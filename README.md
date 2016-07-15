@@ -2,5 +2,5 @@
 
 # Phase 1 - Preparetion
 ```
-bash bash deploy/preparetion-deploy.sh kitv2rc Create
+bash deploy/preparetion-deploy.sh kitv2rc Create
 ```
