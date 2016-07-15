@@ -29,5 +29,34 @@ Created a new port:
 
 # Phase 1 - Preparetion
 ```
-bash deploy/preparetion-deploy.sh kitv2rc Create
+$ bash deploy/preparetion-deploy.sh kitv2rc Create
++--------------------------------------+------------------+--------------------+----------------------+
+| id                                   | stack_name       | stack_status       | creation_time        |
++--------------------------------------+------------------+--------------------+----------------------+
+| 386bfbd6-bcad-4b01-b6d7-d5340f41b834 | PreparetionStack | CREATE_IN_PROGRESS | 2016-07-15T14:35:03Z |
++--------------------------------------+------------------+--------------------+----------------------+
 ```
+This phase is responsible of:
+- TenantNetwork
+- TenantSubnet
+- TenantSecurityGroup
+- AdminSecurityGroup
+
+# Phase 2 - Environment file preparetion
+This phase is the hand on part, which it requires a number of things:
+- Make sure that the environment has the Imaga(s) and write it/them down in the common environment file (environment/common.yaml)
+- Make sure that the environment has the Flavor(s) and write it/them down in the common environment file (environment/common.yaml)
+- Make sure that each Unit Type has a dedicated CSV file per network (e.g. OMU has two CSV file, one for Admin and other one for Secure Zone - environment/omu/admin.csv environment/omu/sz.csv)
+
+# Phase 3 - Create Unit Type
+```
+$ bash deploy/omu-deploy.sh kitv2rc Create environment/omu/admin.csv environment/omu/sz.csv
++--------------------------------------+------------------+--------------------+----------------------+
+| id                                   | stack_name       | stack_status       | creation_time        |
++--------------------------------------+------------------+--------------------+----------------------+
+| 386bfbd6-bcad-4b01-b6d7-d5340f41b834 | PreparetionStack | CREATE_COMPLETE    | 2016-07-15T14:35:03Z |
+| 283220bb-e37c-46f1-9917-f9d8f66fc5e3 | omu1             | CREATE_IN_PROGRESS | 2016-07-15T14:36:43Z |
++--------------------------------------+------------------+--------------------+----------------------+
+```
+This phase is responsible of:
+- Create the Unit Type for the given number of interfaces
