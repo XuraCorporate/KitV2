@@ -5,3 +5,7 @@ parameters:
   tenant_network_dhcp_start: "172.16.0.10" # Left some IP Address for future usage, e.g. Static Routes
   tenant_network_dhcp_end: "172.16.1.254"
   tenant_security_group_name: TenantSecGroup
+
+  admin_network_cidr: "10.107.203.0/24"
+  admin_network_gateway: "10.107.203.1"
+  

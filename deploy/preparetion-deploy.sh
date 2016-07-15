@@ -38,7 +38,7 @@ if [[ "${_ACTION}" != "Delete" && "${_ACTION}" != "List" ]]
 then
 	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') \
 	 --template-file ../templates/preparation.yaml \
-	 --environment-file ../templates/environment/common.yaml \
+	 --environment-file ../environment/common.yaml \
 	${_STACKNAME} || (echo "Error during Stack ${_ACTION}." ; exit 1)
 elif [[ "${_ACTION}" != "List" ]]
 then
