@@ -1,0 +1,9 @@
+export OS_NO_CACHE=True
+export COMPUTE_API_VERSION=1.1
+export OS_USERNAME=kitv2
+export no_proxy=,10.107.201.11
+export OS_TENANT_NAME=kitv2
+export OS_CLOUDNAME=overcloud
+export OS_AUTH_URL=http://10.107.201.11:5000/v2.0/
+export NOVA_VERSION=1.1
+export OS_PASSWORD=kitv2
