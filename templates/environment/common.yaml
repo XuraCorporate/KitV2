@@ -1,0 +1,7 @@
+---
+parameters:
+  tenant_network_name: "TenantNet"
+  tenant_network_cird: "172.16.0.0/23"
+  tenant_network_dhcp_start: "172.16.0.10" # Left some IP Address for future usage, e.g. Static Routes
+  tenant_network_dhcp_end: "172.16.1.254"
+  tenant_security_group_name: TenantSecGroup

@@ -1,0 +1,59 @@
+---
+heat_template_version: 2015-04-30
+
+description: Xura HOT template for the TenantPreparetion
+
+parameters:
+  tenant_network_name:
+    type: string
+    description: Tenant Network name with DHCP
+  tenant_network_cird:
+    type: string
+    description: Tenant Network CIDR
+  tenant_network_dhcp_start:
+    type: string
+    description: Tenant Network Lower DHCP Range
+  tenant_network_dhcp_end:
+    type: string
+    description: Tenant Network Higher DHCP Range
+  tenant_security_group_name:
+    type: string
+    description: Tenant Network Security Group Name
+
+resources:
+  TenantNetwork:
+    type: OS::Neutron::Net
+    properties:
+      admin_state_up: true
+      name: { get_param: tenant_network_name }
+
+  TenantSubnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: TenantNetwork }
+      cidr: { get_param: tenant_network_cird }
+      allocation_pools: [{ "start": {get_param: tenant_network_dhcp_start}, "end": {get_param: tenant_network_dhcp_end} }]
+      enable_dhcp: true
+      gateway_ip: null
+      ip_version: 4
+
+  TenantSecurityGroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Tenant Network Security Group
+      name: { get_param: tenant_security_group_name }
+      rules:
+        - direction: egress
+          remote_ip_prefix: "0.0.0.0/0"
+        - direction: ingress
+          ethertype: IPv4
+          remote_ip_prefix: { get_param: tenant_network_cird }
+          protocol: udp
+          port_range_min: 67
+          port_range_max: 68
+        - direction: ingress
+          ethertype: IPv4
+          remote_ip_prefix: { get_param: tenant_network_cird }
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
