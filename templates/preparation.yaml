@@ -19,6 +19,9 @@ parameters:
   tenant_security_group_name:
     type: string
     description: Tenant Network Security Group Name
+  admin_security_group_name:
+    type: string
+    description: Admin Network Security Group Name
 
 resources:
   TenantNetwork:
@@ -57,3 +60,14 @@ resources:
           protocol: tcp
           port_range_min: 22
           port_range_max: 22
+
+  AdminSecurityGroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Admin Network Security Group
+      name: { get_param: admin_security_group_name }
+      rules:
+        - direction: egress
+          remote_ip_prefix: "0.0.0.0/0"
+        - direction: ingress
+          remote_ip_prefix: "0.0.0.0/0"

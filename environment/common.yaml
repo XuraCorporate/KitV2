@@ -1,11 +1,35 @@
 ---
-parameters:
-  tenant_network_name: "TenantNet"
+parameter_defaults:
+  # Tenant Network Section
+  tenant_network_name: TenantNet
   tenant_network_cird: "172.16.0.0/23"
   tenant_network_dhcp_start: "172.16.0.10" # Left some IP Address for future usage, e.g. Static Routes
   tenant_network_dhcp_end: "172.16.1.254"
   tenant_security_group_name: TenantSecGroup
-
+  # Admin Network Section
   admin_network_cidr: "10.107.203.0/24"
   admin_network_gateway: "10.107.203.1"
-  
+  admin_security_group_name: AdminSecGroup
+  # Secure Zone Network Section 
+  sz_network_cidr: "10.107.204.0/24"
+  # SIP Internal Network Section 
+  sip_network_cidr: "10.107.205.0/24"
+  # Media Network Section 
+  media_network_cidr: "10.107.206.0/24"
+  # Flavor Section
+  cms_flavor_name: m1.small
+  lvu_flavor_name: m1.small
+  omu_flavor_name: m1.small
+  asu_flavor_name: m1.small
+  mau_flavor_name: m1.small
+  # Image Section
+  cms_image_id: 1f4027b2-5290-4abc-9e26-845e8cfc9052 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  cms_image: Fedora23
+  lvu_image_id: 1f4027b2-5290-4abc-9e26-845e8cfc9052 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  lvu_image: Fedora23
+  omu_image_id: 1f4027b2-5290-4abc-9e26-845e8cfc9052 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  omu_image: Fedora23
+  asu_image_id: 1f4027b2-5290-4abc-9e26-845e8cfc9052 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  asu_image: Fedora23
+  mau_image_id: 1f4027b2-5290-4abc-9e26-845e8cfc9052 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  mau_image: Fedora23

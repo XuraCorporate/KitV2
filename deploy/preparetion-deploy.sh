@@ -2,7 +2,7 @@
 
 if [[ "$1" == "" ]]
 then
-	echo "Usage bash $0 <RC File> <Create/Update/List/Delete> [StackName]"
+	echo "Usage bash $0 <RC File> <Create/Update/List/Delete> [StackName - default PreparetionStack]"
 	exit 1
 fi
 
