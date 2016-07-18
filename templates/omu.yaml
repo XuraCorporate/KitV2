@@ -8,6 +8,15 @@ parameters:
     type: boolean
     description: Dev Mode for the Cloud-Init Script which performs development stuff
     default: false
+#  keypair_name:
+#    type: string
+#    description: Keypair for the unit
+  unit_name:
+    type: string
+    description: Hostname of the Unit
+  domain_name:
+    type: string
+    description: Domain Name of the Unit
   omu_flavor_name:
     type: string
     description: Flavor Name to be used
@@ -66,31 +75,35 @@ resources:
   omu_unit:
     type: OS::Nova::Server
     properties:
+      name: { get_param: unit_name }
       flavor: { get_param: omu_flavor_name }
       networks:
         #- port: { get_resource: tenant_network_port }
         - port: { get_param: admin_network_port }
         - port: { get_param: sz_network_port }
       # image: omu_image
-      key_name: M4r1k-RA
+      # key_name: { get_param: keypair_name }
       config_drive: true
       user_data_format: RAW
       user_data:
         str_replace:
-          template: {get_file: ./script/omu_software_config.sh }
+          template: { get_file: ./script/omu_software_config.sh }
           params:
-            _DEVMODE_: {get_param: dev_mode}
-            _ADMIN_MAC_: {get_param: admin_mac_address}
-            _ADMIN_IP_: {get_param: admin_ip_address}
-            _ADMIN_NETMASK_: {get_param: admin_netmask}
-            _ADMIN_GW_: {get_param: admin_gw}
-            _SZ_MAC_: {get_param: sz_mac_address}
-            _SZ_IP_: {get_param: sz_ip_address}
-            _SZ_NETMASK_: {get_param: sz_netmask}
+            _DEVMODE_: { get_param: dev_mode }
+            _ADMIN_MAC_: { get_param: admin_mac_address }
+            _ADMIN_IP_: { get_param: admin_ip_address }
+            _ADMIN_NETMASK_: { get_param: admin_netmask }
+            _ADMIN_GW_: { get_param: admin_gw }
+            _SZ_MAC_: { get_param: sz_mac_address }
+            _SZ_IP_: { get_param: sz_ip_address }
+            _SZ_NETMASK_: { get_param: sz_netmask }
+            _HOSTNAME_: { get_param: unit_name }
+            _DOMAINNAME_: { get_param: domain_name }
+
       block_device_mapping_v2:
         -
           boot_index: 0
           delete_on_termination: true
           device_name: vda
           image_id: { get_param: omu_image_id }
-          volume_size: 10
+          volume_size: 20

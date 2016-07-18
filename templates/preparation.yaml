@@ -4,24 +4,27 @@ heat_template_version: 2015-04-30
 description: Xura HOT template for the TenantPreparetion
 
 parameters:
-  tenant_network_name:
-    type: string
-    description: Tenant Network name with DHCP
-  tenant_network_cird:
-    type: string
-    description: Tenant Network CIDR
-  tenant_network_dhcp_start:
-    type: string
-    description: Tenant Network Lower DHCP Range
-  tenant_network_dhcp_end:
-    type: string
-    description: Tenant Network Higher DHCP Range
-  tenant_security_group_name:
-    type: string
-    description: Tenant Network Security Group Name
+#  tenant_network_name:
+#    type: string
+#    description: Tenant Network name with DHCP
+#  tenant_network_cird:
+#    type: string
+#    description: Tenant Network CIDR
+#  tenant_network_dhcp_start:
+#    type: string
+#    description: Tenant Network Lower DHCP Range
+#  tenant_network_dhcp_end:
+#    type: string
+#    description: Tenant Network Higher DHCP Range
+#  tenant_security_group_name:
+#    type: string
+#    description: Tenant Network Security Group Name
   admin_security_group_name:
     type: string
     description: Admin Network Security Group Name
+#  keypair_name:
+#    type: string
+#    description: Keypair for the unit
 
 resources:
 #  TenantNetwork:
@@ -71,3 +74,13 @@ resources:
           remote_ip_prefix: "0.0.0.0/0"
         - direction: ingress
           remote_ip_prefix: "0.0.0.0/0"
+#  KeyPair:
+#    type: OS::Nova::KeyPair
+#    properties:
+#      name: { get_param: keypair_name }
+#      save_private_key: True
+
+#outputs:
+#  XuraKeyPair:
+#    description: Private Xura Keypair for VoiceMail
+#    value: { get_attr: [ KeyPair, private_key ] }

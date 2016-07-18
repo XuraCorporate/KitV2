@@ -69,6 +69,7 @@ do
 		heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') \
 		 --template-file ../templates/omu.yaml \
 		 --environment-file ../environment/common.yaml \
+                 --parameters "unit_name=${_STACKNAME}${_INSTACE}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "sz_network_port=${_SZ_PORTID}" \
                  --parameters "admin_mac_address=${_ADMIN_MAC}" \

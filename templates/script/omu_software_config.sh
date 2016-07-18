@@ -31,6 +31,9 @@ _DEVMODE=_DEVMODE_
 if $(echo "${_DEVMODE}" | awk '{print tolower($0)}')
 then
         echo "root:Xur4"|chpasswd
+        sed -e "s/^PasswordAuthentication.*$/PasswordAuthentication yes/g" -i /etc/ssh/sshd_config
+        sed -e "s/^PermitRootLogin.*$/PermitRootLogin yes/g" -i /etc/ssh/sshd_config
+        systemctl restart sshd || service sshd restart
 fi
 
 _SYSVINIT=$(pidof /sbin/init >/dev/null 2>&1 && echo true || echo false)
@@ -39,6 +42,13 @@ _SYSTEMD=$(pidof systemd >/dev/null 2>&1 && echo true || echo false)
 netconfig ${_SYSTEMD} _ADMIN_MAC_ _ADMIN_IP_ _ADMIN_NETMASK_ _ADMIN_GW_
 netconfig ${_SYSTEMD} _SZ_MAC_ _SZ_IP_ _SZ_NETMASK_
 
+# RHEL 6.7 has the following bug - https://bugs.launchpad.net/cloud-init/+bug/1246485
+cat > /etc/cloud/cloud.cfg.d/99_hostname.cfg << EOF
+#cloud-config
+hostname: _HOSTNAME_
+fqdn: _HOSTNAME_._DOMAINNAME_
+EOF
+cloud-init init
 
 if ${_SYSVINIT}
 then
