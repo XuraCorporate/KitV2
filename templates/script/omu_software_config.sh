@@ -42,13 +42,15 @@ _SYSTEMD=$(pidof systemd >/dev/null 2>&1 && echo true || echo false)
 netconfig ${_SYSTEMD} _ADMIN_MAC_ _ADMIN_IP_ _ADMIN_NETMASK_ _ADMIN_GW_
 netconfig ${_SYSTEMD} _SZ_MAC_ _SZ_IP_ _SZ_NETMASK_
 
-# RHEL 6.7 has the following bug - https://bugs.launchpad.net/cloud-init/+bug/1246485
+# RHEL 6.7 and 6.8 has the following bug - https://bugs.launchpad.net/cloud-init/+bug/1246485
 cat > /etc/cloud/cloud.cfg.d/99_hostname.cfg << EOF
 #cloud-config
 hostname: _HOSTNAME_
 fqdn: _HOSTNAME_._DOMAINNAME_
 EOF
 cloud-init init
+sysctl -w kernel.hostname=_HOSTNAME_._DOMAINNAME_
+sed -e "s/^HOSTNAME=.*$/HOSTNAME=_HOSTNAME_._DOMAINNAME_/g" -i /etc/sysconfig/network
 
 if ${_SYSVINIT}
 then
