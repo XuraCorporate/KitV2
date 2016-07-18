@@ -1,5 +1,6 @@
 ---
 parameter_defaults:
+  dev_mode: true
   # Deprecated usage of Tenant Network
   # Tenant Network Section
   tenant_network_name: TenantNet

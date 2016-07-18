@@ -1,7 +1,6 @@
 #!/bin/bash
 
 _SCRIPT=OMU
-_DEV=true
 
 if [[ "$1" == "" ]]
 then
@@ -73,7 +72,6 @@ do
                  --parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "sz_network_port=${_SZ_PORTID}" \
-                 --parameters "dev_mode=${_DEV}" \
                  --parameters "admin_mac_address=${_ADMIN_MAC}" \
                  --parameters "admin_ip_address=${_ADMIN_IP}" \
                  --parameters "admin_netmask=${_ADMIN_NETMASK}" \
