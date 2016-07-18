@@ -37,9 +37,6 @@ $ bash deploy/preparetion-deploy.sh kitv2rc Create
 +--------------------------------------+------------------+--------------------+----------------------+
 ```
 This phase is responsible of:
-- TenantNetwork
-- TenantSubnet
-- TenantSecurityGroup
 - AdminSecurityGroup
 
 # Phase 2 - Environment file preparetion
@@ -63,3 +60,6 @@ $ bash deploy/omu-deploy.sh kitv2rc Create environment/omu/admin.csv environment
 ```
 This phase is responsible of:
 - Create the Unit Type for the given number of interfaces
+  - Create the VM
+  - Give to the VM a generic network config file which will configure the IP Address in the VM
+  - In case the developer mode has been enabled, the root password will be changed
