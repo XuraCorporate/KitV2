@@ -28,6 +28,30 @@ parameters:
   sz_network_port:
     type: string
     description: Port ID on Admin Network
+  dev_mode:
+    type: string
+    description: Dev Mode for the Cloud-Init Script which performs development stuff
+  admin_mac_address:
+    type: string
+    description: Admin Port Mac Address
+  admin_ip_address:
+    type: string
+    description: Admin Network IP Address
+  admin_netmask:
+    type: string
+    description: Admin Network Netmask
+  admin_gw:
+    type: string
+    description: Admin Network default GW
+  sz_mac_address:
+    type: string
+    description: Secure Zone Port Mac Address
+  sz_ip_address:
+    type: string
+    description: Secure Zone Network IP Address
+  sz_netmask:
+    type: string
+    description: Secure Zone Network Netmask
 
 resources:
   tenant_network_port:
@@ -43,10 +67,24 @@ resources:
     properties:
       flavor: { get_param: omu_flavor_name }
       networks:
-        - port: { get_resource: tenant_network_port }
+        #- port: { get_resource: tenant_network_port }
         - port: { get_param: admin_network_port }
         - port: { get_param: sz_network_port }
       # image: omu_image
+      config_drive: true
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          template: {get_file: ./script/omu_software_config.sh }
+          params:
+            _DEVMODE_: {get_param: dev_mode}
+            _ADMIN_MAC_: {get_param: admin_mac_address}
+            _ADMIN_IP_: {get_param: admin_ip_address}
+            _ADMIN_NETMASK_: {get_param: admin_netmask}
+            _ADMIN_GW_: {get_param: admin_gw}
+            _SZ_MAC_: {get_param: sz_mac_address}
+            _SZ_IP_: {get_param: sz_ip_address}
+            _SZ_NETMASK_: {get_param: sz_netmask}
       block_device_mapping_v2:
         -
           boot_index: 0
@@ -54,13 +92,3 @@ resources:
           device_name: vda
           image_id: { get_param: omu_image_id }
           volume_size: 10
-#      user_data_format: RAW
-#      user_data:
-#        str_replace:
-#          template: |
-#            #!/bin/sh
-#            # Simple success signal
-#            wc_notify --data-binary '{"status": "SUCCESS"}'
-#
-#          params:
-#            wc_notify: { get_attr: ['wait_handle', 'curl_cli'] }

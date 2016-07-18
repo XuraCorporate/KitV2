@@ -47,6 +47,9 @@ This phase is the hand on part, which it requires a number of things:
 - Make sure that the environment has the Imaga(s) and write it/them down in the common environment file (environment/common.yaml)
 - Make sure that the environment has the Flavor(s) and write it/them down in the common environment file (environment/common.yaml)
 - Make sure that each Unit Type has a dedicated CSV file per network (e.g. OMU has two CSV file, one for Admin and other one for Secure Zone - environment/omu/admin.csv environment/omu/sz.csv)
+  - Each CSV file should have the following format
+    - <Neutron Port ID>,<vNIC MAC Address>,<vNIC IP Address>,<vNIC Netmask Address>,<vNIC Gateway Address>
+    - e.g. a5b544f6-2ca7-44f3-814b-4ec466700b02,fa:16:3e:80:30:09,10.107.203.250,255.255.255.0,10.107.203.1
 
 # Phase 3 - Create Unit Type
 ```
