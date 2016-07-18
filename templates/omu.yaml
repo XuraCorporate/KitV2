@@ -4,6 +4,10 @@ heat_template_version: 2015-04-30
 description: Xura HOT template to deploy OMU unit
 
 parameters:
+  dev_mode:
+    type: boolean
+    description: Dev Mode for the Cloud-Init Script which performs development stuff
+    default: false
   omu_flavor_name:
     type: string
     description: Flavor Name to be used
@@ -13,24 +17,21 @@ parameters:
   omu_image_id:
     type: string
     description: Image ID to be used - in case of block device mapping
-  tenant_network_name:
-    type: string
-    description: Tenant Network Name with DHCP
-  tenant_network_id:
-    type: string
-    description: Tenant Network ID with DHCP
-  tenant_security_group_name:
-    type: string
-    description: Tenant Security Group Name
+#  tenant_network_name:
+#    type: string
+#    description: Tenant Network Name with DHCP
+#  tenant_network_id:
+#    type: string
+#    description: Tenant Network ID with DHCP
+#  tenant_security_group_name:
+#    type: string
+#    description: Tenant Security Group Name
   admin_network_port:
     type: string
     description: Port ID on Admin Network
   sz_network_port:
     type: string
     description: Port ID on Admin Network
-  dev_mode:
-    type: string
-    description: Dev Mode for the Cloud-Init Script which performs development stuff
   admin_mac_address:
     type: string
     description: Admin Port Mac Address
@@ -54,13 +55,13 @@ parameters:
     description: Secure Zone Network Netmask
 
 resources:
-  tenant_network_port:
-    type: OS::Neutron::Port
-    properties:
-      # network_id: { get_param: tenant_network_id }
-      network: { get_param: tenant_network_name }
-      security_groups:
-        - { get_param: tenant_security_group_name }
+#  tenant_network_port:
+#    type: OS::Neutron::Port
+#    properties:
+#      # network_id: { get_param: tenant_network_id }
+#      network: { get_param: tenant_network_name }
+#      security_groups:
+#        - { get_param: tenant_security_group_name }
 
   omu_unit:
     type: OS::Nova::Server
@@ -71,6 +72,7 @@ resources:
         - port: { get_param: admin_network_port }
         - port: { get_param: sz_network_port }
       # image: omu_image
+      key_name: M4r1k-RA
       config_drive: true
       user_data_format: RAW
       user_data:

@@ -37,14 +37,14 @@ then
 	exit 1
 fi
 
-if [ ! -e ${_ADMINCSVFILE} ]
+if [ ! -f ${_ADMINCSVFILE} ] || [ ! -r ${_ADMINCSVFILE} ] || [ ! -s ${_ADMINCSVFILE} ]
 then
 	echo "Wrapper for ${_SCRIPT} Unit Creation"
 	echo "CSV File for Admin Network with mapping Portid,MacAddress,FixedIP,Netmask,Gateway does not exist."
 	exit 1
 fi
 
-if [ ! -e ${_SZCSVFILE} ]
+if [ ! -f ${_SZCSVFILE} ] || [ ! -r ${_SZCSVFILE} ] || [ ! -s ${_SZCSVFILE} ]
 then
 	echo "Wrapper for ${_SCRIPT} Unit Creation"
 	echo "CSV File for Secure Zone Network with mapping Portid,MacAddress,FixedIP,Netmask does not exist."
@@ -56,8 +56,8 @@ source ${_RCFILE}
 _CURRENTDIR=$(pwd)
 cd ${_CURRENTDIR}/$(dirname $0)
 
-_TENANT_NETWORK_NAME=$(cat ../environment/common.yaml|awk '/tenant_network_name/ {print $2}')
-_TENANT_NETWORK_ID=$(neutron net-show --field id --format value ${_TENANT_NETWORK_NAME})
+#_TENANT_NETWORK_NAME=$(cat ../environment/common.yaml|awk '/tenant_network_name/ {print $2}')
+#_TENANT_NETWORK_ID=$(neutron net-show --field id --format value ${_TENANT_NETWORK_NAME})
 
 IFS=","
 exec 3<../${_ADMINCSVFILE}
@@ -69,7 +69,6 @@ do
 		heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') \
 		 --template-file ../templates/omu.yaml \
 		 --environment-file ../environment/common.yaml \
-                 --parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "sz_network_port=${_SZ_PORTID}" \
                  --parameters "admin_mac_address=${_ADMIN_MAC}" \
@@ -80,6 +79,7 @@ do
                  --parameters "sz_ip_address=${_SZ_IP}" \
                  --parameters "sz_netmask=${_SZ_NETMASK}" \
 		 ${_STACKNAME}${_INSTACE} || (echo "Error during Stack ${_ACTION}." ; exit 1)
+                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
 	elif [[ "${_ACTION}" != "List" ]]
 	then
 		heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTACE} || (echo "Error during Stack ${_ACTION}." ; exit 1)
