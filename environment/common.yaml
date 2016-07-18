@@ -1,5 +1,6 @@
 ---
 parameter_defaults:
+  # Deprecated usage of Tenant Network
   # Tenant Network Section
   tenant_network_name: TenantNet
   tenant_network_cird: "172.16.0.0/23"

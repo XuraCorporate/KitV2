@@ -24,42 +24,42 @@ parameters:
     description: Admin Network Security Group Name
 
 resources:
-  TenantNetwork:
-    type: OS::Neutron::Net
-    properties:
-      admin_state_up: true
-      name: { get_param: tenant_network_name }
+#  TenantNetwork:
+#    type: OS::Neutron::Net
+#    properties:
+#      admin_state_up: true
+#      name: { get_param: tenant_network_name }
 
-  TenantSubnet:
-    type: OS::Neutron::Subnet
-    properties:
-      network_id: { get_resource: TenantNetwork }
-      cidr: { get_param: tenant_network_cird }
-      allocation_pools: [{ "start": {get_param: tenant_network_dhcp_start}, "end": {get_param: tenant_network_dhcp_end} }]
-      enable_dhcp: true
-      gateway_ip: null
-      ip_version: 4
+#  TenantSubnet:
+#    type: OS::Neutron::Subnet
+#    properties:
+#      network_id: { get_resource: TenantNetwork }
+#      cidr: { get_param: tenant_network_cird }
+#      allocation_pools: [{ "start": {get_param: tenant_network_dhcp_start}, "end": {get_param: tenant_network_dhcp_end} }]
+#      enable_dhcp: true
+#      gateway_ip: null
+#      ip_version: 4
 
-  TenantSecurityGroup:
-    type: OS::Neutron::SecurityGroup
-    properties:
-      description: Tenant Network Security Group
-      name: { get_param: tenant_security_group_name }
-      rules:
-        - direction: egress
-          remote_ip_prefix: "0.0.0.0/0"
-        - direction: ingress
-          ethertype: IPv4
-          remote_ip_prefix: { get_param: tenant_network_cird }
-          protocol: udp
-          port_range_min: 67
-          port_range_max: 68
-        - direction: ingress
-          ethertype: IPv4
-          remote_ip_prefix: { get_param: tenant_network_cird }
-          protocol: tcp
-          port_range_min: 22
-          port_range_max: 22
+#  TenantSecurityGroup:
+#    type: OS::Neutron::SecurityGroup
+#    properties:
+#      description: Tenant Network Security Group
+#      name: { get_param: tenant_security_group_name }
+#      rules:
+#        - direction: egress
+#          remote_ip_prefix: "0.0.0.0/0"
+#        - direction: ingress
+#          ethertype: IPv4
+#          remote_ip_prefix: { get_param: tenant_network_cird }
+#          protocol: udp
+#          port_range_min: 67
+#          port_range_max: 68
+#        - direction: ingress
+#          ethertype: IPv4
+#          remote_ip_prefix: { get_param: tenant_network_cird }
+#          protocol: tcp
+#          port_range_min: 22
+#          port_range_max: 22
 
   AdminSecurityGroup:
     type: OS::Neutron::SecurityGroup
