@@ -28,7 +28,7 @@ function netconfig {
 
 _DEVMODE=_DEVMODE_
 
-if ${_DEVMODE}
+if $(echo "${_DEVMODE}" | awk '{print tolower($0)}')
 then
         echo "root:Xur4"|chpasswd
 fi
