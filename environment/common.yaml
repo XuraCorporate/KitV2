@@ -12,7 +12,11 @@ parameter_defaults:
 
   #keypair_name: xura-key
   
+  # Domain Name
   domain_name: xura.com 
+
+  # Count for AntiAffinity Group
+  antiaffinity_group_quantity: 4
 
   # Admin Network Section
   admin_network_cidr: "10.107.203.0/24"
