@@ -106,6 +106,7 @@ The shell script "deploy/units-deploy.sh" is a Wrapper which calls Neutron, Nova
 - Replace
 
 The only action that is specific for one instance is the Replace action.
+
 ## Phase 3.1 - Create a Unit Type
 ```
 $ bash deploy/units-deploy.sh kitv2rc Create OMU
@@ -134,6 +135,7 @@ Action performed by the Wrapper:
 - Read the CSV files
 - Update the Security Group of each Port
 - Create OMU Unit Types for each Port available
+
 ## Phase 3.2 - List a Unit Type
 ```
 $ bash deploy/units-deploy.sh kitv2rc List OMU
@@ -150,6 +152,7 @@ $ bash deploy/units-deploy.sh kitv2rc List OMU
 ```
 Action performed by the Wrapper:
 - Display the resource status for each Heat Stack (Each Unit has a dedicated Heat Stack in order to accomplish the requirement to have static Port assignment)
+
 ## Phase 3.3 - Update a Unit Type
 ```
 $ bash deploy/units-deploy.sh kitv2rc Update OMU
@@ -178,6 +181,7 @@ Action performed by the Wrapper:
 - Read the CSV files
 - Update the Security Group of each Port
 - Update OMU Unit Types for each Port available
+
 ## Phase 3.4 - Replace a specific Unit
 ```
 $ bash deploy/units-deploy.sh kitv2rc Replace OMU 1
@@ -231,6 +235,7 @@ Action performed by the Wrapper:
 - Wait unitl has been deleted
 - Update the Security Group of each Port
 - Create OMU Unit Types for each Port available
+
 ## Phase 3.5 - Delete a Unit Type
 ```
 $ bash deploy/units-deploy.sh kitv2rc Delete OMU
@@ -255,8 +260,8 @@ Action performed by the Wrapper:
 - Read the CSV files
 - Delete all of the OMU Unit Type
 
-# Admin command to create the Neutron Ports for users
 ```
+# Admin command to create the Neutron Ports for users
 $ neutron port-create --fixed-ip ip_address=10.107.203.250 --tenant-id 4507ca536d42408093e0fb10d336c275 provider-vlan723
 Created a new port:
 +-----------------------+---------------------------------------------------------------------------------------+
