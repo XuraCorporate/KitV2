@@ -20,17 +20,21 @@ parameter_defaults:
 
   # Admin Network Section
   admin_network_cidr: "10.107.203.0/24"
+  admin_network_netmask: "255.255.255.0"
   admin_network_gateway: "10.107.203.1"
   admin_security_group_name: AdminSecGroup
 
   # Secure Zone Network Section 
   sz_network_cidr: "10.107.204.0/24"
+  sz_network_netmask: "255.255.255.0"
 
   # SIP Internal Network Section 
   sip_network_cidr: "10.107.205.0/24"
+  sip_network_netmask: "255.255.255.0"
 
   # Media Network Section 
   media_network_cidr: "10.107.206.0/24"
+  media_network_netmask: "255.255.255.0"
 
   # Flavor Section
   cms_flavor_name: m1.small

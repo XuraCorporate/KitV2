@@ -38,28 +38,28 @@ parameters:
   admin_network_port:
     type: string
     description: Port ID on Admin Network
+  admin_network_mac:
+    type: string
+    description: Admin Port Mac Address
+  admin_network_ip:
+    type: string
+    description: Admin Network IP Address
+  admin_network_netmask:
+    type: string
+    description: Admin Network Netmask
+  admin_network_gateway:
+    type: string
+    description: Admin Network default GW
   sz_network_port:
     type: string
     description: Port ID on Admin Network
-  admin_mac_address:
-    type: string
-    description: Admin Port Mac Address
-  admin_ip_address:
-    type: string
-    description: Admin Network IP Address
-  admin_netmask:
-    type: string
-    description: Admin Network Netmask
-  admin_gw:
-    type: string
-    description: Admin Network default GW
-  sz_mac_address:
+  sz_network_mac:
     type: string
     description: Secure Zone Port Mac Address
-  sz_ip_address:
+  sz_network_ip:
     type: string
     description: Secure Zone Network IP Address
-  sz_netmask:
+  sz_network_netmask:
     type: string
     description: Secure Zone Network Netmask
 
@@ -90,13 +90,13 @@ resources:
           template: { get_file: ./script/omu_software_config.sh }
           params:
             _DEVMODE_: { get_param: dev_mode }
-            _ADMIN_MAC_: { get_param: admin_mac_address }
-            _ADMIN_IP_: { get_param: admin_ip_address }
-            _ADMIN_NETMASK_: { get_param: admin_netmask }
-            _ADMIN_GW_: { get_param: admin_gw }
-            _SZ_MAC_: { get_param: sz_mac_address }
-            _SZ_IP_: { get_param: sz_ip_address }
-            _SZ_NETMASK_: { get_param: sz_netmask }
+            _ADMIN_MAC_: { get_param: admin_network_mac }
+            _ADMIN_IP_: { get_param: admin_network_ip }
+            _ADMIN_NETMASK_: { get_param: admin_network_netmask }
+            _ADMIN_GW_: { get_param: admin_network_gateway }
+            _SZ_MAC_: { get_param: sz_network_mac }
+            _SZ_IP_: { get_param: sz_network_ip }
+            _SZ_NETMASK_: { get_param: sz_network_netmask }
             _HOSTNAME_: { get_param: unit_name }
             _DOMAINNAME_: { get_param: domain_name }
 
