@@ -64,3 +64,4 @@ This phase is responsible of:
   - Create the VM
   - Give to the VM a generic network config file which will configure the IP Address in the VM
   - In case the developer mode has been enabled, the root password will be changed
+  - Apply the anti-affinity rules

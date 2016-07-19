@@ -56,6 +56,15 @@ fi
 
 source ${_RCFILE}
 
+_GROUPS=./groups.tmp
+nova server-group-list|grep Group|sort -k4|awk '{print $2}' > ${_GROUPS}
+_GROUPNUMBER=$(cat ${_GROUPS}|wc -l)
+for (( i=0 ; i < ${_GROUPNUMBER} ; i++ ))
+do
+	_GROUP[${i}]=$(sed -n -e $((${i}+1))p ${_GROUPS})
+done
+rm -f ${_GROUPS}
+
 _CURRENTDIR=$(pwd)
 cd ${_CURRENTDIR}/$(dirname $0)
 
@@ -83,6 +92,7 @@ then
 	                 --parameters "sz_network_port=${_SZ_PORTID}" \
 	                 --parameters "sz_network_mac=${_SZ_MAC}" \
 	                 --parameters "sz_network_ip=${_SZ_IP}" \
+	                 --parameters "antiaffinity_group=${_GROUP[ $((${_INSTACE}%${_GROUPNUMBER})) ]}" \
 			 ${_STACKNAME}${_INSTACE} || (echo "Error during Stack ${_ACTION}." ; exit 1)
 	                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
 		elif [[ "${_ACTION}" != "List" ]]
