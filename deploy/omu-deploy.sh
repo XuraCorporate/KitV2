@@ -5,16 +5,15 @@ _SCRIPT=OMU
 if [[ "$1" == "" ]]
 then
 	echo "Wrapper for ${_SCRIPT} Unit Creation"
-	echo "Usage bash $0 <RC File> <Create/Update/List/Delete> <ADMIN CSV File> <SZ CSV File> [StackName - default omu1] [Instace to start with - default 1]"
+	echo "Usage bash $0 <RC File> <Create/Update/List/Delete> [Path to the CSV Files - default "environment/omu" and it looks for admin.csv and sz.csv] [StackName - default omu1] [Instace to start with - default 1]"
 	exit 1
 fi
 
 _RCFILE=$1
 _ACTION=$2
-_ADMINCSVFILE=$3
-_SZCSVFILE=$4
-_STACKNAME=${5-omu}
-_INSTACE=${6-1}
+_CSVFILEPATH=${3-environment/omu}
+_STACKNAME=${4-omu}
+_INSTACE=${5-1}
 
 if [ ! -e ${_RCFILE} ]
 then
@@ -36,6 +35,9 @@ then
 	echo "Usage bash $0 <RC File> <Create/Update/List/Delete> <ADMIN CSV File> <SZ CSV File> [StackName - default omu1] [Instace to start with - default 1]"
 	exit 1
 fi
+
+_ADMINCSVFILE=$(echo ${_CSVFILEPATH}/admin.csv)
+_SZCSVFILE=$(echo ${_CSVFILEPATH}/sz.csv)
 
 if [ ! -f ${_ADMINCSVFILE} ] || [ ! -r ${_ADMINCSVFILE} ] || [ ! -s ${_ADMINCSVFILE} ]
 then
