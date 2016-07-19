@@ -260,8 +260,8 @@ Action performed by the Wrapper:
 - Read the CSV files
 - Delete all of the OMU Unit Type
 
-```
 # Admin command to create the Neutron Ports for users
+```
 $ neutron port-create --fixed-ip ip_address=10.107.203.250 --tenant-id 4507ca536d42408093e0fb10d336c275 provider-vlan723
 Created a new port:
 +-----------------------+---------------------------------------------------------------------------------------+
