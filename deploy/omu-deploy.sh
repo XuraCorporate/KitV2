@@ -82,6 +82,9 @@ then
 	do
 		if [[ "${_ACTION}" != "Delete" && "${_ACTION}" != "List" ]]
 		then 
+                        neutron port-update --no-security-groups ${_ADMIN_PORTID}
+			neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID}
+                        neutron port-update --no-security-groups ${_SZ_PORTID}
 			heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') \
 			 --template-file ../templates/omu.yaml \
 			 --environment-file ../environment/common.yaml \
@@ -98,6 +101,7 @@ then
 		elif [[ "${_ACTION}" != "List" ]]
 		then
 			heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTACE} || (echo "Error during Stack ${_ACTION}." ; exit 1)
+                        neutron port-update --no-security-groups ${_ADMIN_PORTID}
 		else
 			heat resource-$(echo "${_ACTION}" | awk '{print tolower($0)}') -n 20 ${_STACKNAME}${_INSTACE} || (echo "Error during Stack ${_ACTION}." ; exit 1)
 		fi
@@ -114,6 +118,9 @@ then
 	do
 		heat stack-delete ${_STACKNAME}${_INSTACE} || (echo "Error during Stack ${_ACTION}." ; exit 1)
 		while :; do heat resource-list ${_STACKNAME}${_INSTACE} || break; done
+                neutron port-update --no-security-groups ${_ADMIN_PORTID}
+		neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID}
+                neutron port-update --no-security-groups ${_SZ_PORTID}
                 heat stack-create \
                  --template-file ../templates/omu.yaml \
                  --environment-file ../environment/common.yaml \

@@ -48,8 +48,8 @@ parameter_defaults:
   cms_image: RHEL_6.7_x64
   lvu_image_id: bc303413-3e8e-424b-a76a-48f214a709df #LP: https://bugs.launchpad.net/heat/+bug/1559186
   lvu_image: RHEL_6.7_x64
-  omu_image_id: bc303413-3e8e-424b-a76a-48f214a709df #LP: https://bugs.launchpad.net/heat/+bug/1559186
-  omu_image: RHEL_6.7_x64
+  omu_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  omu_image: Image_for_Stack_1
   asu_image_id: bc303413-3e8e-424b-a76a-48f214a709df #LP: https://bugs.launchpad.net/heat/+bug/1559186
   asu_image: RHEL_6.7_x64
   mau_image_id: bc303413-3e8e-424b-a76a-48f214a709df #LP: https://bugs.launchpad.net/heat/+bug/1559186
