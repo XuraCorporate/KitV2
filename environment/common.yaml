@@ -24,21 +24,29 @@ parameter_defaults:
   admin_network_netmask: "255.255.255.0"
   admin_network_gateway: "10.107.203.1"
   admin_security_group_name: AdminSecGroup
+  # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
+  admin_network_vlan: none
 
   # Secure Zone Network Section 
   sz_network_name: "provider-vlan724"
   sz_network_cidr: "10.107.204.0/24"
   sz_network_netmask: "255.255.255.0"
+  # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
+  sz_network_vlan: none
 
   # SIP Internal Network Section 
   sip_network_name: "provider-vlan725"
   sip_network_cidr: "10.107.205.0/24"
   sip_network_netmask: "255.255.255.0"
+  # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
+  sip_network_vlan: none
 
   # Media Network Section 
   media_network_name: "provider-vlan726"
   media_network_cidr: "10.107.206.0/24"
   media_network_netmask: "255.255.255.0"
+  # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
+  media_network_vlan: none
 
   # Flavor Section
   cms_flavor_name: m1.small
