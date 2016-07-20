@@ -5,6 +5,17 @@ function input_error_log {
 	echo "Usage bash $0 <RC File> <Create/Update/List/Delete/Replace> <CMS/LVU/OMU/VM-ASU/MAU> [Instace to start with or replace to - default 1] [Path to the CSV Files - default "environment/${_UNITLOWER}"] [StackName - default ${_UNITLOWER}]"
 }
 
+function exit_for_error {
+        _MESSAGE=$1
+        _CHANGEDIR=$2
+        echo ${_MESSAGE}
+        if ${_CHANGEDIR}
+        then
+                cd ${_CURRENTDIR}
+        fi
+        exit 1
+}
+
 function create_update_cms {
 	echo "Not yet implemented."
 }
@@ -23,7 +34,7 @@ function create_update_omu {
 	        exec 4<../${_SZCSVFILE}.tmp
 	        while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3 && read _SZ_PORTID _SZ_MAC _SZ_IP <&4
 	        do
-	                heat stack-delete ${_STACKNAME}${_INSTACE} || (echo "Error during Stack ${_ACTION}." ; exit 1)
+	                heat stack-delete ${_STACKNAME}${_INSTACE} || exit_for_error "Error during Stack ${_ACTION}." true
 	                while :; do heat resource-list ${_STACKNAME}${_INSTACE} || break; done
 			init_omu Create
 		done
@@ -45,6 +56,8 @@ function create_update_omu {
 
 function init_omu {
 	_COMMAND=${1}
+	port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
+	port_validation ${_SZ_PORTID} ${_SZ_MAC}
 	neutron port-update --no-security-groups ${_ADMIN_PORTID}
 	neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID}
 	neutron port-update --no-security-groups ${_SZ_PORTID}
@@ -59,7 +72,7 @@ function init_omu {
 	 --parameters "sz_network_mac=${_SZ_MAC}" \
 	 --parameters "sz_network_ip=${_SZ_IP}" \
 	 --parameters "antiaffinity_group=${_GROUP[ $((${_INSTACE}%${_GROUPNUMBER})) ]}" \
-	 ${_STACKNAME}${_INSTACE} || (echo "Error during Stack ${_ACTION}." ; exit 1)
+	 ${_STACKNAME}${_INSTACE} || exit_for_error "Error during Stack ${_ACTION}." true
 	#--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
 	_INSTACE=$(($_INSTACE+1))
 }
@@ -71,6 +84,33 @@ function create_update_vmasu {
 function create_update_mau {
 	echo "Not yet implemented."
 }
+
+function validation {
+	_UNITTOVALIDATE=$1
+	_IMAGE=$(cat ../environment/common.yaml|grep "$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image"|grep -v image_id|awk '{print $2}'|sed "s/\"//g")
+	_IMAGEID=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image_id'/ {print $2}'|sed "s/\"//g")
+	_FLAVOR=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_flavor_name'/ {print $2}'|sed "s/\"//g")
+	_ADMIN_NETWORK=$(cat ../environment/common.yaml|awk '/admin_network_name/ {print $2}'|sed "s/\"//g")
+
+	glance image-show ${_IMAGEID}|grep "${_IMAGE}" >/dev/null 2>&1 || exit_for_error "Error, Image for Unit ${_UNITTOVALIDATE} not present or mismatch between ID and Name." true
+	nova flavor-show "${_FLAVOR}" >/dev/null 2>&1 || exit_for_error "Error, Flavor for Unit ${_UNITTOVALIDATE} not present." true
+	neutron net-show "${_ADMIN_NETWORK}" >/dev/null 2>&1 || exit_for_error "Error, Admin Network not present." true
+}
+
+function port_validation {
+	_PORT=$1
+	_MAC=$2
+	neutron port-show ${_PORT} >/dev/null 2>&1 || exit_for_error "Error, Port with ID ${_PORT} does not exist." true
+	if [[ "$(neutron port-show --field device_id --format value ${_PORT})" != "" ]]
+	then
+		exit_for_error "Error, Port with ID ${_PORT} is in use." true
+	fi
+	if [[ "$(neutron port-show --field mac_address --format value ${_PORT})" != "${_MAC}" ]]
+	then
+		exit_for_error "Error, Port with ID ${_PORT} has a different MAC Address than the one provided into the CSV file." true
+	fi
+}
+
 
 _RCFILE=$1
 _ACTION=$2
@@ -154,9 +194,20 @@ fi
 
 source ${_RCFILE}
 
+which heat > /dev/null 2>&1 || exit_for_error "Error, cannot find pythonheat-client." false
+which nova > /dev/null 2>&1 || exit_for_error "Error, cannot find pythonnova-client." false
+which neutron > /dev/null 2>&1 || exit_for_error "Error, cannot find pythonneutron-client." false
+which glance > /dev/null 2>&1 || exit_for_error "Error, cannot find pythonglance-client." false
+heat stack-list > /dev/null 2>&1 || exit_for_error "Error during credential validation." false
+heat resource-list PreparetionStack > /dev/null 2>&1 || exit_for_error "Error, cannot find the Preparetion Stack, so create it first." false
+
 _GROUPS=./groups.tmp
 nova server-group-list|grep Group|sort -k4|awk '{print $2}' > ${_GROUPS}
 _GROUPNUMBER=$(cat ${_GROUPS}|wc -l)
+if [[ "${_GROUPNUMBER}" == "0" ]]
+then
+	exit_for_error "Error, there is any available Anti-Affinity Group." false
+fi
 for (( i=0 ; i < ${_GROUPNUMBER} ; i++ ))
 do
 	_GROUP[${i}]=$(sed -n -e $((${i}+1))p ${_GROUPS})
@@ -173,7 +224,7 @@ if [[ "${_ACTION}" == "List" ]]
 then
 	for _STACKID in $(heat stack-list|awk '/'${_STACKNAME}'/ {print $2}')
 	do
-		heat resource-$(echo "${_ACTION}" | awk '{print tolower($0)}') -n 20 ${_STACKID} || (echo "Error during Stack ${_ACTION}." ; exit 1)
+		heat resource-$(echo "${_ACTION}" | awk '{print tolower($0)}') -n 20 ${_STACKID} || exit_for_error "Error during Stack ${_ACTION}." true
 	done
 	cd ${_CURRENTDIR}
 	exit 0
@@ -181,7 +232,7 @@ elif [[ "${_ACTION}" == "Delete" ]]
 then
 	for _STACKID in $(heat stack-list|awk '/'${_STACKNAME}'/ {print $2}')
 	do
-		heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKID} || (echo "Error during Stack ${_ACTION}." ; exit 1)
+		heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKID} || exit_for_error "Error during Stack ${_ACTION}." true
 	done
 	cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} > ../${_ADMINCSVFILE}.tmp
 	IFS=","
@@ -196,6 +247,7 @@ then
 	exit 0
 elif [[ "${_ACTION}" == "Create" || "${_ACTION}" == "Update" || "${_ACTION}" == "Replace" ]]
 then
+	validation ${_UNIT}
 	if [[ ${_UNIT} == "CMS" ]]
 	then
 		create_update_cms
