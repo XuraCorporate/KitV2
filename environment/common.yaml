@@ -32,7 +32,7 @@ parameter_defaults:
   sz_network_cidr: "10.107.204.0/24"
   sz_network_netmask: "255.255.255.0"
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
-  sz_network_vlan: none
+  sz_network_vlan: 1234
 
   # SIP Internal Network Section 
   sip_network_name: "provider-vlan725"

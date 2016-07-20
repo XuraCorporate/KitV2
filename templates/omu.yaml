@@ -53,6 +53,10 @@ parameters:
   admin_network_gateway:
     type: string
     description: Admin Network default GW
+  admin_network_vlan:
+    type: string
+    description: Admin Network VLAN ID none will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggind
+    default: none
   sz_network_port:
     type: string
     description: Port ID on Admin Network
@@ -65,6 +69,10 @@ parameters:
   sz_network_netmask:
     type: string
     description: Secure Zone Network Netmask
+  sz_network_vlan:
+    type: string
+    description: Secure Zone Network VLAN ID none will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggind
+    default: none
 
 resources:
 #  tenant_network_port:
@@ -97,9 +105,11 @@ resources:
             _ADMIN_IP_: { get_param: admin_network_ip }
             _ADMIN_NETMASK_: { get_param: admin_network_netmask }
             _ADMIN_GW_: { get_param: admin_network_gateway }
+            _ADMIN_VLAN_: { get_param: admin_network_vlan }
             _SZ_MAC_: { get_param: sz_network_mac }
             _SZ_IP_: { get_param: sz_network_ip }
             _SZ_NETMASK_: { get_param: sz_network_netmask }
+            _SZ_VLAN_: { get_param: sz_network_vlan }
             _HOSTNAME_: { get_param: unit_name }
             _DOMAINNAME_: { get_param: domain_name }
       scheduler_hints: { group: {get_param: antiaffinity_group } }
