@@ -8,12 +8,16 @@ function input_error_log {
 function exit_for_error {
         _MESSAGE=$1
         _CHANGEDIR=$2
+	_EXIT=${3-hard}
         echo ${_MESSAGE}
         if ${_CHANGEDIR}
         then
                 cd ${_CURRENTDIR}
         fi
-        exit 1
+	if [[ "${_EXIT}" == "hard" ]]
+	then
+        	exit 1
+	fi
 }
 
 function create_update_cms {
@@ -62,6 +66,12 @@ function create_update_omu {
 
 function init_omu {
 	_COMMAND=${1}
+	heat resource-list ${_STACKNAME}${_INSTACE} > /dev/null 2>&1
+        if [[ "${_ACTION}" == "Create" && "${?}" == "0" ]]
+        then
+                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTACE} already exist." true soft
+        fi
+
 	port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
 	port_validation ${_SZ_PORTID} ${_SZ_MAC}
 	neutron port-update --no-security-groups ${_ADMIN_PORTID}

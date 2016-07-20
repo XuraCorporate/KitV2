@@ -43,23 +43,29 @@ fi
 
 source ${_RCFILE}
 
-which heat > /dev/null 2>&1 || exit_for_error "Error, cannot find pythonheat-client." false
-heat stack-list > /dev/null 2>&1 || exit_for_error "Error during credential validation." false
+which heat > /dev/null 2>&1 || exit_for_error "Error, Cannot find pythonheat-client." false
+heat stack-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 
 _CURRENTDIR=$(pwd)
 cd ${_CURRENTDIR}/$(dirname $0)
 
 if [[ "${_ACTION}" != "Delete" && "${_ACTION}" != "List" ]]
 then
+	heat resource-list ${_STACKNAME} > /dev/null 2>&1
+	if [[ "${_ACTION}" == "Create" && "${?}" == "0" ]]
+	then
+		exit_for_error "Error, The Stack already exist." true
+	fi
+	
 	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') \
 	 --template-file ../templates/preparation.yaml \
 	 --environment-file ../environment/common.yaml \
-	${_STACKNAME} || exit_for_error "Error during Stack ${_ACTION}." true
+	${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
 elif [[ "${_ACTION}" != "List" ]]
 then
-	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME} || exit_for_error "Error during Stack ${_ACTION}." true
+	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
 else
-	heat resource-$(echo "${_ACTION}" | awk '{print tolower($0)}') -n 20 ${_STACKNAME} || exit_for_error "Error during Stack ${_ACTION}." true
+	heat resource-$(echo "${_ACTION}" | awk '{print tolower($0)}') -n 20 ${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
 fi
 
 cd ${_CURRENTDIR}
