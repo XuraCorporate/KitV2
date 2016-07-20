@@ -208,6 +208,10 @@ then
 	exit 1
 fi
 
+for _ENV in $(env|grep ^OS|awk -F "=" '{print $1}')
+do
+        unset ${_ENV}
+done
 source ${_RCFILE}
 
 which heat > /dev/null 2>&1 || exit_for_error "Error, Cannot find pythonheat-client." false
