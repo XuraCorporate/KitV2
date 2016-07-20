@@ -34,7 +34,7 @@ function create_update_omu {
 	        exec 4<../${_SZCSVFILE}.tmp
 	        while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3 && read _SZ_PORTID _SZ_MAC _SZ_IP <&4
 	        do
-	                heat stack-delete ${_STACKNAME}${_INSTACE} || exit_for_error "Error during Stack ${_ACTION}." true
+	                heat stack-delete ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true
 	                while :; do heat resource-list ${_STACKNAME}${_INSTACE} || break; done
 			init_omu Create
 		done
@@ -45,7 +45,7 @@ function create_update_omu {
 		_SZ_PORT_NUMBER=$(cat ../${_SZCSVFILE}.tmp|wc -l)
 		if [[ "${_ADMIN_PORT_NUMBER}" != "${_SZ_PORT_NUMBER}" ]]
 		then
-			exit_for_error "Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Secure Zone, which has ${_SZ_PORT_NUMBER} Port(s)" true 
+			exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Secure Zone, which has ${_SZ_PORT_NUMBER} Port(s)" true 
 		fi
 	        IFS=","
 	        exec 3<../${_ADMINCSVFILE}.tmp
@@ -78,7 +78,7 @@ function init_omu {
 	 --parameters "sz_network_mac=${_SZ_MAC}" \
 	 --parameters "sz_network_ip=${_SZ_IP}" \
 	 --parameters "antiaffinity_group=${_GROUP[ $((${_INSTACE}%${_GROUPNUMBER})) ]}" \
-	 ${_STACKNAME}${_INSTACE} || exit_for_error "Error during Stack ${_ACTION}." true
+	 ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true
 	#--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
 	_INSTACE=$(($_INSTACE+1))
 }
@@ -200,19 +200,19 @@ fi
 
 source ${_RCFILE}
 
-which heat > /dev/null 2>&1 || exit_for_error "Error, cannot find pythonheat-client." false
-which nova > /dev/null 2>&1 || exit_for_error "Error, cannot find pythonnova-client." false
-which neutron > /dev/null 2>&1 || exit_for_error "Error, cannot find pythonneutron-client." false
-which glance > /dev/null 2>&1 || exit_for_error "Error, cannot find pythonglance-client." false
-heat stack-list > /dev/null 2>&1 || exit_for_error "Error during credential validation." false
-heat resource-list PreparetionStack > /dev/null 2>&1 || exit_for_error "Error, cannot find the Preparetion Stack, so create it first." false
+which heat > /dev/null 2>&1 || exit_for_error "Error, Cannot find pythonheat-client." false
+which nova > /dev/null 2>&1 || exit_for_error "Error, Cannot find pythonnova-client." false
+which neutron > /dev/null 2>&1 || exit_for_error "Error, Cannot find pythonneutron-client." false
+which glance > /dev/null 2>&1 || exit_for_error "Error, Cannot find pythonglance-client." false
+heat stack-list > /dev/null 2>&1 || exit_for_error "Error During credential validation." false
+heat resource-list PreparetionStack > /dev/null 2>&1 || exit_for_error "Error, Cannot find the Preparetion Stack, so create it first." false
 
 _GROUPS=./groups.tmp
 nova server-group-list|grep Group|sort -k4|awk '{print $2}' > ${_GROUPS}
 _GROUPNUMBER=$(cat ${_GROUPS}|wc -l)
 if [[ "${_GROUPNUMBER}" == "0" ]]
 then
-	exit_for_error "Error, there is any available Anti-Affinity Group." false
+	exit_for_error "Error, There is any available Anti-Affinity Group." false
 fi
 for (( i=0 ; i < ${_GROUPNUMBER} ; i++ ))
 do
@@ -230,7 +230,7 @@ if [[ "${_ACTION}" == "List" ]]
 then
 	for _STACKID in $(heat stack-list|awk '/'${_STACKNAME}'/ {print $2}')
 	do
-		heat resource-$(echo "${_ACTION}" | awk '{print tolower($0)}') -n 20 ${_STACKID} || exit_for_error "Error during Stack ${_ACTION}." true
+		heat resource-$(echo "${_ACTION}" | awk '{print tolower($0)}') -n 20 ${_STACKID} || exit_for_error "Error, During Stack ${_ACTION}." true
 	done
 	cd ${_CURRENTDIR}
 	exit 0
@@ -238,7 +238,7 @@ elif [[ "${_ACTION}" == "Delete" ]]
 then
 	for _STACKID in $(heat stack-list|awk '/'${_STACKNAME}'/ {print $2}')
 	do
-		heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKID} || exit_for_error "Error during Stack ${_ACTION}." true
+		heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKID} || exit_for_error "Error, During Stack ${_ACTION}." true
 	done
 	cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} > ../${_ADMINCSVFILE}.tmp
 	IFS=","
