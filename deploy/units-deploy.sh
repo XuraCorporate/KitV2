@@ -41,6 +41,12 @@ function create_update_omu {
 	else
 	        cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} > ../${_ADMINCSVFILE}.tmp
 	        cat ../${_SZCSVFILE}|tail -n+${_INSTACE} > ../${_SZCSVFILE}.tmp
+		_ADMIN_PORT_NUMBER=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
+		_SZ_PORT_NUMBER=$(cat ../${_SZCSVFILE}.tmp|wc -l)
+		if [[ "${_ADMIN_PORT_NUMBER}" != "${_SZ_PORT_NUMBER}" ]]
+		then
+			exit_for_error "Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Secure Zone, which has ${_SZ_PORT_NUMBER} Port(s)" true 
+		fi
 	        IFS=","
 	        exec 3<../${_ADMINCSVFILE}.tmp
 	        exec 4<../${_SZCSVFILE}.tmp
