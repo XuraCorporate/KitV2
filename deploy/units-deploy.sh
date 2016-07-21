@@ -51,7 +51,7 @@ function create_update_omu {
 	        while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3 && read _SZ_PORTID _SZ_MAC _SZ_IP <&4
 	        do
 	                heat stack-delete ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
-	                while :; do heat resource-list ${_STACKNAME}${_INSTACE} || break; done
+	                while :; do heat resource-list ${_STACKNAME}${_INSTACE} >/dev/null 2>&1 || break; done
 			init_omu Create
 		done
 	else
