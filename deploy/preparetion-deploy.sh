@@ -1,4 +1,8 @@
 #!/bin/bash
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
 function exit_for_error {
         _MESSAGE=$1
@@ -21,10 +25,6 @@ _RCFILE=$1
 _ACTION=$2
 _STACKNAME=PreparetionStack
 #_STACKNAME=${3-PreparetionStack}
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
 
 if [ ! -e ${_RCFILE} ]
 then
@@ -67,6 +67,7 @@ echo -e "${GREEN} [OK]${NC}"
 _CURRENTDIR=$(pwd)
 cd ${_CURRENTDIR}/$(dirname $0)
 
+echo -e "${GREEN}Performing Action ${_ACTION}${NC}"
 if [[ "${_ACTION}" != "Delete" && "${_ACTION}" != "List" ]]
 then
 	echo -e -n "Verifing if ${_STACKNAME} is already loaded ...\t\t"
@@ -77,19 +78,15 @@ then
 	fi
 	echo -e "${GREEN} [OK]${NC}"
 	
-	echo -e "Loading Stack ${_STACKNAME} ..."
 	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') \
 	 --template-file ../templates/preparation.yaml \
 	 --environment-file ../environment/common.yaml \
 	${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
 elif [[ "${_ACTION}" != "List" ]]
 then
-	echo -e "Seeing Stack ${_STACKNAME} ..."
 	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
 else
-	echo -e "Loading Stack ${_STACKNAME} ..."
 	heat resource-$(echo "${_ACTION}" | awk '{print tolower($0)}') -n 20 ${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
-	echo -e "${GREEN} [OK]${NC}"
 fi
 
 cd ${_CURRENTDIR}
