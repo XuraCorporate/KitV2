@@ -242,7 +242,7 @@ heat resource-list PreparetionStack > /dev/null 2>&1 || exit_for_error "Error, C
 _GROUPS=./groups.tmp
 nova server-group-list|grep Group|sort -k4|awk '{print $2}' > ${_GROUPS}
 _GROUPNUMBER=$(cat ${_GROUPS}|wc -l)
-if [[ "${_GROUPNUMBER}" == "0" ]]
+if [[ "${_GROUPNUMBER}" == "0" && "${_ACTION}" != "Delete" && "${_ACTION}" != "List" ]]
 then
 	exit_for_error "Error, There is any available Anti-Affinity Group." false hard
 fi
