@@ -2,7 +2,7 @@
 
 function input_error_log {
 	echo "Wrapper for ${_UNIT} Unit Creation"
-	echo "Usage bash $0 <RC File> <Create/Update/List/Delete/Replace> <CMS/LVU/OMU/VM-ASU/MAU> [Instace to start with or replace to - default 1] [Path to the CSV Files - default "environment/${_UNITLOWER}"] [StackName - default ${_UNITLOWER}]"
+	echo "Usage bash $0 <OpenStack RC environment file> <Create/Update/List/Delete/Replace> <CMS/LVU/OMU/VM-ASU/MAU> [Instace to start with or replace to - default 1] [Path to the CSV Files - default "environment/${_UNITLOWER}"] [StackName - default ${_UNITLOWER}]"
 }
 
 function exit_for_error {
@@ -163,7 +163,7 @@ fi
 if [ ! -e ${_RCFILE} ]
 then
 	input_error_log
-	echo "RC File does not exist."
+	echo "OpenStack RC environment file does not exist."
 	exit 1
 fi
 

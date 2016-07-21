@@ -3,7 +3,8 @@ This deployment kit has been developed based on some requirements.
 One of them is the fully VM(s) isolation from the OpenStack API or not be able to call the OpenStack Metadata server.
 
 # Requirements
-In order to run this Kit a Linux box is required. Also are required the following packages:
+In order to run this Kit a Linux box is required.
+The following packages are required:
 - git
 - python-neutronclient
 - python-openstackclient
@@ -14,10 +15,28 @@ In order to run this Kit a Linux box is required. Also are required the followin
 - python-cinderclient
 - python-keystoneclient
 - python-glanceclient
-
-Also the Linux box has to be able to call all of the OpenStack API.
+The Linux box has to be able to call the OpenStack API.
+When the Kit has been downloaded, it needs the read and the write permission on the Kit files.
+An OpenStack environment file is required in order to authenticate the wrapper to the OpenStack API.
+```
+export OS_NO_CACHE=True
+export COMPUTE_API_VERSION=1.1
+export OS_USERNAME=kitv2
+export no_proxy=,10.107.201.11
+export OS_TENANT_NAME=kitv2
+export OS_CLOUDNAME=overcloud
+export OS_AUTH_URL=http://10.107.201.11:5000/v2.0/
+export NOVA_VERSION=1.1
+export OS_PASSWORD=kitv2
+```
 
 # Phase 1 - Preparetion
+## Phase 1.1 - Git
+The Kit can be cloned by GitHub with the following command:
+```
+$ git clone git@github.com:XuraCorporate/KitV2.git
+```
+## Phase 1.2 - Preparetion Stack
 ```
 $ bash deploy/preparetion-deploy.sh kitv2rc Create
 +--------------------------------------+------------------+--------------------+----------------------+

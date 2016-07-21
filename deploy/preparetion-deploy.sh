@@ -13,7 +13,7 @@ function exit_for_error {
 
 if [[ "$1" == "" ]]
 then
-	echo "Usage bash $0 <RC File> <Create/Update/List/Delete>"
+	echo "Usage bash $0 <OpenStack RC environment file> <Create/Update/List/Delete>"
 	exit 1
 fi
 
@@ -24,8 +24,8 @@ _STACKNAME=PreparetionStack
 
 if [ ! -e ${_RCFILE} ]
 then
-	echo "RC File does not exist."
-	echo "Usage bash $0 <RC File> <Create/Update/List/Delete>"
+	echo "OpenStack RC environment file does not exist."
+	echo "Usage bash $0 <OpenStack RC environment file> <Create/Update/List/Delete>"
 	exit 1
 fi
 
@@ -37,7 +37,7 @@ then
 	echo "\"Update\" - To update the stack ${_STACKNAME}"
 	echo "\"List\" - To list the resource in the stack ${_STACKNAME}"
 	echo "\"Delete\" - To delete the stack ${_STACKNAME} - WARNING cannot be reversed!"
-	echo "Usage bash $0 <RC File> <Create/Update/List/Delete>"
+	echo "Usage bash $0 <OpenStack RC environment file> <Create/Update/List/Delete>"
 	exit 1
 fi
 
