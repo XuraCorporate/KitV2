@@ -13,7 +13,9 @@ parameter_defaults:
   #keypair_name: xura-key
   
   # Domain Name
-  domain_name: xura.com 
+  # It could be a domain name or "none" which will remove the Domain configuration
+  # Place a dot before the domain, it has to be like this ".xura.com"
+  domain_name: none
 
   # Count for AntiAffinity Group
   antiaffinity_group_quantity: 4

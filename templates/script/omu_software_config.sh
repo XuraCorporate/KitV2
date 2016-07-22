@@ -72,15 +72,23 @@ done
 netconfig ${_SYSTEMD} _ADMIN_VLAN_ _ADMIN_MAC_ _ADMIN_IP_ _ADMIN_NETMASK_ _ADMIN_GW_
 netconfig ${_SYSTEMD} _SZ_VLAN_ _SZ_MAC_ _SZ_IP_ _SZ_NETMASK_
 
-# RHEL 6.7 and 6.8 has the following bug - https://bugs.launchpad.net/cloud-init/+bug/1246485
 cat > /etc/cloud/cloud.cfg.d/99_hostname.cfg << EOF
 #cloud-config
 hostname: _HOSTNAME_
-fqdn: _HOSTNAME_._DOMAINNAME_
 EOF
+
+_DOMAIN=_DOMAINNAME_
+if [[ "${_DOMAIN}" != "none" ]]
+then
+	echo "fqdn: _HOSTNAME_${_DOMAIN}" >> /etc/cloud/cloud.cfg.d/99_hostname.cfg
+else
+	_DOMAIN=""
+fi
+
 cloud-init init
-sysctl -w kernel.hostname=_HOSTNAME_._DOMAINNAME_
-sed -e "s/^HOSTNAME=.*$/HOSTNAME=_HOSTNAME_._DOMAINNAME_/g" -i /etc/sysconfig/network
+# RHEL 6.7 and 6.8 has the following bug - https://bugs.launchpad.net/cloud-init/+bug/1246485
+sysctl -w kernel.hostname=_HOSTNAME_${_DOMAIN}
+sed -e "s/^HOSTNAME=.*$/HOSTNAME=_HOSTNAME_${_DOMAIN}/g" -i /etc/sysconfig/network
 
 if ${_SYSVINIT}
 then
