@@ -19,6 +19,20 @@ function exit_for_error {
 }
 
 #####
+# Function to check the OpenStack environment
+#####
+function check {
+#	echo -e -n "Verifing access to the Nova API ...\t\t"
+#	nova list > /dev/null 2>&1 || exit_for_error "Error, Cannot access to the Nova API." false
+#	echo -e "${GREEN} [OK]${NC}"
+#	
+#	echo -e -n "Verifing access to the Neutron API ...\t\t"
+#	neutron net-list > /dev/null 2>&1 || exit_for_error "Error, Cannot access to the Nova API." false
+#	echo -e "${GREEN} [OK]${NC}"
+	echo "Not yet implemented."
+}
+
+#####
 # Verity if any input values are present
 #####
 if [[ "$1" == "" ]]
@@ -50,7 +64,7 @@ fi
 #####
 # Check Action Name
 #####
-if [[ "${_ACTION}" != "Create" && "${_ACTION}" != "Update" && "${_ACTION}" != "List" && "${_ACTION}" != "Delete" ]]
+if [[ "${_ACTION}" != "Create" && "${_ACTION}" != "Update" && "${_ACTION}" != "List" && "${_ACTION}" != "Delete" && "${_ACTION}" != "Check" ]]
 then
 	echo -e "${RED}"
 	echo "Action not valid."
@@ -59,6 +73,7 @@ then
 	echo "\"Update\" - To update the stack ${_STACKNAME}"
 	echo "\"List\" - To list the resource in the stack ${_STACKNAME}"
 	echo "\"Delete\" - To delete the stack ${_STACKNAME} - WARNING cannot be reversed!"
+	echo "\"Check\" - Check the OpenStack environment in order to find out any possible issue"
 	echo "Usage bash $0 <OpenStack RC environment file> <Create/Update/List/Delete>"
 	echo -e "${NC}"
 	exit 1
@@ -82,9 +97,13 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify binary
 #####
-echo -e -n "Verifing Heat binary ...\t\t"
-which heat > /dev/null 2>&1 || exit_for_error "Error, Cannot find pythonheat-client." false
-echo -e "${GREEN} [OK]${NC}"
+_BINS="heat nova neutron glance"
+for _BIN in ${_BINS}
+do
+	echo -e -n "Verifing ${_BIN} binary ...\t\t"
+	which ${_BIN} > /dev/null 2>&1 || exit_for_error "Error, Cannot find python${_BIN}-client." false
+	echo -e "${GREEN} [OK]${NC}"
+done
 
 #####
 # Verify if the given credential are valid. This will also check if the use can contact Heat
@@ -103,7 +122,7 @@ cd ${_CURRENTDIR}/$(dirname $0)
 # Initiate the actions phase
 #####
 echo -e "${GREEN}Performing Action ${_ACTION}${NC}"
-if [[ "${_ACTION}" != "Delete" && "${_ACTION}" != "List" ]]
+if [[ "${_ACTION}" != "Delete" && "${_ACTION}" != "List" && "${_ACTION}" != "Check" ]]
 then
 	#####
 	# Here the action can be only Update or Create
@@ -133,17 +152,23 @@ then
 	 --template-file ../templates/preparation.yaml \
 	 --environment-file ../environment/common.yaml \
 	${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
-elif [[ "${_ACTION}" != "List" ]]
+elif [[ "${_ACTION}" != "List" && "${_ACTION}" != "Check" ]]
 then
 	#####
 	# Delete the Stack
 	#####
 	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
-else
+elif [[ "${_ACTION}" != "Check" ]]
+then
 	#####
 	# List all of the Stack's resources
 	#####
 	heat resource-$(echo "${_ACTION}" | awk '{print tolower($0)}') -n 20 ${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
+else
+	#####
+	# Check the OpenStack environment
+	#####
+	check	
 fi
 
 cd ${_CURRENTDIR}
