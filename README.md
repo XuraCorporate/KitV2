@@ -33,6 +33,7 @@ export OS_PASSWORD=kitv2
 The following are the required API in order to execure those Kits.
 All of the OpenStack API can be found at the following link
 http://developer.openstack.org/api-ref.html
+
 ### Nova
 - List Servers - http://developer.openstack.org/api-ref/compute/?expanded=#list-servers
 - Create Server - http://developer.openstack.org/api-ref/compute/?expanded=#create-server
@@ -67,12 +68,14 @@ http://developer.openstack.org/api-ref.html
 - Create Server Group - http://developer.openstack.org/api-ref/compute/?expanded=#create-server-group
 - Show Server Group Details - http://developer.openstack.org/api-ref/compute/?expanded=#show-server-group-details
 - Delete Server Group - http://developer.openstack.org/api-ref/compute/?expanded=#delete-server-group
+
 ### Cinder
 - List volumes - http://developer.openstack.org/api-ref-blockstorage-v2.html#listVolumes
 - Creates a volume - http://developer.openstack.org/api-ref-blockstorage-v2.html#createVolume
 - List volumes with details - http://developer.openstack.org/api-ref-blockstorage-v2.html#listVolumesDetail
 - Shows details for a volume - http://developer.openstack.org/api-ref-blockstorage-v2.html#showVolume
 - Delete a volume - http://developer.openstack.org/api-ref-blockstorage-v2.html#deleteVolume
+
 ### Neutron
 - List networks - http://developer.openstack.org/api-ref/networking/v2/?expanded=list-networks-detail#list-networks
 - Show network details - http://developer.openstack.org/api-ref/networking/v2/?expanded=show-network-details-detail#show-network-details
@@ -86,10 +89,12 @@ http://developer.openstack.org/api-ref.html
 - Delete security group - http://developer.openstack.org/api-ref/networking/v2-ext/?expanded=delete-security-group-detail
 - Show security group - http://developer.openstack.org/api-ref/networking/v2-ext/?expanded=show-security-group-detail
 - Update security group - http://developer.openstack.org/api-ref/networking/v2-ext/?expanded=update-security-group-detail
+
 ### Glance
 - Lists public virtual machine (VM) images - http://developer.openstack.org/api-ref-image-v2.html#listImages-v2
 - Shows details for an image - http://developer.openstack.org/api-ref-image-v2.html#showImage-v2
 - Creates a virtual machine (VM) image - http://developer.openstack.org/api-ref-image-v2.html#createImage-v2
+
 ### Heat
 - Create stack - http://developer.openstack.org/api-ref-orchestration-v1.html#stack_create
 - List stack data - http://developer.openstack.org/api-ref-orchestration-v1.html#stack_list
