@@ -29,6 +29,80 @@ export OS_AUTH_URL=http://10.107.201.11:5000/v2.0/
 export NOVA_VERSION=1.1
 export OS_PASSWORD=kitv2
 ```
+## API Requirements
+The following are the required API in order to execure those Kits.
+All of the OpenStack API can be found at the following link
+http://developer.openstack.org/api-ref.html
+### Nova
+- List Servers - http://developer.openstack.org/api-ref/compute/?expanded=#list-servers
+- Create Server - http://developer.openstack.org/api-ref/compute/?expanded=#create-server
+- List Servers Detailed - http://developer.openstack.org/api-ref/compute/?expanded=#list-servers-detailed
+- Show Server Details - http://developer.openstack.org/api-ref/compute/?expanded=#show-server-details
+- Update Server - http://developer.openstack.org/api-ref/compute/?expanded=#update-server
+- Delete Server - http://developer.openstack.org/api-ref/compute/?expanded=#delete-server
+- Create Image (createImage Action) - http://developer.openstack.org/api-ref/compute/?expanded=#create-image-createimage-action
+- Reboot Server (reboot Action) - http://developer.openstack.org/api-ref/compute/?expanded=#reboot-server-reboot-action
+- Start Server (os-start Action) - http://developer.openstack.org/api-ref/compute/?expanded=#start-server-os-start-action
+- Stop Server (os-start Action) - http://developer.openstack.org/api-ref/compute/?expanded=#stop-server-os-stop-action
+- Show Console Output (Os-Getconsoleoutput Action) - http://developer.openstack.org/api-ref/compute/?expanded=#show-console-output-os-getconsoleoutput-action
+- Get Vnc Console (os-getVNCConsole Action) - http://developer.openstack.org/api-ref/compute/?expanded=#get-vnc-console-os-getvncconsole-action
+- List Ips - http://developer.openstack.org/api-ref/compute/?expanded=#list-ips
+- Show Ip Details - http://developer.openstack.org/api-ref/compute/?expanded=#show-ip-details
+- List All Metadata - http://developer.openstack.org/api-ref/compute/?expanded=#list-all-metadata
+- Update Metadata Items - http://developer.openstack.org/api-ref/compute/?expanded=#update-metadata-items
+- Create Or Replace Metadata Items - http://developer.openstack.org/api-ref/compute/?expanded=#create-or-replace-metadata-items
+- Show Metadata Item Details - http://developer.openstack.org/api-ref/compute/?expanded=#show-metadata-item-details
+- Create Or Update Metadata Item - http://developer.openstack.org/api-ref/compute/?expanded=#create-or-update-metadata-item
+- Delete Metadata Item - http://developer.openstack.org/api-ref/compute/?expanded=#delete-metadata-item
+- List volume attachments for an instance - http://developer.openstack.org/api-ref/compute/?expanded=#list-volume-attachments-for-an-instance
+- Attach a volume to an instance - http://developer.openstack.org/api-ref/compute/?expanded=#attach-a-volume-to-an-instance
+- Show a detail of a volume attachment - http://developer.openstack.org/api-ref/compute/?expanded=#show-a-detail-of-a-volume-attachment
+- Update a volume attachment - http://developer.openstack.org/api-ref/compute/?expanded=#update-a-volume-attachment
+- Detach a volume from an instance - http://developer.openstack.org/api-ref/compute/?expanded=#detach-a-volume-from-an-instance
+- List Flavors - http://developer.openstack.org/api-ref/compute/?expanded=#list-flavors
+- List Keypairs - http://developer.openstack.org/api-ref/compute/?expanded=#list-keypairs
+- Create Or Import Keypair - http://developer.openstack.org/api-ref/compute/?expanded=#create-or-import-keypair
+- Delete Keypair - http://developer.openstack.org/api-ref/compute/?expanded=#delete-keypair
+- List Server Groups - http://developer.openstack.org/api-ref/compute/?expanded=#list-server-groups
+- Create Server Group - http://developer.openstack.org/api-ref/compute/?expanded=#create-server-group
+- Show Server Group Details - http://developer.openstack.org/api-ref/compute/?expanded=#show-server-group-details
+- Delete Server Group - http://developer.openstack.org/api-ref/compute/?expanded=#delete-server-group
+### Cinder
+- List volumes - http://developer.openstack.org/api-ref-blockstorage-v2.html#listVolumes
+- Creates a volume - http://developer.openstack.org/api-ref-blockstorage-v2.html#createVolume
+- List volumes with details - http://developer.openstack.org/api-ref-blockstorage-v2.html#listVolumesDetail
+- Shows details for a volume - http://developer.openstack.org/api-ref-blockstorage-v2.html#showVolume
+- Delete a volume - http://developer.openstack.org/api-ref-blockstorage-v2.html#deleteVolume
+### Neutron
+- List networks - http://developer.openstack.org/api-ref/networking/v2/?expanded=list-networks-detail#list-networks
+- Show network details - http://developer.openstack.org/api-ref/networking/v2/?expanded=show-network-details-detail#show-network-details
+- List subnets - http://developer.openstack.org/api-ref/networking/v2/?expanded=list-subnets-detail#show-network-details
+- Show subnets details - http://developer.openstack.org/api-ref/networking/v2/?expanded=show-subnet-details-detail#show-network-details
+- List ports - http://developer.openstack.org/api-ref/networking/v2/?expanded=list-ports-detail#show-network-details
+- Show ports details - http://developer.openstack.org/api-ref/networking/v2/?expanded=list-ports-detail,show-port-details-detail#show-network-details
+- Update port - http://developer.openstack.org/api-ref/networking/v2/?expanded=update-port-detail#show-network-details
+- List security groups - http://developer.openstack.org/api-ref/networking/v2-ext/?expanded=list-security-groups-detail
+- Create security group - http://developer.openstack.org/api-ref/networking/v2-ext/?expanded=create-security-group-detail
+- Delete security group - http://developer.openstack.org/api-ref/networking/v2-ext/?expanded=delete-security-group-detail
+- Show security group - http://developer.openstack.org/api-ref/networking/v2-ext/?expanded=show-security-group-detail
+- Update security group - http://developer.openstack.org/api-ref/networking/v2-ext/?expanded=update-security-group-detail
+### Glance
+- Lists public virtual machine (VM) images - http://developer.openstack.org/api-ref-image-v2.html#listImages-v2
+- Shows details for an image - http://developer.openstack.org/api-ref-image-v2.html#showImage-v2
+- Creates a virtual machine (VM) image - http://developer.openstack.org/api-ref-image-v2.html#createImage-v2
+### Heat
+- Create stack - http://developer.openstack.org/api-ref-orchestration-v1.html#stack_create
+- List stack data - http://developer.openstack.org/api-ref-orchestration-v1.html#stack_list
+- Preview stack - http://developer.openstack.org/api-ref-orchestration-v1.html#stack_preview
+- Preview stack update - http://developer.openstack.org/api-ref-orchestration-v1.html#stack_update_preview
+- Find stack - http://developer.openstack.org/api-ref-orchestration-v1.html#stack_find
+- Find stack resources - http://developer.openstack.org/api-ref-orchestration-v1.html#stack_resources_find
+- Show stack details - http://developer.openstack.org/api-ref-orchestration-v1.html#stack_show
+- Update stack - http://developer.openstack.org/api-ref-orchestration-v1.html#stack_update
+- Delete stack - http://developer.openstack.org/api-ref-orchestration-v1.html#stack_delete
+- List resources - http://developer.openstack.org/api-ref-orchestration-v1.html#resource_list
+- Show resource data - http://developer.openstack.org/api-ref-orchestration-v1.html#resource_show
+- Show resource metadata - http://developer.openstack.org/api-ref-orchestration-v1.html#resource_metadata
 
 # Phase 1 - Preparetion
 ## Phase 1.1 - Git
