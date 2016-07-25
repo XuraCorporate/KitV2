@@ -59,7 +59,7 @@ parameters:
     default: none
   sz_network_port:
     type: string
-    description: Port ID on Admin Network
+    description: Port ID on Secure Zone Network
   sz_network_mac:
     type: string
     description: Secure Zone Port Mac Address

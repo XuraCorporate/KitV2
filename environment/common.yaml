@@ -47,6 +47,7 @@ parameter_defaults:
   media_network_name: "provider-vlan726"
   media_network_cidr: "10.107.206.0/24"
   media_network_netmask: "255.255.255.0"
+  media_network_gateway: "10.107.206.1" # For CMS
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
   media_network_vlan: none
 
