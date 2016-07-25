@@ -55,7 +55,156 @@ function exit_for_error {
 # Function to Create CMS Unit
 #####
 function create_update_cms {
-	echo "Not yet implemented."
+        if [[ "${_ACTION}" == "Replace" ]]
+        then
+                #####
+                # Load the CSV Files
+                #####
+                sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} > ../${_ADMINCSVFILE}.tmp
+                sed -n -e ${_INSTACE}p ../${_SZCSVFILE} > ../${_SZCSVFILE}.tmp
+                sed -n -e ${_INSTACE}p ../${_SIPCSVFILE} > ../${_sipCSVFILE}.tmp
+                sed -n -e ${_INSTACE}p ../${_MEDIACSVFILE} > ../${_MEDIACSVFILE}.tmp
+                IFS=","
+                exec 3<../${_ADMINCSVFILE}.tmp
+                exec 4<../${_SZCSVFILE}.tmp
+                exec 5<../${_SIPCSVFILE}.tmp
+                exec 6<../${_MEDIACSVFILE}.tmp
+                while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3 && read _SZ_PORTID _SZ_MAC _SZ_IP <&4 && read _SIP_PORTID _SIP_MAC _SIP_IP <&5 && read _MEDIA_PORTID _MEDIA_MAC _MEDIA_IP <&6
+                do
+                        #####
+                        # Delete the old stack
+                        #####
+                        heat stack-delete ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+
+                        #####
+                        # Wait until has been deleted
+                        #####
+                        while :; do heat resource-list ${_STACKNAME}${_INSTACE} >/dev/null 2>&1 || break; done
+
+                        #####
+                        # Create it again
+                        #####
+                        init_cms Create
+                done
+        else
+                cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} > ../${_ADMINCSVFILE}.tmp
+                cat ../${_SZCSVFILE}|tail -n+${_INSTACE} > ../${_SZCSVFILE}.tmp
+                cat ../${_SIPCSVFILE}|tail -n+${_INSTACE} > ../${_SIPCSVFILE}.tmp
+                cat ../${_MEDIACSVFILE}|tail -n+${_INSTACE} > ../${_MEDIACSVFILE}.tmp
+
+                #####
+                # Verify that in the CSV files there are the same amout of Ports
+                #####
+                _ADMIN_PORT_NUMBER=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
+                _SZ_PORT_NUMBER=$(cat ../${_SZCSVFILE}.tmp|wc -l)
+                _SIP_PORT_NUMBER=$(cat ../${_SIPCSVFILE}.tmp|wc -l)
+                _MEDIA_PORT_NUMBER=$(cat ../${_MEDIACSVFILE}.tmp|wc -l)
+                echo -e -n "Validating number of Ports ...\t\t"
+                if [[ "${_ADMIN_PORT_NUMBER}" != "${_SZ_PORT_NUMBER}" ]]
+                then
+                        exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Secure Zone, which has ${_SZ_PORT_NUMBER} Port(s)" true hard
+                fi
+                if [[ "${_ADMIN_PORT_NUMBER}" != "${_SIP_PORT_NUMBER}" ]]
+                then
+                        exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and SIP, which has ${_SIP_PORT_NUMBER} Port(s)" true hard
+                fi
+                if [[ "${_ADMIN_PORT_NUMBER}" != "${_MEDIA_PORT_NUMBER}" ]]
+                then
+                        exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Media, which has ${_MEDIA_PORT_NUMBER} Port(s)" true hard
+                fi
+                echo -e "${GREEN} [OK]${NC}"
+
+                #####
+                # Load the CSV Files
+                #####
+                IFS=","
+                exec 3<../${_ADMINCSVFILE}.tmp
+                exec 4<../${_SZCSVFILE}.tmp
+                exec 5<../${_SIPCSVFILE}.tmp
+                exec 6<../${_MEDIACSVFILE}.tmp
+                while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3 && read _SZ_PORTID _SZ_MAC _SZ_IP <&4 && read _SIP_PORTID _SIP_MAC _SIP_IP <&5 && read _MEDIA_PORTID _MEDIA_MAC _MEDIA_IP <&6
+                do
+
+                        #####
+                        # After the checks create the OMU with the right parameters
+                        #####
+                        init_cms ${_ACTION}
+                done
+        fi
+        exec 3<&-
+        exec 4<&-
+        rm -f ../${_ADMINCSVFILE}.tmp ../${_SZCSVFILE}.tmp
+}
+
+#####
+# Function to initialize the creation of the OMU Unit
+#####
+function init_cms {
+        _COMMAND=${1}
+
+        #####
+        # Verify if the stack already exist. A double create will fail
+        # Verify if the stack exist in order to be updated
+        #####
+        echo -e -n "Verifing if ${_STACKNAME}${_INSTACE} is already loaded ...\t\t"
+        heat resource-list ${_STACKNAME}${_INSTACE} > /dev/null 2>&1
+        _STATUS=${?}
+        if [[ "${_ACTION}" == "Create" && "${_STATUS}" == "0" ]]
+        then
+                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTACE} already exist." false soft
+        elif [[ "${_ACTION}" == "Update" && "${_STATUS}" != "0" ]]
+        then
+                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTACE} does not exist." false soft
+        else
+                echo -e "${GREEN} [OK]${NC}"
+
+                #####
+                # Verify the port status one by one
+                #####
+                port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
+                port_validation ${_SZ_PORTID} ${_SZ_MAC}
+                port_validation ${_SIP_PORTID} ${_SIP_MAC}
+                port_validation ${_MEDIA_PORTID} ${_MEDIA_MAC}
+
+                #####
+                # Update the port securtiy group
+                #####
+                neutron port-update --no-security-groups ${_ADMIN_PORTID}
+                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID}
+                neutron port-update --no-security-groups ${_SZ_PORTID}
+                neutron port-update --no-security-groups ${_SIP_PORTID}
+                neutron port-update --no-security-groups ${_MEDIA_PORTID}
+
+                #####
+                # Load the Stack and pass the following information
+                # - Admin Port ID, Mac Address and IP Address
+                # - SZ Port ID, Mac Address and IP Address
+                # - SIP Port ID, Mac Address and IP Address
+                # - MEDIA Port ID, Mac Address and IP Address
+                # - Hostname
+                # - Anti-affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
+                #####
+                heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
+                 --template-file ../templates/${_UNITLOWER}.yaml \
+                 --environment-file ../environment/common.yaml \
+                 --parameters "unit_name=${_STACKNAME}${_INSTACE}" \
+                 --parameters "admin_network_port=${_ADMIN_PORTID}" \
+                 --parameters "admin_network_mac=${_ADMIN_MAC}" \
+                 --parameters "admin_network_ip=${_ADMIN_IP}" \
+                 --parameters "sz_network_port=${_SZ_PORTID}" \
+                 --parameters "sz_network_mac=${_SZ_MAC}" \
+                 --parameters "sz_network_ip=${_SZ_IP}" \
+                 --parameters "sip_network_port=${_SZ_PORTID}" \
+                 --parameters "sip_network_mac=${_SZ_MAC}" \
+                 --parameters "sip_network_ip=${_SZ_IP}" \
+                 --parameters "media_network_port=${_SZ_PORTID}" \
+                 --parameters "media_network_mac=${_SZ_MAC}" \
+                 --parameters "media_network_ip=${_SZ_IP}" \
+                 --parameters "antiaffinity_group=${_GROUP[ $((${_INSTACE}%${_GROUPNUMBER})) ]}" \
+                 ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
+        fi
+        _INSTACE=$(($_INSTACE+1))
 }
 
 #####
