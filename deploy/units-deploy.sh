@@ -970,7 +970,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify binary
 #####
-_BINS="heat nova neutron glance"
+_BINS="heat nova neutron glance cinder"
 for _BIN in ${_BINS}
 do
 	echo -e -n "Verifing ${_BIN} binary ...\t\t"
