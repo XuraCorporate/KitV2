@@ -1,7 +1,7 @@
 ---
 heat_template_version: 2015-04-30
 
-description: Xura HOT template to deploy OMU unit
+description: Xura HOT template to deploy CMS unit
 
 parameters:
   dev_mode:
@@ -20,13 +20,13 @@ parameters:
   antiaffinity_group:
     type: string
     description: Anti-Affinity Scheduler Group ID
-  omu_flavor_name:
+  cms_flavor_name:
     type: string
     description: Flavor Name to be used
-  omu_image:
+  cms_image:
     type: string
     description: Image Name to be used
-  omu_image_id:
+  cms_image_id:
     type: string
     description: Image ID to be used - in case of block device mapping
 #  tenant_network_name:
@@ -116,24 +116,24 @@ resources:
 #      security_groups:
 #        - { get_param: tenant_security_group_name }
 
-  omu_unit:
+  cms_unit:
     type: OS::Nova::Server
     properties:
       name: { get_param: unit_name }
-      flavor: { get_param: omu_flavor_name }
+      flavor: { get_param: cms_flavor_name }
       networks:
         #- port: { get_resource: tenant_network_port }
         - port: { get_param: admin_network_port }
         - port: { get_param: sz_network_port }
         - port: { get_param: sip_network_port }
         - port: { get_param: media_network_port }
-      # image: omu_image
+      # image: cms_image
       # key_name: { get_param: keypair_name }
       config_drive: true
       user_data_format: RAW
       user_data:
         str_replace:
-          template: { get_file: ./script/omu_software_config.sh }
+          template: { get_file: ./script/cms_software_config.sh }
           params:
             _DEVMODE_: { get_param: dev_mode }
             _ADMIN_MAC_: { get_param: admin_network_mac }
@@ -161,5 +161,5 @@ resources:
           boot_index: 0
           delete_on_termination: true
           device_name: vda
-          image_id: { get_param: omu_image_id }
+          image_id: { get_param: cms_image_id }
           volume_size: 20

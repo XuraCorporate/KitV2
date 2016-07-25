@@ -196,12 +196,12 @@ function init_cms {
                  --parameters "sz_network_port=${_SZ_PORTID}" \
                  --parameters "sz_network_mac=${_SZ_MAC}" \
                  --parameters "sz_network_ip=${_SZ_IP}" \
-                 --parameters "sip_network_port=${_SZ_PORTID}" \
-                 --parameters "sip_network_mac=${_SZ_MAC}" \
-                 --parameters "sip_network_ip=${_SZ_IP}" \
-                 --parameters "media_network_port=${_SZ_PORTID}" \
-                 --parameters "media_network_mac=${_SZ_MAC}" \
-                 --parameters "media_network_ip=${_SZ_IP}" \
+                 --parameters "sip_network_port=${_SIP_PORTID}" \
+                 --parameters "sip_network_mac=${_SIP_MAC}" \
+                 --parameters "sip_network_ip=${_SIP_IP}" \
+                 --parameters "media_network_port=${_MEDIA_PORTID}" \
+                 --parameters "media_network_mac=${_MEDIA_MAC}" \
+                 --parameters "media_network_ip=${_MEDIA_IP}" \
                  --parameters "antiaffinity_group=${_GROUP[ $((${_INSTACE}%${_GROUPNUMBER})) ]}" \
                  ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \

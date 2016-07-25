@@ -20,13 +20,13 @@ parameters:
   antiaffinity_group:
     type: string
     description: Anti-Affinity Scheduler Group ID
-  vmasu_flavor_name:
+  vm-asu_flavor_name:
     type: string
     description: Flavor Name to be used
-  vmasu_image:
+  vm-asu_image:
     type: string
     description: Image Name to be used
-  vmasu_image_id:
+  vm-asu_image_id:
     type: string
     description: Image ID to be used - in case of block device mapping
 #  tenant_network_name:
@@ -83,22 +83,22 @@ resources:
 #      security_groups:
 #        - { get_param: tenant_security_group_name }
 
-  vmasu_unit:
+  vm-asu_unit:
     type: OS::Nova::Server
     properties:
       name: { get_param: unit_name }
-      flavor: { get_param: vmasu_flavor_name }
+      flavor: { get_param: vm-asu_flavor_name }
       networks:
         #- port: { get_resource: tenant_network_port }
         - port: { get_param: admin_network_port }
         - port: { get_param: sz_network_port }
-      # image: vmasu_image
+      # image: vm-asu_image
       # key_name: { get_param: keypair_name }
       config_drive: true
       user_data_format: RAW
       user_data:
         str_replace:
-          template: { get_file: ./script/vmasu_software_config.sh }
+          template: { get_file: ./script/vm-asu_software_config.sh }
           params:
             _DEVMODE_: { get_param: dev_mode }
             _ADMIN_MAC_: { get_param: admin_network_mac }
@@ -118,5 +118,5 @@ resources:
           boot_index: 0
           delete_on_termination: true
           device_name: vda
-          image_id: { get_param: vmasu_image_id }
+          image_id: { get_param: vm-asu_image_id }
           volume_size: 20
