@@ -65,7 +65,7 @@ parameter_defaults:
   cms_local_boot: True
   lvu_local_boot: True
   omu_local_boot: True
-  vm-asu_local_boot: True
+  vm-asu_local_boot: False
   mau_local_boot: True
 
   # Image Section
