@@ -213,7 +213,7 @@ For each of those actions will be perform various checks about consistency, corr
 
 The only action that is specific for one instance is the Replace action.
 
-## Phase 3.1 -(Anti-)Affinity Rules
+## Phase 3.1 - (Anti-)Affinity Rules
 In OpenStack until the Mitaka version the Affinity and the Anti-Affinity rules are mandatory actions.
 From the following implementation blueprint
 https://blueprints.launchpad.net/nova/+spec/soft-affinity-for-server-group
