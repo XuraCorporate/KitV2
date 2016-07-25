@@ -186,7 +186,7 @@ function init_cms {
                 # - Hostname
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
-		_LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_COMMAND}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+		_LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
 		if "${_LOCAL_BOOT}"
 		then
 			_HOT="../templates/${_UNITLOWER}.yaml"
@@ -326,7 +326,7 @@ function init_lvu {
                 # - Hostname
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
-                _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_COMMAND}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+                _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 if "${_LOCAL_BOOT}"
                 then
                         _HOT="../templates/${_UNITLOWER}.yaml"
@@ -460,7 +460,7 @@ function init_omu {
 		# - Hostname
 		# - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
 		#####
-                _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_COMMAND}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+                _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 if "${_LOCAL_BOOT}"
                 then
                         _HOT="../templates/${_UNITLOWER}.yaml"
@@ -594,7 +594,7 @@ function init_vmasu {
                 # - Hostname
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
-                _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_COMMAND}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+                _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 if "${_LOCAL_BOOT}"
                 then
                         _HOT="../templates/${_UNITLOWER}.yaml"
@@ -708,7 +708,7 @@ function init_mau {
                 # - Hostname
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
-                _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_COMMAND}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+                _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 if "${_LOCAL_BOOT}"
                 then
                         _HOT="../templates/${_UNITLOWER}.yaml"

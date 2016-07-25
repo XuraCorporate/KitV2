@@ -117,7 +117,7 @@ $ git clone git@github.com:XuraCorporate/KitV2.git
 ```
 
 # Phase 1.1 - Environment file preparetion
-This phase is the "hand on" part, which requires a number of things (all of them has to be configure in environment/common.yaml)
+This phase is the "hand on" part, which requires a number of things (most of them has to be configure in environment/common.yaml)
 - Make sure that the Tenant in OpenStack environment has the right Image(s). To see them
 ```
 $ glance image-list
@@ -182,10 +182,11 @@ $ neutron port-list
 ```
 11a0cf62-3ec3-4bd9-8cfd-3cdf0110b930,fa:16:3e:a4:c1:41,10.107.204.201
 ```
-- Configure the Network VLANs (environment/common.yaml)
-- Configure the Domain Name (environment/common.yaml)
+- Eventually write down Network VLAN (environment/common.yaml)
+- Eventually write down the Domain Name (environment/common.yaml)
 - Configure the affinity/anti-affinity policy (environment/common.yaml)
 - Enable/Disable the development mode (environment/common.yaml)
+- Choose the Boot from Local Disk vs Boot from Volume
 
 ## Phase 2 - Preparetion Stack
 ```

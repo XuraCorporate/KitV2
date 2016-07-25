@@ -18,7 +18,7 @@ parameter_defaults:
   domain_name: none
 
   # Server Group Policy, has to be "affinity" or "anti-affinity"
-  server_group_policy: anti-affinity
+  server_group_policy: affinity
 
   # Count for Server Groups
   server_group_quantity: 4
