@@ -62,7 +62,7 @@ function create_update_cms {
                 #####
                 sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} > ../${_ADMINCSVFILE}.tmp
                 sed -n -e ${_INSTACE}p ../${_SZCSVFILE} > ../${_SZCSVFILE}.tmp
-                sed -n -e ${_INSTACE}p ../${_SIPCSVFILE} > ../${_sipCSVFILE}.tmp
+                sed -n -e ${_INSTACE}p ../${_SIPCSVFILE} > ../${_SIPCSVFILE}.tmp
                 sed -n -e ${_INSTACE}p ../${_MEDIACSVFILE} > ../${_MEDIACSVFILE}.tmp
                 IFS=","
                 exec 3<../${_ADMINCSVFILE}.tmp
@@ -303,8 +303,6 @@ function init_lvu {
                 #####
                 port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
                 port_validation ${_SZ_PORTID} ${_SZ_MAC}
-                port_validation ${_SIP_PORTID} ${_SIP_MAC}
-                port_validation ${_MEDIA_PORTID} ${_MEDIA_MAC}
 
                 #####
                 # Update the port securtiy group
@@ -557,8 +555,6 @@ function init_vmasu {
                 #####
                 port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
                 port_validation ${_SZ_PORTID} ${_SZ_MAC}
-                port_validation ${_SIP_PORTID} ${_SIP_MAC}
-                port_validation ${_MEDIA_PORTID} ${_MEDIA_MAC}
 
                 #####
                 # Update the port securtiy group
@@ -863,7 +859,7 @@ fi
 #####
 _ADMINCSVFILE=$(echo ${_CSVFILEPATH}/admin.csv)
 _SZCSVFILE=$(echo ${_CSVFILEPATH}/sz.csv)
-_SIPINTCSVFILE=$(echo ${_CSVFILEPATH}/sip.csv)
+_SIPCSVFILE=$(echo ${_CSVFILEPATH}/sip.csv)
 _MEDIACSVFILE=$(echo ${_CSVFILEPATH}/media.csv)
 
 #####
