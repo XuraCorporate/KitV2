@@ -17,8 +17,11 @@ parameter_defaults:
   # Place a dot before the domain, it has to be like this ".xura.com"
   domain_name: none
 
-  # Count for AntiAffinity Group
-  antiaffinity_group_quantity: 4
+  # Server Group Policy, has to be "affinity" or "anti-affinity"
+  server_group_policy: anti-affinity
+
+  # Count for Server Groups
+  server_group_quantity: 4
 
   # Admin Network Section
   admin_network_name: "provider-vlan723"

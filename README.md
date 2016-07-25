@@ -115,21 +115,9 @@ The Kit can be cloned by GitHub with the following command:
 ```
 $ git clone git@github.com:XuraCorporate/KitV2.git
 ```
-## Phase 1.2 - Preparetion Stack
-```
-$ bash deploy/preparetion-deploy.sh kitv2rc Create
-+--------------------------------------+------------------+--------------------+----------------------+
-| id                                   | stack_name       | stack_status       | creation_time        |
-+--------------------------------------+------------------+--------------------+----------------------+
-| 96961593-cde7-4c4e-b895-b3f405412a03 | PreparetionStack | CREATE_IN_PROGRESS | 2016-07-19T11:33:41Z |
-+--------------------------------------+------------------+--------------------+----------------------+
-```
-This phase is responsible of:
-- Admin Security Group Creation
-- Anti-Affinity Group Creation
 
-# Phase 2 - Environment file preparetion
-This phase is the "hand on" part, which requires a number of things:
+# Phase 1.1 - Environment file preparetion
+This phase is the "hand on" part, which requires a number of things (all of them has to be configure in environment/common.yaml)
 - Make sure that the Tenant in OpenStack environment has the right Image(s). To see them
 ```
 $ glance image-list
@@ -194,6 +182,23 @@ $ neutron port-list
 ```
 11a0cf62-3ec3-4bd9-8cfd-3cdf0110b930,fa:16:3e:a4:c1:41,10.107.204.201
 ```
+- Configure the Network VLANs (environment/common.yaml)
+- Configure the Domain Name (environment/common.yaml)
+- Configure the affinity/anti-affinity policy (environment/common.yaml)
+- Enable/Disable the development mode (environment/common.yaml)
+
+## Phase 2 - Preparetion Stack
+```
+$ bash deploy/preparetion-deploy.sh kitv2rc Create
++--------------------------------------+------------------+--------------------+----------------------+
+| id                                   | stack_name       | stack_status       | creation_time        |
++--------------------------------------+------------------+--------------------+----------------------+
+| 96961593-cde7-4c4e-b895-b3f405412a03 | PreparetionStack | CREATE_IN_PROGRESS | 2016-07-19T11:33:41Z |
++--------------------------------------+------------------+--------------------+----------------------+
+```
+This phase is responsible of:
+- Admin Security Group Creation
+- (Anti-)Affinity Group Creation
 
 # Phase 3 - Understanding the Wrapper
 The shell script "deploy/units-deploy.sh" is a Wrapper which calls Neutron, Nova and Heat to orchestrate various actions:
@@ -207,7 +212,7 @@ For each of those actions will be perform various checks about consistency, corr
 
 The only action that is specific for one instance is the Replace action.
 
-## Phase 3.1 - Anti-Affinity Rules
+## Phase 3.1 -(Anti-)Affinity Rules
 In OpenStack until the Mitaka version the Affinity and the Anti-Affinity rules are mandatory actions.
 From the following implementation blueprint
 https://blueprints.launchpad.net/nova/+spec/soft-affinity-for-server-group
@@ -232,15 +237,15 @@ the instances on a small amount of different host.
 With the proposed good-to-have anti-affinity rule the End User can request
 nova to spread the instances in the same group as much as possible.
 ```
-So since this Kit has been designed to run on OpenStack Kilo and Liberty, a was has to be find in order to have Anti-Affinity less strict policies. 
+So since this Kit has been designed to run on OpenStack Kilo and Liberty, a was has to be find in order to have (Anti-)Affinity less strict policies. 
 The designed solutions has been implementated as following:
 - In the environment file (environment/common.yaml) has been described how many Server Group to be created.
 - The Preparetion script will create those
-- The Unit Deploy script will use a mathematical function called modulo (the %) that will assign for each unit a specific Anti-Affinity group - choosing from one previously created
+- The Unit Deploy script will use a mathematical function called modulo (the %) that will assign for each unit a specific (Anti-)Affinity group - choosing from one previously created
 
 This approch has the following advantages
-- Mitigate the current OpenStack Anti-Affinity limitation
-- Reduce as much as possible the failoure domain
+- Mitigate the current OpenStack (Anti-)Affinity limitation
+- Reduce as much as possible the failoure domain if the Anti-Affinity has been chosen
 
 Below an example
 - Number of OMU to be created = 4 each

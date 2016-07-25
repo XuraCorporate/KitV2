@@ -184,7 +184,7 @@ function init_cms {
                 # - SIP Port ID, Mac Address and IP Address
                 # - MEDIA Port ID, Mac Address and IP Address
                 # - Hostname
-                # - Anti-affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
+                # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ../templates/${_UNITLOWER}.yaml \
@@ -316,7 +316,7 @@ function init_lvu {
                 # - Admin Port ID, Mac Address and IP Address
                 # - SZ Port ID, Mac Address and IP Address
                 # - Hostname
-                # - Anti-affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
+                # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ../templates/${_UNITLOWER}.yaml \
@@ -442,7 +442,7 @@ function init_omu {
 		# - Admin Port ID, Mac Address and IP Address
 		# - SZ Port ID, Mac Address and IP Address
 		# - Hostname
-		# - Anti-affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
+		# - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
 		#####
 		heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
 		 --template-file ../templates/${_UNITLOWER}.yaml \
@@ -568,7 +568,7 @@ function init_vmasu {
                 # - Admin Port ID, Mac Address and IP Address
                 # - SZ Port ID, Mac Address and IP Address
                 # - Hostname
-                # - Anti-affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
+                # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ../templates/${_UNITLOWER}.yaml \
@@ -674,7 +674,7 @@ function init_mau {
                 # Load the Stack and pass the following information
                 # - Admin Port ID, Mac Address and IP Address
                 # - Hostname
-                # - Anti-affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
+                # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ../templates/${_UNITLOWER}.yaml \
@@ -996,16 +996,16 @@ neutron security-group-show $(cat environment/common.yaml|awk '/admin_security_g
 echo -e "${GREEN} [OK]${NC}"
 
 #####
-# Verify if the AntiAffinity Group is available and
+# Verify if the Server Groups are available and
 # - Load them into an array
 #####
-echo -e -n "Verifing Anti-Affinity rules ...\t\t"
+echo -e -n "Verifing (Anti-)Affinity rules ...\t\t"
 _GROUPS=./groups.tmp
-nova server-group-list|grep Group|sort -k4|awk '{print $2}' > ${_GROUPS}
+nova server-group-list|grep ServerGroup|sort -k4|awk '{print $2}' > ${_GROUPS}
 _GROUPNUMBER=$(cat ${_GROUPS}|wc -l)
 if [[ "${_GROUPNUMBER}" == "0" && "${_ACTION}" != "Delete" && "${_ACTION}" != "List" ]]
 then
-	exit_for_error "Error, There is any available Anti-Affinity Group." false hard
+	exit_for_error "Error, There is any available (Anti-)Affinity Group." false hard
 fi
 for (( i=0 ; i < ${_GROUPNUMBER} ; i++ ))
 do

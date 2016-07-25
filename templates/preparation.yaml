@@ -22,10 +22,14 @@ parameters:
   admin_security_group_name:
     type: string
     description: Admin Network Security Group Name
-  antiaffinity_group_quantity:
+  server_group_policy:
+    type: string
+    default: anti-affinity
+    description: Server Group Policy
+  server_group_quantity:
     type: number
     default: 4
-    description: Number of Anti-Affinity Group to be created
+    description: Number of Server Group Group to be created
 #  keypair_name:
 #    type: string
 #    description: Keypair for the unit
@@ -78,15 +82,15 @@ resources:
           remote_ip_prefix: "0.0.0.0/0"
         - direction: ingress
           remote_ip_prefix: "0.0.0.0/0"
-  AntiAffinityGroups:
+  ServerGroups:
     type: OS::Heat::ResourceGroup
     properties:
-      count: { get_param: antiaffinity_group_quantity }
+      count: { get_param: server_group_quantity }
       resource_def:
         type: OS::Nova::ServerGroup
         properties:
-          name: Group%index%
-          policies: [ anti-affinity ]
+          name: ServerGroup%index%
+          policies: [ { get_param: server_group_policy } ]
 #  KeyPair:
 #    type: OS::Nova::KeyPair
 #    properties:

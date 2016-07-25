@@ -19,7 +19,7 @@ parameters:
     description: Domain Name of the Unit
   antiaffinity_group:
     type: string
-    description: Anti-Affinity Scheduler Group ID
+    description: (Anti-)Affinity Scheduler Group ID
   mau_flavor_name:
     type: string
     description: Flavor Name to be used
@@ -75,7 +75,7 @@ resources:
       networks:
         #- port: { get_resource: tenant_network_port }
         - port: { get_param: admin_network_port }
-      # image: mau_image
+      # image: { get_param: mau_image }
       # key_name: { get_param: keypair_name }
       config_drive: true
       user_data_format: RAW
