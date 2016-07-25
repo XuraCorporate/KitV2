@@ -203,9 +203,77 @@ The shell script "deploy/units-deploy.sh" is a Wrapper which calls Neutron, Nova
 - List
 - Replace
 
+For each of those actions will be perform various checks about consistency, correct input data, available data, etc
+
 The only action that is specific for one instance is the Replace action.
 
-## Phase 3.1 - Create a Unit Type
+## Phase 3.1 - Anti-Affinity Rules
+In OpenStack until the Mitaka version the Affinity and the Anti-Affinity rules are mandatory actions.
+From the following implementation blueprint
+https://blueprints.launchpad.net/nova/+spec/soft-affinity-for-server-group
+```
+As a tenant I would like to schedule instances on the same host if possible,
+so that I can achieve colocation. However if it is not possible to schedule
+some instance to the same host then I still want that the subsequent
+instances are scheduled together on another host. In this way I can express
+a good-to-have relationship between a group of instances.
+
+As a tenant I would like to schedule instances on different hosts if possible.
+However if it is not possible I still want my instances to be scheduled even
+if it means that some of them are placed on a host where another instances
+are runnig from the same group.
+
+End User might want to have a less strict affinity and anti-affinity
+rule than what is today available in server-group API extension.
+With the proposed good-to-have affinity rule the End User can request nova
+to schedule the instance to the same host if possible. However if it is not
+possible (e.g. due to resource limitations) then End User still wants to keep
+the instances on a small amount of different host.
+With the proposed good-to-have anti-affinity rule the End User can request
+nova to spread the instances in the same group as much as possible.
+```
+So since this Kit has been designed to run on OpenStack Kilo and Liberty, a was has to be find in order to have Anti-Affinity less strict policies. 
+The designed solutions has been implementated as following:
+- In the environment file (environment/common.yaml) has been described how many Server Group to be created.
+- The Preparetion script will create those
+- The Unit Deploy script will use a mathematical function called modulo (the %) that will assign for each unit a specific Anti-Affinity group - choosing from one previously created
+
+This approch has the following advantages
+- Mitigate the current OpenStack Anti-Affinity limitation
+- Reduce as much as possible the failoure domain
+
+Below an example
+- Number of OMU to be created = 4 each
+- Number of CMS to be created = 8 each
+- Number fo physical host available = 3
+- Number of Anti-Affinity groups = 4
+
+```
+Unit Type	Unit Index	Anti-Affinity Group				Number per Anti-Affinity group
+OMU		1		1			Anti-Affinity Group 0	3
+OMU		2		2			Anti-Affinity Group 1	3
+OMU		3		3			Anti-Affinity Group 2	3
+OMU		4		0			Anti-Affinity Group 3	3
+CMS		1		1			
+CMS		2		2			
+CMS		3		3			
+CMS		4		0			
+CMS		5		1			
+CMS		6		2			
+CMS		7		3			
+CMS		8		0			
+```
+So the right formula to calculate the number of required Anti-Affinity groups is the following one
+```
+<Total number of VMs>/<Number of hosts> = The result to round up to the next integer.
+```
+In our case: (4+8)/3 = 4
+
+In general:
+- A high number of Anti-Affinity is less safe since less VM will be in the same Anti-Affinity group
+- A low number of Anti-Affinity is not recommended since the Nova Schedule could fail to find a valid hypervisor for the VM
+
+## Phase 3.2 - Create a Unit Type Group
 ```
 $ bash deploy/units-deploy.sh kitv2rc Create OMU
 Updated port: c5f4aca6-2706-4cad-9dcb-968652edeca2
@@ -234,7 +302,7 @@ Action performed by the Wrapper:
 - Update the Security Group of each Port
 - Create OMU Unit Types for each Port available
 
-## Phase 3.2 - List a Unit Type
+## Phase 3.3 - List a Unit Type Group
 ```
 $ bash deploy/units-deploy.sh kitv2rc List OMU
 +---------------+--------------------------------------+------------------+-----------------+----------------------+-----------------+
@@ -251,7 +319,7 @@ $ bash deploy/units-deploy.sh kitv2rc List OMU
 Action performed by the Wrapper:
 - Display the resource status for each Heat Stack (Each Unit has a dedicated Heat Stack in order to accomplish the requirement to have static Port assignment)
 
-## Phase 3.3 - Update a Unit Type
+## Phase 3.4 - Update a Unit Type Group
 ```
 $ bash deploy/units-deploy.sh kitv2rc Update OMU
 Updated port: c5f4aca6-2706-4cad-9dcb-968652edeca2
@@ -280,7 +348,7 @@ Action performed by the Wrapper:
 - Update the Security Group of each Port
 - Update OMU Unit Types for each Port available
 
-## Phase 3.4 - Replace a specific Unit
+## Phase 3.5 - Replace a specific Unit Type in a Group
 ```
 $ bash deploy/units-deploy.sh kitv2rc Replace OMU 1
 +--------------------------------------+------------------+--------------------+----------------------+
@@ -334,7 +402,7 @@ Action performed by the Wrapper:
 - Update the Security Group of each Port
 - Create OMU Unit Types for each Port available
 
-## Phase 3.5 - Delete a Unit Type
+## Phase 3.6 - Delete a Unit Type Group
 ```
 $ bash deploy/units-deploy.sh kitv2rc Delete OMU
 +--------------------------------------+------------------+--------------------+----------------------+
