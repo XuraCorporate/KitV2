@@ -61,6 +61,13 @@ parameter_defaults:
   vm-asu_flavor_name: m1.small
   mau_flavor_name: m1.small
 
+  # Boot from Local Disk instead of using Cinder for Boot from Volume
+  cms_local_boot: True
+  lvu_local_boot: True
+  omu_local_boot: True
+  vm-asu_local_boot: True
+  mau_local_boot: True
+
   # Image Section
   cms_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   cms_image: Image_for_Stack_1

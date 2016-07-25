@@ -186,8 +186,16 @@ function init_cms {
                 # - Hostname
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
+		_LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_COMMAND}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+		if "${_LOCAL_BOOT}"
+		then
+			_HOT="../templates/${_UNITLOWER}.yaml"
+		else
+			_HOT="../templates/${_UNITLOWER}_volume.yaml"
+		fi
+
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
-                 --template-file ../templates/${_UNITLOWER}.yaml \
+                 --template-file ${_HOT} \
                  --environment-file ../environment/common.yaml \
                  --parameters "unit_name=${_STACKNAME}${_INSTACE}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
@@ -318,8 +326,16 @@ function init_lvu {
                 # - Hostname
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
+                _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_COMMAND}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+                if "${_LOCAL_BOOT}"
+                then
+                        _HOT="../templates/${_UNITLOWER}.yaml"
+                else
+                        _HOT="../templates/${_UNITLOWER}_volume.yaml"
+                fi
+
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
-                 --template-file ../templates/${_UNITLOWER}.yaml \
+                 --template-file ${_HOT} \
                  --environment-file ../environment/common.yaml \
                  --parameters "unit_name=${_STACKNAME}${_INSTACE}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
@@ -444,8 +460,16 @@ function init_omu {
 		# - Hostname
 		# - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
 		#####
+                _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_COMMAND}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+                if "${_LOCAL_BOOT}"
+                then
+                        _HOT="../templates/${_UNITLOWER}.yaml"
+                else
+                        _HOT="../templates/${_UNITLOWER}_volume.yaml"
+                fi
+
 		heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
-		 --template-file ../templates/${_UNITLOWER}.yaml \
+		 --template-file ${_HOT} \
 		 --environment-file ../environment/common.yaml \
 		 --parameters "unit_name=${_STACKNAME}${_INSTACE}" \
 		 --parameters "admin_network_port=${_ADMIN_PORTID}" \
@@ -570,8 +594,16 @@ function init_vmasu {
                 # - Hostname
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
+                _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_COMMAND}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+                if "${_LOCAL_BOOT}"
+                then
+                        _HOT="../templates/${_UNITLOWER}.yaml"
+                else
+                        _HOT="../templates/${_UNITLOWER}_volume.yaml"
+                fi
+
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
-                 --template-file ../templates/${_UNITLOWER}.yaml \
+                 --template-file ${_HOT} \
                  --environment-file ../environment/common.yaml \
                  --parameters "unit_name=${_STACKNAME}${_INSTACE}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
@@ -676,8 +708,16 @@ function init_mau {
                 # - Hostname
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
+                _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_COMMAND}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+                if "${_LOCAL_BOOT}"
+                then
+                        _HOT="../templates/${_UNITLOWER}.yaml"
+                else
+                        _HOT="../templates/${_UNITLOWER}_volume.yaml"
+                fi
+
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
-                 --template-file ../templates/${_UNITLOWER}.yaml \
+                 --template-file ${_HOT} \
                  --environment-file ../environment/common.yaml \
                  --parameters "unit_name=${_STACKNAME}${_INSTACE}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \

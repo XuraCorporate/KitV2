@@ -92,7 +92,6 @@ resources:
         #- port: { get_resource: tenant_network_port }
         - port: { get_param: admin_network_port }
         - port: { get_param: sz_network_port }
-      image: { get_param: vm-asu_image }
       # key_name: { get_param: keypair_name }
       config_drive: true
       user_data_format: RAW
@@ -113,3 +112,10 @@ resources:
             _HOSTNAME_: { get_param: unit_name }
             _DOMAINNAME_: { get_param: domain_name }
       scheduler_hints: { group: {get_param: antiaffinity_group } }
+      block_device_mapping_v2:
+        -
+          boot_index: 0
+          delete_on_termination: true
+          device_name: vda
+          image_id: { get_param: vm-asu_image_id }
+          volume_size: 20

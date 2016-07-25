@@ -1,7 +1,7 @@
 ---
 heat_template_version: 2015-04-30
 
-description: Xura HOT template to deploy VM-ASU unit
+description: Xura HOT template to deploy MAU unit
 
 parameters:
   dev_mode:
@@ -20,13 +20,13 @@ parameters:
   antiaffinity_group:
     type: string
     description: (Anti-)Affinity Scheduler Group ID
-  vm-asu_flavor_name:
+  mau_flavor_name:
     type: string
     description: Flavor Name to be used
-  vm-asu_image:
+  mau_image:
     type: string
     description: Image Name to be used
-  vm-asu_image_id:
+  mau_image_id:
     type: string
     description: Image ID to be used - in case of block device mapping
 #  tenant_network_name:
@@ -57,22 +57,6 @@ parameters:
     type: string
     description: Admin Network VLAN ID none will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggind
     default: none
-  sz_network_port:
-    type: string
-    description: Port ID on Secure Zone Network
-  sz_network_mac:
-    type: string
-    description: Secure Zone Port Mac Address
-  sz_network_ip:
-    type: string
-    description: Secure Zone Network IP Address
-  sz_network_netmask:
-    type: string
-    description: Secure Zone Network Netmask
-  sz_network_vlan:
-    type: string
-    description: Secure Zone Network VLAN ID none will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggind
-    default: none
 
 resources:
 #  tenant_network_port:
@@ -83,22 +67,20 @@ resources:
 #      security_groups:
 #        - { get_param: tenant_security_group_name }
 
-  vm-asu_unit:
+  mau_unit:
     type: OS::Nova::Server
     properties:
       name: { get_param: unit_name }
-      flavor: { get_param: vm-asu_flavor_name }
+      flavor: { get_param: mau_flavor_name }
       networks:
         #- port: { get_resource: tenant_network_port }
         - port: { get_param: admin_network_port }
-        - port: { get_param: sz_network_port }
-      image: { get_param: vm-asu_image }
       # key_name: { get_param: keypair_name }
       config_drive: true
       user_data_format: RAW
       user_data:
         str_replace:
-          template: { get_file: ./script/vm-asu_software_config.sh }
+          template: { get_file: ./script/mau_software_config.sh }
           params:
             _DEVMODE_: { get_param: dev_mode }
             _ADMIN_MAC_: { get_param: admin_network_mac }
@@ -106,10 +88,13 @@ resources:
             _ADMIN_NETMASK_: { get_param: admin_network_netmask }
             _ADMIN_GW_: { get_param: admin_network_gateway }
             _ADMIN_VLAN_: { get_param: admin_network_vlan }
-            _SZ_MAC_: { get_param: sz_network_mac }
-            _SZ_IP_: { get_param: sz_network_ip }
-            _SZ_NETMASK_: { get_param: sz_network_netmask }
-            _SZ_VLAN_: { get_param: sz_network_vlan }
             _HOSTNAME_: { get_param: unit_name }
             _DOMAINNAME_: { get_param: domain_name }
       scheduler_hints: { group: {get_param: antiaffinity_group } }
+      block_device_mapping_v2:
+        -
+          boot_index: 0
+          delete_on_termination: true
+          device_name: vda
+          image_id: { get_param: mau_image_id }
+          volume_size: 20
