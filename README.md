@@ -214,8 +214,8 @@ For each of those actions will be perform various checks about consistency, corr
 The only action that is specific for one instance is the Replace action.
 
 ## Phase 3.1 - (Anti-)Affinity Rules
-In OpenStack until the Mitaka version the Affinity and the Anti-Affinity rules are mandatory actions.
-From the following implementation blueprint
+In OpenStack until the Mitaka version the Affinity and the Anti-Affinity rules were mandatory actions.
+Here the implementation blueprint which explains what has changed and the reasons.
 https://blueprints.launchpad.net/nova/+spec/soft-affinity-for-server-group
 ```
 As a tenant I would like to schedule instances on the same host if possible,
@@ -238,9 +238,11 @@ the instances on a small amount of different host.
 With the proposed good-to-have anti-affinity rule the End User can request
 nova to spread the instances in the same group as much as possible.
 ```
-So since this Kit has been designed to run on OpenStack Kilo and Liberty, a was has to be find in order to have (Anti-)Affinity less strict policies. 
+
+So since this Kit has been designed to run on OpenStack Kilo and OpenStack Liberty, a way has to be found in order to have (Anti-)Affinity less strict policies. 
 The designed solutions has been implementated as following:
-- In the environment file (environment/common.yaml) has been described how many Server Group to be created.
+- In the environment file (environment/common.yaml) has been written the Server Group policy to be used ("affinity" or "anti-affinity").
+- In the environment file (environment/common.yaml) has been written how many Server Group to be created.
 - The Preparetion script will create those
 - The Unit Deploy script will use a mathematical function called modulo (the %) that will assign for each unit a specific (Anti-)Affinity group - choosing from one previously created
 
@@ -271,13 +273,17 @@ CMS		8		0
 ```
 So the right formula to calculate the number of required Anti-Affinity groups is the following one
 ```
-<Total number of VMs>/<Number of hosts> = The result to round up to the next integer.
+<Total number of VMs>/<Total Number of hosts> = The result to round up to the next integer (aka 3.7 -> 4)
 ```
 In our case: (4+8)/3 = 4
 
 In general:
-- A high number of Anti-Affinity is less safe since less VM will be in the same Anti-Affinity group
+- A high number of Anti-Affinity is less safe since less VM will be in the same Anti-Affinity group and so potentially all together in the same hypervisor
 - A low number of Anti-Affinity is not recommended since the Nova Schedule could fail to find a valid hypervisor for the VM
+
+Limitations:
+- If you want to create one VM per each unit type all of the VMs will be in the same physical host
+- Given the previous limitation, with the current implementation, all of the VM with the same index (aka OMU1 -> 1 is the index) will be always together
 
 ## Phase 3.2 - Create a Unit Type Group
 ```
