@@ -8,14 +8,38 @@ NC='\033[0m' # No Color
 # Function to exit in case of error
 #####
 function exit_for_error {
+        #####
+        # The message to print
+        #####
         _MESSAGE=$1
-	_CHANGEDIR=$2
-	echo -e "${RED}${_MESSAGE}${NC}"
-	if ${_CHANGEDIR}
-	then
-		cd ${_CURRENTDIR}
-	fi
-        exit 1
+
+        #####
+        # If perform a change directory in case something has failed in order to not be in deploy dir
+        #####
+        _CHANGEDIR=$2
+
+        #####
+        # If hard "exit 1"
+        # If break "break"
+        # If soft no exit
+        #####
+        _EXIT=${3-hard}
+        if ${_CHANGEDIR}
+        then
+                cd ${_CURRENTDIR}
+        fi
+        if [[ "${_EXIT}" == "hard" ]]
+        then
+                echo -e "${RED}${_MESSAGE}${NC}"
+                exit 1
+        elif [[ "${_EXIT}" == "break" ]]
+        then
+                echo -e "${RED}${_MESSAGE}${NC}"
+                break
+        elif [[ "${_EXIT}" == "soft" ]]
+        then
+                echo -e "${YELLOW}${_MESSAGE}${NC}"
+        fi
 }
 
 #####
@@ -80,6 +104,48 @@ then
 fi
 
 #####
+# Verify binary
+#####
+_BINS="heat nova neutron glance"
+for _BIN in ${_BINS}
+do
+	echo -e -n "Verifing ${_BIN} binary ...\t\t"
+	which ${_BIN} > /dev/null 2>&1 || exit_for_error "Error, Cannot find python${_BIN}-client." false
+	echo -e "${GREEN} [OK]${NC}"
+done
+echo -e -n "Verifing git binary ...\t\t"
+which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find git and any changes will be commited." false soft
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n "Verifing dos2unix binary ...\t\t"
+which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find dos2unix binary, please install it first." false hard
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n "Verifing md5sum binary ...\t\t"
+which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find md5sum binary." false hard
+echo -e "${GREEN} [OK]${NC}"
+
+#####
+# Convert every files exept the GITs one
+#####
+echo -e -n "Eventually converting files in Standard Unix format ...\t\t"
+for _FILE in $(find . -not \( -path ./.git -prune \) -type f)
+do
+	_MD5BEFORE=$(md5sum ${_FILE}|awk '{print $1}')
+	dos2unix ${_FILE} >/dev/null 2>&1 || exit_for_error "Error, Cannot convert to Unix format some files" false hard
+	_MD5AFTER=$(md5sum ${_FILE}|awk '{print $1}')
+	#####
+	# Verify the MD5 after and before the dos2unix - eventually commit the changes
+	#####
+	if [[ "${_MD5BEFORE}" != "${_MD5AFTER}" ]]
+	then
+		git add ${_FILE} >/dev/null 2>&1
+		git commit -m "Auto Commit Dos2Unix for file ${_FILE} conversion" >/dev/null 2>&1
+	fi
+done
+echo -e "${GREEN} [OK]${NC}"
+
+#####
 # Unload any previous loaded environment file
 #####
 for _ENV in $(env|grep ^OS|awk -F "=" '{print $1}')
@@ -93,17 +159,6 @@ done
 echo -e -n "Loading environment file ...\t\t"
 source ${_RCFILE}
 echo -e "${GREEN} [OK]${NC}"
-
-#####
-# Verify binary
-#####
-_BINS="heat nova neutron glance"
-for _BIN in ${_BINS}
-do
-	echo -e -n "Verifing ${_BIN} binary ...\t\t"
-	which ${_BIN} > /dev/null 2>&1 || exit_for_error "Error, Cannot find python${_BIN}-client." false
-	echo -e "${GREEN} [OK]${NC}"
-done
 
 #####
 # Verify if the given credential are valid. This will also check if the use can contact Heat
