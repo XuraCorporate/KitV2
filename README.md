@@ -6,6 +6,8 @@ One of them is the fully VM(s) isolation from the OpenStack API or not be able t
 In order to run this Kit a Linux box is required.
 The following packages are required:
 - git
+- dos2unix
+- md5sum
 - python-neutronclient
 - python-openstackclient
 - python-heatclient

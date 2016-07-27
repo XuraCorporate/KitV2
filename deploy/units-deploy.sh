@@ -989,6 +989,48 @@ then
 fi
 
 #####
+# Verify binary
+#####
+_BINS="heat nova neutron glance cinder"
+for _BIN in ${_BINS}
+do
+	echo -e -n "Verifing ${_BIN} binary ...\t\t"
+	which ${_BIN} > /dev/null 2>&1 || exit_for_error "Error, Cannot find python${_BIN}-client." false
+	echo -e "${GREEN} [OK]${NC}"
+done
+echo -e -n "Verifing git binary ...\t\t"
+which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find git and any changes will be commited." false soft
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n "Verifing dos2unix binary ...\t\t"
+which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find dos2unix binary, please install it first." false hard
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n "Verifing md5sum binary ...\t\t"
+which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find md5sum binary." false hard
+echo -e "${GREEN} [OK]${NC}"
+
+#####
+# Convert every files exept the GITs one
+#####
+echo -e -n "Eventually converting files in Standard Unix format ...\t\t"
+for _FILE in $(find . -not \( -path ./.git -prune \) -type f)
+do
+        _MD5BEFORE=$(md5sum ${_FILE}|awk '{print $1}')
+        dos2unix ${_FILE} >/dev/null 2>&1 || exit_for_error "Error, Cannot convert to Unix format some files" false hard
+        _MD5AFTER=$(md5sum ${_FILE}|awk '{print $1}')
+        #####
+        # Verify the MD5 after and before the dos2unix - eventually commit the changes
+        #####
+        if [[ "${_MD5BEFORE}" != "${_MD5AFTER}" ]]
+        then
+                git add ${_FILE} >/dev/null 2>&1
+                git commit -m "Auto Commit Dos2Unix for file ${_FILE} conversion" >/dev/null 2>&1
+        fi
+done
+echo -e "${GREEN} [OK]${NC}"
+
+#####
 # Unload any previous loaded environment file
 #####
 for _ENV in $(env|grep ^OS|awk -F "=" '{print $1}')
@@ -1002,17 +1044,6 @@ done
 echo -e -n "Loading environment file ...\t\t"
 source ${_RCFILE}
 echo -e "${GREEN} [OK]${NC}"
-
-#####
-# Verify binary
-#####
-_BINS="heat nova neutron glance cinder"
-for _BIN in ${_BINS}
-do
-	echo -e -n "Verifing ${_BIN} binary ...\t\t"
-	which ${_BIN} > /dev/null 2>&1 || exit_for_error "Error, Cannot find python${_BIN}-client." false
-	echo -e "${GREEN} [OK]${NC}"
-done
 
 #####
 # Verify if the given credential are valid. This will also check if the use can contact Heat
