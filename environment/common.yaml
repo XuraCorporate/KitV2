@@ -61,6 +61,13 @@ parameter_defaults:
   vm-asu_flavor_name: m1.small
   mau_flavor_name: m1.small
 
+  # Source image to boot, could be Glance or Cinder (Local Disk from Cinder is not supported in OpenStack)
+  cms_image_source: Glance
+  lvu_image_source: Glance
+  omu_image_source: Glance
+  vm-asu_image_source: Cinder
+  mau_image_source: Glance
+
   # Boot from Local Disk instead of using Cinder for Boot from Volume
   cms_local_boot: True
   lvu_local_boot: True

@@ -769,15 +769,24 @@ function init_mau {
 #####
 function validation {
 	_UNITTOVALIDATE=$1
-	_IMAGE=$(cat ../environment/common.yaml|grep "$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image"|grep -v image_id|awk '{print $2}'|sed "s/\"//g")
+	_IMAGE=$(cat ../environment/common.yaml|grep "$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image"|grep -v -E "image_id|image_source"|awk '{print $2}'|sed "s/\"//g")
 	_IMAGEID=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image_id'/ {print $2}'|sed "s/\"//g")
 	_FLAVOR=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_flavor_name'/ {print $2}'|sed "s/\"//g")
+	_SOURCE=$(cat ../environment/common.yaml|grep "$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image_source"|awk '{print $2}'|sed "s/\"//g")
 
 	#####
 	# Check the Image Id and the Image Name is the same 
 	#####
-	echo -e -n "Validating chosen Image ${_IMAGE} ...\t\t"
-	glance image-show ${_IMAGEID}|grep "${_IMAGE}" >/dev/null 2>&1 || exit_for_error "Error, Image for Unit ${_UNITTOVALIDATE} not present or mismatch between ID and Name." true hard
+		echo -e -n "Validating chosen Image ${_IMAGE} ...\t\t"
+	if [[ "${_SOURCE}" == "glance" ]]
+	then
+		glance image-show ${_IMAGEID}|grep "${_IMAGE}" >/dev/null 2>&1 || exit_for_error "Error, Image for Unit ${_UNITTOVALIDATE} not present or mismatch between ID and Name." true hard
+	elif [[ "${_SOURCE}" == "cinder" ]]
+	then
+		exit_for_error "To be implemented." true hard
+	else
+		exit_for_error "Error, Invalid Image Source option, can be \"Glance\" or \"Cinder\"." true hard
+	fi
 	echo -e "${GREEN} [OK]${NC}"
 
 	#####
