@@ -163,10 +163,20 @@ function init_cms {
                 #####
                 # Verify the port status one by one
                 #####
+		mac_validation ${_ADMIN_MAC}
+		mac_validation ${_SZ_MAC}
+		mac_validation ${_SIP_MAC}
+		mac_validation ${_MEDIA_MAC}
+
                 port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
                 port_validation ${_SZ_PORTID} ${_SZ_MAC}
                 port_validation ${_SIP_PORTID} ${_SIP_MAC}
                 port_validation ${_MEDIA_PORTID} ${_MEDIA_MAC}
+
+		ip_validation ${_ADMIN_IP}
+		ip_validation ${_SZ_IP}
+		ip_validation ${_SIP_IP}
+		ip_validation ${_MEDIA_IP}
 
                 #####
                 # Update the port securtiy group
@@ -309,8 +319,14 @@ function init_lvu {
                 #####
                 # Verify the port status one by one
                 #####
+                mac_validation ${_ADMIN_MAC}
+                mac_validation ${_SZ_MAC}
+
                 port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
                 port_validation ${_SZ_PORTID} ${_SZ_MAC}
+
+		ip_validation ${_ADMIN_IP}
+		ip_validation ${_SZ_IP}
 
                 #####
                 # Update the port securtiy group
@@ -443,8 +459,14 @@ function init_omu {
 		#####
 		# Verify the port status one by one
 		#####
+                mac_validation ${_ADMIN_MAC}
+                mac_validation ${_SZ_MAC}
+
 		port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
 		port_validation ${_SZ_PORTID} ${_SZ_MAC}
+
+		ip_validation ${_ADMIN_IP}
+		ip_validation ${_SZ_IP}
 
 		#####
 		# Update the port securtiy group
@@ -577,8 +599,14 @@ function init_vmasu {
                 #####
                 # Verify the port status one by one
                 #####
+                mac_validation ${_ADMIN_MAC}
+                mac_validation ${_SZ_MAC}
+
                 port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
                 port_validation ${_SZ_PORTID} ${_SZ_MAC}
+
+                ip_validation ${_ADMIN_IP}
+                ip_validation ${_SZ_IP}
 
                 #####
                 # Update the port securtiy group
@@ -694,7 +722,11 @@ function init_mau {
                 #####
                 # Verify the port status one by one
                 #####
+                mac_validation ${_ADMIN_MAC}
+
                 port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
+
+                ip_validation ${_ADMIN_IP}
 
                 #####
                 # Update the port securtiy group
@@ -828,6 +860,53 @@ function port_validation {
 	echo -e "${GREEN} [OK]${NC}"
 }
 
+function ip_validation {
+        _IP=$1
+
+        #####
+        # Check if the given IP or NetMask is valid
+        #####
+        echo -e -n "Validating ${_IP} ...\t\t"
+	echo ${_IP}|grep -E "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" >/dev/null 2>&1
+        if [[ "${?}" != "0" ]]
+        then
+                exit_for_error "Error, The Address ${_IP} is not valid." true hard
+        fi
+	if (( "$(echo ${_IP}|awk -F "." '{print $1}')" < "1" || "$(echo ${_IP}|awk -F "." '{print $1}')" > "255" ))
+        then
+                exit_for_error "Error, The Address ${_IP} is not valid." true hard
+        fi
+	if (( "$(echo ${_IP}|awk -F "." '{print $2}')" < "0" || "$(echo ${_IP}|awk -F "." '{print $2}')" > "255" ))
+        then
+                exit_for_error "Error, The Address ${_IP} is not valid." true hard
+        fi
+	if (( "$(echo ${_IP}|awk -F "." '{print $3}')" < "0" || "$(echo ${_IP}|awk -F "." '{print $3}')" > "255" ))
+        then
+                exit_for_error "Error, The Address ${_IP} is not valid." true hard
+        fi
+	if (( "$(echo ${_IP}|awk -F "." '{print $4}')" < "0" || "$(echo ${_IP}|awk -F "." '{print $4}')" > "255" ))
+        then
+                exit_for_error "Error, The Address ${_IP} is not valid." true hard
+        fi
+        echo -e "${GREEN} [OK]${NC}"
+
+}
+
+function mac_validation {
+        _MAC=$1
+
+        #####
+        # Check if the given IP or NetMask is valid
+        #####
+        echo -e -n "Validating ${_MAC} ...\t\t"
+        echo ${_MAC}|grep -E "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})" >/dev/null 2>&1
+        if [[ "${?}" != "0" ]]
+        then
+                exit_for_error "Error, The Port Mac Address ${_MAC} is not valid." true hard
+        fi
+        echo -e "${GREEN} [OK]${NC}"
+
+}
 #####
 # Write the input args into variable
 #####
