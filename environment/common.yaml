@@ -61,28 +61,53 @@ parameter_defaults:
   vm-asu_flavor_name: m1.small
   mau_flavor_name: m1.small
 
-  # Source image to boot, could be Glance or Cinder (Local Disk from Cinder is not supported in OpenStack)
-  cms_image_source: Glance
-  lvu_image_source: Glance
-  omu_image_source: Glance
-  vm-asu_image_source: Cinder
-  mau_image_source: Glance
+  # Source image to boot, could be "glance" or "cinder" (Local Disk from Cinder is not supported in OpenStack)
+  cms_image_source: cinder
+  lvu_image_source: glance
+  omu_image_source: glance
+  vm-asu_image_source: cinder
+  mau_image_source: glance
 
-  # Boot from Local Disk instead of using Cinder for Boot from Volume
+  #####
+  # Glance Source Section
+  # *_local_boot: Boot from Local Disk instead of using Cinder for Boot from Volume
+  # *_image_volume_size: Size in GB without the Unit
+  # *_image_id: Glance Image ID
+  # *_image: Glance Image Name
+  ####
   cms_local_boot: True
-  lvu_local_boot: True
-  omu_local_boot: True
-  vm-asu_local_boot: False
-  mau_local_boot: True
-
-  # Image Section
+  cms_image_volume_size: 20
   cms_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   cms_image: Image_for_Stack_1
+  lvu_local_boot: True
+  lvu_image_volume_size: 20
   lvu_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   lvu_image: Image_for_Stack_1
+  omu_local_boot: True
+  omu_image_volume_size: 20
   omu_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   omu_image: Image_for_Stack_1
+  vm-asu_local_boot: False
+  vm-asu_image_volume_size: 20
   vm-asu_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   vm-asu_image: Image_for_Stack_1
+  mau_local_boot: True
+  mau_image_volume_size: 20
   mau_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   mau_image: Image_for_Stack_1
+
+  #####
+  # Cinder Source Section
+  # Size in GB without the Unit
+  ####
+  cms_volume_id: d8842665-3408-42d6-9ae8-78468b8b39a9
+  cms_volume_size: 8
+  lvu_volume_id: d8842665-3408-42d6-9ae8-78468b8b39a9
+  lvu_volume_size: 8
+  omu_volume_id: d8842665-3408-42d6-9ae8-78468b8b39a9
+  omu_volume_size: 8
+  vm-asu_volume_id: d8842665-3408-42d6-9ae8-78468b8b39a9
+  vm-asu_volume_size: 20
+  mau_volume_id: d8842665-3408-42d6-9ae8-78468b8b39a9
+  mau_volume_size: 8
+

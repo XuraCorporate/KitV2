@@ -39,6 +39,8 @@ function exit_for_error {
         fi
 	if [[ "${_EXIT}" == "hard" ]]
 	then
+		rm -rf ../${_ADMINCSVFILE}.tmp ../${_SZCSVFILE}.tmp ../${_SIPCSVFILE}.tmp ../${_MEDIACSVFILE}.tmp >/dev/null 2>&1
+		rm -rf ${_ADMINCSVFILE}.tmp ${_SZCSVFILE}.tmp ${_SIPCSVFILE}.tmp ${_MEDIACSVFILE}.tmp >/dev/null 2>&1
 		echo -e "${RED}${_MESSAGE}${NC}"
         	exit 1
 	elif [[ "${_EXIT}" == "break" ]]
@@ -135,7 +137,7 @@ function create_update_cms {
         exec 4<&-
         exec 5<&-
         exec 6<&-
-        rm -f ../${_ADMINCSVFILE}.tmp ../${_SZCSVFILE}.tmp ../${_SIPCSVFILE}.tmp ../${_MEDIACSVFILE}.tmp
+        rm -rf ../${_ADMINCSVFILE}.tmp ../${_SZCSVFILE}.tmp ../${_SIPCSVFILE}.tmp ../${_MEDIACSVFILE}.tmp
 }
 
 #####
@@ -197,7 +199,14 @@ function init_cms {
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
 		_LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
-		if "${_LOCAL_BOOT}"
+		_SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
+		if [[ "${_LOCAL_BOOT}" == "true" && "${_SOURCE_BOOT}" == "cinder" ]]
+		then
+			exit_for_error "Error, Local Boot using a Volume source is not supported in OpenStack." true hard
+		elif [[ "${_SOURCE_BOOT}" == "cinder" ]]
+		then
+			_HOT="../templates/${_UNITLOWER}_cinder_source.yaml"
+		elif "${_LOCAL_BOOT}" # in this case _SOURCE_BOOT=glance
 		then
 			_HOT="../templates/${_UNITLOWER}.yaml"
 		else
@@ -291,7 +300,7 @@ function create_update_lvu {
         fi
         exec 3<&-
         exec 4<&-
-        rm -f ../${_ADMINCSVFILE}.tmp ../${_SZCSVFILE}.tmp
+        rm -rf ../${_ADMINCSVFILE}.tmp ../${_SZCSVFILE}.tmp
 }
 
 #####
@@ -343,7 +352,14 @@ function init_lvu {
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
                 _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
-                if "${_LOCAL_BOOT}"
+                _SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
+                if [[ "${_LOCAL_BOOT}" == "true" && "${_SOURCE_BOOT}" == "cinder" ]]
+                then
+                        exit_for_error "Error, Local Boot using a Volume source is not supported in OpenStack." true hard
+                elif [[ "${_SOURCE_BOOT}" == "cinder" ]]
+                then
+                        _HOT="../templates/${_UNITLOWER}_cinder_source.yaml"
+                elif "${_LOCAL_BOOT}" # in this case _SOURCE_BOOT=glance
                 then
                         _HOT="../templates/${_UNITLOWER}.yaml"
                 else
@@ -431,7 +447,7 @@ function create_update_omu {
 	fi
 	exec 3<&-
 	exec 4<&-
-	rm -f ../${_ADMINCSVFILE}.tmp ../${_SZCSVFILE}.tmp
+	rm -rf ../${_ADMINCSVFILE}.tmp ../${_SZCSVFILE}.tmp
 }
 
 #####
@@ -483,7 +499,14 @@ function init_omu {
 		# - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
 		#####
                 _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
-                if "${_LOCAL_BOOT}"
+                _SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
+                if [[ "${_LOCAL_BOOT}" == "true" && "${_SOURCE_BOOT}" == "cinder" ]]
+                then
+                        exit_for_error "Error, Local Boot using a Volume source is not supported in OpenStack." true hard
+                elif [[ "${_SOURCE_BOOT}" == "cinder" ]]
+                then
+                        _HOT="../templates/${_UNITLOWER}_cinder_source.yaml"
+                elif "${_LOCAL_BOOT}" # in this case _SOURCE_BOOT=glance
                 then
                         _HOT="../templates/${_UNITLOWER}.yaml"
                 else
@@ -571,7 +594,7 @@ function create_update_vmasu {
         fi
         exec 3<&-
         exec 4<&-
-        rm -f ../${_ADMINCSVFILE}.tmp ../${_SZCSVFILE}.tmp
+        rm -rf ../${_ADMINCSVFILE}.tmp ../${_SZCSVFILE}.tmp
 }
 
 #####
@@ -623,7 +646,14 @@ function init_vmasu {
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
                 _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
-                if "${_LOCAL_BOOT}"
+                _SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
+                if [[ "${_LOCAL_BOOT}" == "true" && "${_SOURCE_BOOT}" == "cinder" ]]
+                then
+                        exit_for_error "Error, Local Boot using a Volume source is not supported in OpenStack." true hard
+                elif [[ "${_SOURCE_BOOT}" == "cinder" ]]
+                then
+                        _HOT="../templates/${_UNITLOWER}_cinder_source.yaml"
+                elif "${_LOCAL_BOOT}" # in this case _SOURCE_BOOT=glance
                 then
                         _HOT="../templates/${_UNITLOWER}.yaml"
                 else
@@ -694,7 +724,7 @@ function create_update_mau {
                 done
         fi
         exec 3<&-
-        rm -f ../${_ADMINCSVFILE}.tmp
+        rm -rf ../${_ADMINCSVFILE}.tmp
 }
 
 #####
@@ -741,7 +771,14 @@ function init_mau {
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
                 _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
-                if "${_LOCAL_BOOT}"
+                _SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
+                if [[ "${_LOCAL_BOOT}" == "true" && "${_SOURCE_BOOT}" == "cinder" ]]
+                then
+                        exit_for_error "Error, Local Boot using a Volume source is not supported in OpenStack." true hard
+                elif [[ "${_SOURCE_BOOT}" == "cinder" ]]
+                then
+                        _HOT="../templates/${_UNITLOWER}_cinder_source.yaml"
+                elif "${_LOCAL_BOOT}" # in this case _SOURCE_BOOT=glance
                 then
                         _HOT="../templates/${_UNITLOWER}.yaml"
                 else
@@ -771,23 +808,64 @@ function validation {
 	_UNITTOVALIDATE=$1
 	_IMAGE=$(cat ../environment/common.yaml|grep "$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image"|grep -v -E "image_id|image_source"|awk '{print $2}'|sed "s/\"//g")
 	_IMAGEID=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image_id'/ {print $2}'|sed "s/\"//g")
+	_VOLUMEID=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_volume_id'/ {print $2}'|sed "s/\"//g")
 	_FLAVOR=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_flavor_name'/ {print $2}'|sed "s/\"//g")
 	_SOURCE=$(cat ../environment/common.yaml|grep "$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image_source"|awk '{print $2}'|sed "s/\"//g")
 
 	#####
 	# Check the Image Id and the Image Name is the same 
 	#####
-		echo -e -n "Validating chosen Image ${_IMAGE} ...\t\t"
 	if [[ "${_SOURCE}" == "glance" ]]
 	then
+		echo -e -n "Validating chosen Glance Image ${_IMAGE} ...\t\t"
 		glance image-show ${_IMAGEID}|grep "${_IMAGE}" >/dev/null 2>&1 || exit_for_error "Error, Image for Unit ${_UNITTOVALIDATE} not present or mismatch between ID and Name." true hard
+		echo -e "${GREEN} [OK]${NC}"
 	elif [[ "${_SOURCE}" == "cinder" ]]
 	then
-		exit_for_error "To be implemented." true hard
+		echo -e -n "Validating chosen Cinder Volume ${_VOLUMEID} ...\t\t"
+		cinder show ${_VOLUMEID} >/dev/null 2>&1 || exit_for_error "Error, Volume for Unit ${_UNITTOVALIDATE} not present." true hard
+		echo -e "${GREEN} [OK]${NC}"
+
+		echo -e -n "Validating given volume size ...\t\t"
+		_VOLUME_SIZE=$(cinder show ${_VOLUMEID}|awk '/size/ {print $4}'|sed "s/ //g")
+		_VOLUME_GIVEN_SIZE=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_volume_size'/ {print $2}'|sed "s/\"//g")
+		if (( "${_VOLUME_GIVEN_SIZE}" < "${_VOLUME_SIZE}" ))
+		then
+			exit_for_error "Error, Volume for Unit ${_UNITTOVALIDATE} with UUID ${_VOLUMEID} has a size of ${_VOLUME_SIZE} which cannot fit into the given input size of ${_VOLUME_GIVEN_SIZE}." true hard
+		fi
+		echo -e "${GREEN} [OK]${NC}"
+
+		#####
+		# Creating a test volume to verify that the snapshotting works
+		# https://wiki.openstack.org/wiki/CinderSupportMatrix
+		# e.g. Feature not available with standard NFS driver
+		#####
+		echo -e -n "Validating if volume cloning/snapshotting is available ...\t\t"
+		#####
+		# Creating a new volume from the given one
+		#####
+		cinder create --source-volid ${_VOLUMEID} --display-name "temp-${_VOLUMEID}" ${_VOLUME_SIZE} >/dev/null 2>&1 || exit_for_error "Error, During volume cloning/snapshotting creation." true hard
+		
+		#####
+		# Wait until the volume created is in error or available states
+		#####
+		while :
+		do
+			_VOLUME_SOURCE_STATUS=$(cinder show temp-${_VOLUMEID}|grep status|grep -v extended_status|awk '{print $4}')
+			if [[ "${_VOLUME_SOURCE_STATUS}" == "available" ]]
+			then
+				cinder delete temp-${_VOLUMEID} >/dev/null 2>&1
+				echo -e "${GREEN} [OK]${NC}"
+				break
+			elif [[ "${_VOLUME_SOURCE_STATUS}" == "error" ]]
+			then
+				cinder delete temp-${_VOLUMEID} >/dev/null 2>&1
+				exit_for_error "Error, the system does not support volume cloning/snapshotting." true hard
+			fi
+		done
 	else
-		exit_for_error "Error, Invalid Image Source option, can be \"Glance\" or \"Cinder\"." true hard
+		exit_for_error "Error, Invalid Image Source option, can be \"glance\" or \"cinder\"." true hard
 	fi
-	echo -e "${GREEN} [OK]${NC}"
 
 	#####
 	# Check the given flavor is available
@@ -1170,7 +1248,7 @@ for (( i=0 ; i < ${_GROUPNUMBER} ; i++ ))
 do
 	_GROUP[${i}]=$(sed -n -e $((${i}+1))p ${_GROUPS})
 done
-rm -f ${_GROUPS}
+rm -rf ${_GROUPS}
 echo -e "${GREEN} [OK]${NC}"
 
 #####
@@ -1219,7 +1297,7 @@ then
         	neutron port-update --no-security-groups ${_ADMIN_PORTID}
 	done
 	exec 3<&-
-	rm -f ../${_ADMINCSVFILE}.tmp
+	rm -rf ../${_ADMINCSVFILE}.tmp
 	cd ${_CURRENTDIR}
 	exit 0
 elif [[ "${_ACTION}" == "Create" || "${_ACTION}" == "Update" || "${_ACTION}" == "Replace" ]]

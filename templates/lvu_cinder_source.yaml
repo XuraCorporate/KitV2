@@ -23,12 +23,12 @@ parameters:
   lvu_flavor_name:
     type: string
     description: Flavor Name to be used
-  lvu_image_id:
+  lvu_volume_id:
     type: string
-    description: Image ID to be used - in case of block device mapping
-  lvu_image_volume_size:
+    description: Volume ID to be used
+  lvu_volume_size:
     type: number
-    description: Volume size to be used by the image
+    description: Volume Size to be used
 #  tenant_network_name:
 #    type: string
 #    description: Tenant Network Name with DHCP
@@ -117,5 +117,11 @@ resources:
           boot_index: 0
           delete_on_termination: true
           device_name: vda
-          image_id: { get_param: lvu_image_id }
-          volume_size: { get_param: lvu_image_volume_size }
+          volume_id: { get_resource: lvu_unit_volume }
+
+  lvu_unit_volume:
+    type: OS::Cinder::Volume
+    properties:
+      source_volid: { get_param: lvu_volume_id }
+      size: { get_param: lvu_volume_size }
+      description: { get_param: unit_name }

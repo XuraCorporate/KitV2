@@ -1,7 +1,7 @@
 ---
 heat_template_version: 2015-04-30
 
-description: Xura HOT template to deploy LVU unit
+description: Xura HOT template to deploy VM-ASU unit
 
 parameters:
   dev_mode:
@@ -20,15 +20,15 @@ parameters:
   antiaffinity_group:
     type: string
     description: (Anti-)Affinity Scheduler Group ID
-  lvu_flavor_name:
+  vm-asu_flavor_name:
     type: string
     description: Flavor Name to be used
-  lvu_image_id:
+  vm-asu_volume_id:
     type: string
-    description: Image ID to be used - in case of block device mapping
-  lvu_image_volume_size:
+    description: Volume ID to be used
+  vm-asu_volume_size:
     type: number
-    description: Volume size to be used by the image
+    description: Volume Size to be used
 #  tenant_network_name:
 #    type: string
 #    description: Tenant Network Name with DHCP
@@ -83,11 +83,11 @@ resources:
 #      security_groups:
 #        - { get_param: tenant_security_group_name }
 
-  lvu_unit:
+  vm-asu_unit:
     type: OS::Nova::Server
     properties:
       name: { get_param: unit_name }
-      flavor: { get_param: lvu_flavor_name }
+      flavor: { get_param: vm-asu_flavor_name }
       networks:
         #- port: { get_resource: tenant_network_port }
         - port: { get_param: admin_network_port }
@@ -97,7 +97,7 @@ resources:
       user_data_format: RAW
       user_data:
         str_replace:
-          template: { get_file: ./script/lvu_software_config.sh }
+          template: { get_file: ./script/vm-asu_software_config.sh }
           params:
             _DEVMODE_: { get_param: dev_mode }
             _ADMIN_MAC_: { get_param: admin_network_mac }
@@ -117,5 +117,11 @@ resources:
           boot_index: 0
           delete_on_termination: true
           device_name: vda
-          image_id: { get_param: lvu_image_id }
-          volume_size: { get_param: lvu_image_volume_size }
+          volume_id: { get_resource: vm-asu_unit_volume }
+
+  vm-asu_unit_volume:
+    type: OS::Cinder::Volume
+    properties:
+      source_volid: { get_param: vm-asu_volume_id }
+      size: { get_param: vm-asu_volume_size }
+      description: { get_param: unit_name }
