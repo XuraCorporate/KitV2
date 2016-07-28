@@ -18,10 +18,18 @@ parameter_defaults:
   domain_name: none
 
   # Server Group Policy, has to be "affinity" or "anti-affinity"
-  server_group_policy: affinity
+  cms_server_group_policy: affinity
+  lvu_server_group_policy: affinity
+  omu_server_group_policy: affinity
+  vm-asu_server_group_policy: affinity
+  mau_server_group_policy: affinity
 
-  # Count for Server Groups
-  server_group_quantity: 4
+  # Count for Server Groups per Unit
+  cms_server_group_quantity: 2
+  lvu_server_group_quantity: 2
+  omu_server_group_quantity: 2
+  vm-asu_server_group_quantity: 2
+  mau_server_group_quantity: 2
 
   # Admin Network Section
   admin_network_name: "provider-vlan723"

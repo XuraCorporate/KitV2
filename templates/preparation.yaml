@@ -22,14 +22,46 @@ parameters:
   admin_security_group_name:
     type: string
     description: Admin Network Security Group Name
-  server_group_policy:
+  cms_server_group_policy:
     type: string
     default: anti-affinity
     description: Server Group Policy
-  server_group_quantity:
+  lvu_server_group_policy:
+    type: string
+    default: anti-affinity
+    description: Server Group Policy
+  omu_server_group_policy:
+    type: string
+    default: anti-affinity
+    description: Server Group Policy
+  vm-asu_server_group_policy:
+    type: string
+    default: anti-affinity
+    description: Server Group Policy
+  mau_server_group_policy:
+    type: string
+    default: anti-affinity
+    description: Server Group Policy
+  cms_server_group_quantity:
     type: number
     default: 4
-    description: Number of Server Group Group to be created
+    description: Number of Server Group Group to be created for CMS
+  lvu_server_group_quantity:
+    type: number
+    default: 4
+    description: Number of Server Group Group to be created for LVU
+  omu_server_group_quantity:
+    type: number
+    default: 4
+    description: Number of Server Group Group to be created for OMU
+  vm-asu_server_group_quantity:
+    type: number
+    default: 4
+    description: Number of Server Group Group to be created for VM-ASU
+  mau_server_group_quantity:
+    type: number
+    default: 4
+    description: Number of Server Group Group to be created for MAU
 #  keypair_name:
 #    type: string
 #    description: Keypair for the unit
@@ -82,15 +114,51 @@ resources:
           remote_ip_prefix: "0.0.0.0/0"
         - direction: ingress
           remote_ip_prefix: "0.0.0.0/0"
-  ServerGroups:
+  CMSServerGroups:
     type: OS::Heat::ResourceGroup
     properties:
-      count: { get_param: server_group_quantity }
+      count: { get_param: cms_server_group_quantity }
       resource_def:
         type: OS::Nova::ServerGroup
         properties:
-          name: ServerGroup%index%
-          policies: [ { get_param: server_group_policy } ]
+          name: CMSServerGroup%index%
+          policies: [ { get_param: cms_server_group_policy } ]
+  LVUServerGroups:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: lvu_server_group_quantity }
+      resource_def:
+        type: OS::Nova::ServerGroup
+        properties:
+          name: LVUServerGroup%index%
+          policies: [ { get_param: lvu_server_group_policy } ]
+  OMUServerGroups:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: omu_server_group_quantity }
+      resource_def:
+        type: OS::Nova::ServerGroup
+        properties:
+          name: OMUServerGroup%index%
+          policies: [ { get_param: omu_server_group_policy } ]
+  VM-ASUServerGroups:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: vm-asu_server_group_quantity }
+      resource_def:
+        type: OS::Nova::ServerGroup
+        properties:
+          name: VM-ASUServerGroup%index%
+          policies: [ { get_param: vm-asu_server_group_policy } ]
+  MAUServerGroups:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: mau_server_group_quantity }
+      resource_def:
+        type: OS::Nova::ServerGroup
+        properties:
+          name: MAUServerGroup%index%
+          policies: [ { get_param: mau_server_group_policy } ]
 #  KeyPair:
 #    type: OS::Nova::KeyPair
 #    properties:

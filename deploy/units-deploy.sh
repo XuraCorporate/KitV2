@@ -229,7 +229,7 @@ function init_cms {
                  --parameters "media_network_port=${_MEDIA_PORTID}" \
                  --parameters "media_network_mac=${_MEDIA_MAC}" \
                  --parameters "media_network_ip=${_MEDIA_IP}" \
-                 --parameters "antiaffinity_group=${_GROUP[ $((${_INSTACE}%${_GROUPNUMBER})) ]}" \
+                 --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
                  ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
         fi
@@ -376,7 +376,7 @@ function init_lvu {
                  --parameters "sz_network_port=${_SZ_PORTID}" \
                  --parameters "sz_network_mac=${_SZ_MAC}" \
                  --parameters "sz_network_ip=${_SZ_IP}" \
-                 --parameters "antiaffinity_group=${_GROUP[ $((${_INSTACE}%${_GROUPNUMBER})) ]}" \
+                 --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
                  ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
         fi
@@ -523,7 +523,7 @@ function init_omu {
 		 --parameters "sz_network_port=${_SZ_PORTID}" \
 		 --parameters "sz_network_mac=${_SZ_MAC}" \
 		 --parameters "sz_network_ip=${_SZ_IP}" \
-		 --parameters "antiaffinity_group=${_GROUP[ $((${_INSTACE}%${_GROUPNUMBER})) ]}" \
+		 --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
 		 ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
 		#--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
 	fi
@@ -670,7 +670,7 @@ function init_vmasu {
                  --parameters "sz_network_port=${_SZ_PORTID}" \
                  --parameters "sz_network_mac=${_SZ_MAC}" \
                  --parameters "sz_network_ip=${_SZ_IP}" \
-                 --parameters "antiaffinity_group=${_GROUP[ $((${_INSTACE}%${_GROUPNUMBER})) ]}" \
+                 --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
                  ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
         fi
@@ -792,7 +792,7 @@ function init_mau {
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
-                 --parameters "antiaffinity_group=${_GROUP[ $((${_INSTACE}%${_GROUPNUMBER})) ]}" \
+                 --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
                  ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
         fi
@@ -1238,17 +1238,26 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 echo -e -n "Verifing (Anti-)Affinity rules ...\t\t"
 _GROUPS=./groups.tmp
-nova server-group-list|grep ServerGroup|sort -k4|awk '{print $2}' > ${_GROUPS}
-_GROUPNUMBER=$(cat ${_GROUPS}|wc -l)
+nova server-group-list|grep ServerGroup|sort -k4|awk '{print $4,$2}' > ${_GROUPS}
+_GROUPNUMBER=$(cat ${_GROUPS}|grep ${_UNIT}|wc -l)
 if [[ "${_GROUPNUMBER}" == "0" && "${_ACTION}" != "Delete" && "${_ACTION}" != "List" ]]
 then
 	exit_for_error "Error, There is any available (Anti-)Affinity Group." false hard
 fi
-for (( i=0 ; i < ${_GROUPNUMBER} ; i++ ))
+_INDEXGROUP=0
+_OLDIFS=$IFS
+while IFS=$'\n' read -r _LINE || [[ -n "$line" ]]
 do
-	_GROUP[${i}]=$(sed -n -e $((${i}+1))p ${_GROUPS})
-done
+	_UNITGROUP=$(echo ${_LINE}|awk '{print $1}')
+	_UNITGROUPID=$(echo ${_LINE}|awk '{print $2}')
+	if [[ ${_UNITGROUP} =~ "${_UNIT}" ]]
+	then
+		_GROUP[${_INDEXGROUP}]=${_UNITGROUPID}
+		_INDEXGROUP=$((${_INDEXGROUP}+1))
+	fi
+done < ${_GROUPS}
 rm -rf ${_GROUPS}
+IFS=${_OLDIFS}
 echo -e "${GREEN} [OK]${NC}"
 
 #####
@@ -1281,6 +1290,7 @@ then
 	# Release the port cleaning up the security group
 	#####
 	cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+	_OLDIFS=$IFS
 	IFS=","
 	exec 3<../${_ADMINCSVFILE}.tmp
 	while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3
@@ -1290,6 +1300,7 @@ then
 	done
 	exec 3<&-
 	rm -rf ../${_ADMINCSVFILE}.tmp
+	IFS=${_OLDIFS}
 
 	#####
 	# Delete each Stack of the same Unit
