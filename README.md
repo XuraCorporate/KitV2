@@ -298,6 +298,8 @@ The only action that is specific for one instance is the Replace action.
 
 ## Phase 3.1 - (Anti-)Affinity Rules
 In OpenStack until the Mitaka version the Affinity and the Anti-Affinity rules were mandatory actions.
+Mandatory means that all of the VM in the same server group MUST stay (Affinity) other or MUST not stay (Anti-Affinity) together.
+
 Here the implementation blueprint which explains what has changed and the reasons.
 https://blueprints.launchpad.net/nova/+spec/soft-affinity-for-server-group
 ```
@@ -324,35 +326,60 @@ nova to spread the instances in the same group as much as possible.
 
 So since this Kit has been designed to run on OpenStack Kilo and OpenStack Liberty, a way has to be found in order to have (Anti-)Affinity less strict policies. 
 The designed solutions has been implementated as following:
-- In the environment file (environment/common.yaml) has been written the Server Group policy to be used ("affinity" or "anti-affinity").
-- In the environment file (environment/common.yaml) has been written how many Server Group to be created.
+- In the environment file (environment/common.yaml) has been written the Server Group policy to be used ("affinity" or "anti-affinity") for each unit type.
+- In the environment file (environment/common.yaml) has been written how many Server Group to be created for each unit type.
 - The Preparetion script will create those
 - The Unit Deploy script will use a mathematical function called modulo (the %) that will assign for each unit a specific (Anti-)Affinity group - choosing from one previously created
 
 This approch has the following advantages
 - Mitigate the current OpenStack (Anti-)Affinity limitation
 - Reduce as much as possible the failoure domain if the Anti-Affinity has been chosen
+- The OpenStack (Anti-)Affinity is per unit type
+- The algorithm uses a random function and it will use all of the Groups equally
+  - e.g. 8 omu and 4 host => 2 omu per host
+  - e.g. 4 omu and 4 host => 1 omu per host
+  - e.g. 10 omu and 1 host => 10 omu per host
 
 Below an example
-- Number of OMU to be created = 4 each
-- Number of CMS to be created = 8 each
-- Number fo physical host available = 3
-- Number of Anti-Affinity groups = 4
+- Number of CMS to be created = 10 each
+- Number of OMU to be created = 5 each
+- Number of LVU to be created = 3 each
+- Number of MAU to be created = 7 each
+- Number of VM-ASU to be created = 4 each
+- Number fo physical host available = 4
+- Number of Anti-Affinity groups per unit type = 2
 
 ```
-Unit Type	Unit Index	Anti-Affinity Group				Number per Anti-Affinity group
-OMU		1		1			Anti-Affinity Group 0	3
-OMU		2		2			Anti-Affinity Group 1	3
-OMU		3		3			Anti-Affinity Group 2	3
-OMU		4		0			Anti-Affinity Group 3	3
-CMS		1		1			
-CMS		2		2			
-CMS		3		3			
-CMS		4		0			
-CMS		5		1			
-CMS		6		2			
-CMS		7		3			
-CMS		8		0			
+Unit	Server Group		Hypervisor hostname
+CMS1	ServerGroupCMS1		overcloud-compute-0
+CMS2	ServerGroupCMS2		overcloud-compute-0
+CMS3	ServerGroupCMS1		overcloud-compute-1
+CMS4	ServerGroupCMS2		overcloud-compute-1
+CMS5	ServerGroupCMS1		overcloud-compute-2
+CMS6	ServerGroupCMS2		overcloud-compute-2
+CMS7	ServerGroupCMS1		overcloud-compute-3
+CMS8	ServerGroupCMS2		overcloud-compute-3
+CMS9	ServerGroupCMS1		overcloud-compute-4
+CMS10	ServerGroupCMS2		overcloud-compute-4
+OMU1	ServerGroupOMU1		overcloud-compute-0
+OMU2	ServerGroupOMU2		overcloud-compute-0
+OMU3	ServerGroupOMU1		overcloud-compute-1
+OMU4	ServerGroupOMU2		overcloud-compute-1
+OMU5	ServerGroupOMU1		overcloud-compute-2
+LVU1	ServerGroupLVU1		overcloud-compute-0
+LVU2	ServerGroupLVU2		overcloud-compute-0
+LVU3	ServerGroupLVU1		overcloud-compute-1
+MAU1	ServerGroupMAU1		overcloud-compute-0
+MAU2	ServerGroupMAU2		overcloud-compute-0
+MAU3	ServerGroupMAU1		overcloud-compute-1
+MAU4	ServerGroupMAU2		overcloud-compute-1
+MAU5	ServerGroupMAU1		overcloud-compute-2
+MAU6	ServerGroupMAU2		overcloud-compute-2
+MAU7	ServerGroupMAU1		overcloud-compute-3
+VM-ASU1	ServerGroupVM-ASU1	overcloud-compute-0
+VM-ASU2	ServerGroupVM-ASU2	overcloud-compute-0
+VM-ASU3	ServerGroupVM-ASU1	overcloud-compute-1
+VM-ASU4	ServerGroupVM-ASU2	overcloud-compute-1
 ```
 So the right formula to calculate the number of required Anti-Affinity groups is the following one
 ```
@@ -362,7 +389,8 @@ In our case: (4+8)/3 = 4
 
 In general:
 - A high number of Anti-Affinity is less safe since less VM will be in the same Anti-Affinity group and so potentially all together in the same hypervisor
-- A low number of Anti-Affinity is not recommended since the Nova Schedule could fail to find a valid hypervisor for the VM
+- A low number of Anti-Affinity is ideal but the Nova Schedule could fail to find a valid hypervisor for the VM
+- About 99.9% of the time the mathematics functiona will work as expected but something it can do something different, so the above schema is theoretical but not too far from the reality
 
 Limitations:
 - If you want to create one VM per each unit type all of the VMs will be in the same physical host
