@@ -1,6 +1,6 @@
 ---
 parameter_defaults:
-  dev_mode: True
+  dev_mode: False
 
   # Deprecated usage of Tenant Network
   # Tenant Network Section
@@ -18,11 +18,11 @@ parameter_defaults:
   domain_name: none
 
   # Server Group Policy, has to be "affinity" or "anti-affinity"
-  cms_server_group_policy: affinity
-  lvu_server_group_policy: affinity
-  omu_server_group_policy: affinity
-  vm-asu_server_group_policy: affinity
-  mau_server_group_policy: affinity
+  cms_server_group_policy: anti-affinity
+  lvu_server_group_policy: anti-affinity
+  omu_server_group_policy: anti-affinity
+  vm-asu_server_group_policy: anti-affinity
+  mau_server_group_policy: anti-affinity
 
   # Count for Server Groups per Unit
   cms_server_group_quantity: 2
@@ -45,7 +45,7 @@ parameter_defaults:
   sz_network_cidr: "10.107.204.0/24"
   sz_network_netmask: "255.255.255.0"
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
-  sz_network_vlan: 1234
+  sz_network_vlan: none
 
   # SIP Internal Network Section 
   sip_network_name: "provider-vlan725"
@@ -70,10 +70,10 @@ parameter_defaults:
   mau_flavor_name: m1.small
 
   # Source image to boot, could be "glance" or "cinder" (Local Disk from Cinder is not supported in OpenStack)
-  cms_image_source: cinder
+  cms_image_source: glance
   lvu_image_source: glance
   omu_image_source: glance
-  vm-asu_image_source: cinder
+  vm-asu_image_source: glance
   mau_image_source: glance
 
   # Nova and Cinder Availability Zone
@@ -99,7 +99,7 @@ parameter_defaults:
   omu_image_volume_size: 20
   omu_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   omu_image: Image_for_Stack_1
-  vm-asu_local_boot: False
+  vm-asu_local_boot: True
   vm-asu_image_volume_size: 20
   vm-asu_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   vm-asu_image: Image_for_Stack_1
