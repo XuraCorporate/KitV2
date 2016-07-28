@@ -806,7 +806,7 @@ function init_mau {
 #####
 function validation {
 	_UNITTOVALIDATE=$1
-	_IMAGE=$(cat ../environment/common.yaml|grep "$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image"|grep -v -E "image_id|image_source"|awk '{print $2}'|sed "s/\"//g")
+	_IMAGE=$(cat ../environment/common.yaml|grep "$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image"|grep -v -E "image_id|image_source|image_volume_size"|awk '{print $2}'|sed "s/\"//g")
 	_IMAGEID=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image_id'/ {print $2}'|sed "s/\"//g")
 	_VOLUMEID=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_volume_id'/ {print $2}'|sed "s/\"//g")
 	_FLAVOR=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_flavor_name'/ {print $2}'|sed "s/\"//g")
@@ -1278,15 +1278,7 @@ then
 elif [[ "${_ACTION}" == "Delete" ]]
 then
 	#####
-	# Delete each Stack of the same Unit
-	#####
-	for _STACKID in $(heat stack-list|awk '/'${_STACKNAME}'/ {print $2}')
-	do
-		heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKID} || exit_for_error "Error, During Stack ${_ACTION}." true hard
-	done
-
-	#####
-	# Release the the port cleaning up the security group
+	# Release the port cleaning up the security group
 	#####
 	cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
 	IFS=","
@@ -1298,6 +1290,14 @@ then
 	done
 	exec 3<&-
 	rm -rf ../${_ADMINCSVFILE}.tmp
+
+	#####
+	# Delete each Stack of the same Unit
+	#####
+	for _STACKID in $(heat stack-list|awk '/'${_STACKNAME}'/ {print $2}')
+	do
+		heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKID} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+	done
 	cd ${_CURRENTDIR}
 	exit 0
 elif [[ "${_ACTION}" == "Create" || "${_ACTION}" == "Update" || "${_ACTION}" == "Replace" ]]
