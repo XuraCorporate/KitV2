@@ -132,6 +132,87 @@ $ glance image-list
 +--------------------------------------+------------------------------------+-------------+------------------+-------------+--------+
 ```
 - Write the Images' Name and the Images' ID down in the common environment file (environment/common.yaml)
+- Make sure that the Tenant in OpenStack environment has the right Volume(s). To see them
+```
+cinder list
++--------------------------------------+-----------+--------------+------+-------------+----------+-------------+
+|                  ID                  |   Status  | Display Name | Size | Volume Type | Bootable | Attached to |
++--------------------------------------+-----------+--------------+------+-------------+----------+-------------+
+| d8842665-3408-42d6-9ae8-78468b8b39a9 | available |      -       |  10  |      -      |  false   |             |
++--------------------------------------+-----------+--------------+------+-------------+----------+-------------+
+```
+- Write the Volumes' ID down and the desired deployment size in the common environment file (environment/common.yaml)
+- To make a golden volume from a running VM
+```
+$ nova show 1c8a864f-4995-455d-82b7-9de284c5f4d0
++--------------------------------------+----------------------------------------------------------+
+| Property                             | Value                                                    |
++--------------------------------------+----------------------------------------------------------+
+| OS-DCF:diskConfig                    | AUTO                                                     |
+| OS-EXT-AZ:availability_zone          | nova                                                     |
+| OS-EXT-SRV-ATTR:host                 | localization-ai1                                         |
+| OS-EXT-SRV-ATTR:hypervisor_hostname  | localization-ai1.xura.com                                |
+| OS-EXT-SRV-ATTR:instance_name        | instance-000000ac                                        |
+| OS-EXT-STS:power_state               | 1                                                        |
+| OS-EXT-STS:task_state                | -                                                        |
+| OS-EXT-STS:vm_state                  | active                                                   |
+| OS-SRV-USG:launched_at               | 2016-07-28T14:08:08.000000                               |
+| OS-SRV-USG:terminated_at             | -                                                        |
+| accessIPv4                           |                                                          |
+| accessIPv6                           |                                                          |
+| config_drive                         |                                                          |
+| created                              | 2016-07-28T14:07:59Z                                     |
+| flavor                               | m1.tiny (1)                                              |
+| hostId                               | ad26c73d2d74c8f674d72558802717a0894f36fbe1a9dcbf5afb047d |
+| id                                   | 1c8a864f-4995-455d-82b7-9de284c5f4d0                     |
+| image                                | Attempt to boot from volume - no image supplied          |
+| key_name                             | -                                                        |
+| metadata                             | {}                                                       |
+| name                                 | VolVM                                                    |
+| os-extended-volumes:volumes_attached | [{"id": "2ae0a16c-dcaa-46fb-af05-3f4850a619ec"}]         |
+| private network                      | 10.0.0.70                                                |
+| progress                             | 0                                                        |
+| security_groups                      | default                                                  |
+| status                               | ACTIVE                                                   |
+| tenant_id                            | d3d042add50946ad9bf0ac48652878ed                         |
+| updated                              | 2016-07-28T14:08:09Z                                     |
+| user_id                              | b287ed94a53d4a66adb4ff6c5f2e7e1c                         |
++--------------------------------------+----------------------------------------------------------+
+$ cinder create --source-volid 2ae0a16c-dcaa-46fb-af05-3f4850a619ec 1
++---------------------+--------------------------------------+
+|       Property      |                Value                 |
++---------------------+--------------------------------------+
+|     attachments     |                  []                  |
+|  availability_zone  |                 nova                 |
+|       bootable      |                false                 |
+|      created_at     |      2016-07-28T14:09:12.986773      |
+| display_description |                 None                 |
+|     display_name    |                 None                 |
+|      encrypted      |                False                 |
+|          id         | b85aab4e-984a-4058-9552-f98b606f2aa3 |
+|       metadata      |                  {}                  |
+|     multiattach     |                false                 |
+|         size        |                  1                   |
+|     snapshot_id     |                 None                 |
+|     source_volid    | 2ae0a16c-dcaa-46fb-af05-3f4850a619ec |
+|        status       |               creating               |
+|     volume_type     |                 lvm2                 |
++---------------------+--------------------------------------+
+$ cinder list
++--------------------------------------+----------+--------------+------+-------------+----------+--------------------------------------+
+|                  ID                  |  Status  | Display Name | Size | Volume Type | Bootable |             Attached to              |
++--------------------------------------+----------+--------------+------+-------------+----------+--------------------------------------+
+| 2ae0a16c-dcaa-46fb-af05-3f4850a619ec |  in-use  |      -       |  1   |     lvm2    |   true   | 1c8a864f-4995-455d-82b7-9de284c5f4d0 |
+| b85aab4e-984a-4058-9552-f98b606f2aa3 | creating |      -       |  1   |     lvm2    |  false   |                                      |
++--------------------------------------+----------+--------------+------+-------------+----------+--------------------------------------+
+$ cinder list
++--------------------------------------+-----------+--------------+------+-------------+----------+--------------------------------------+
+|                  ID                  |   Status  | Display Name | Size | Volume Type | Bootable |             Attached to              |
++--------------------------------------+-----------+--------------+------+-------------+----------+--------------------------------------+
+| 2ae0a16c-dcaa-46fb-af05-3f4850a619ec |   in-use  |      -       |  1   |     lvm2    |   true   | 1c8a864f-4995-455d-82b7-9de284c5f4d0 |
+| b85aab4e-984a-4058-9552-f98b606f2aa3 | available |      -       |  1   |     lvm2    |   true   |                                      |
++--------------------------------------+-----------+--------------+------+-------------+----------+--------------------------------------+
+```
 - Make sure that the Tenant in OpenStack environment has the Flavor(s). To see them
 ```
 $ nova flavor-list
