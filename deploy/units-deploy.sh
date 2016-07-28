@@ -62,10 +62,10 @@ function create_update_cms {
                 #####
                 # Load the CSV Files
                 #####
-                sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" > ../${_ADMINCSVFILE}.tmp
-                sed -n -e ${_INSTACE}p ../${_SZCSVFILE} | sed -e "s/\^M//g" > ../${_SZCSVFILE}.tmp
-                sed -n -e ${_INSTACE}p ../${_SIPCSVFILE} | sed -e "s/\^M//g" > ../${_SIPCSVFILE}.tmp
-                sed -n -e ${_INSTACE}p ../${_MEDIACSVFILE} | sed -e "s/\^M//g" > ../${_MEDIACSVFILE}.tmp
+                sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                sed -n -e ${_INSTACE}p ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+                sed -n -e ${_INSTACE}p ../${_SIPCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SIPCSVFILE}.tmp
+                sed -n -e ${_INSTACE}p ../${_MEDIACSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_MEDIACSVFILE}.tmp
                 IFS=","
                 exec 3<../${_ADMINCSVFILE}.tmp
                 exec 4<../${_SZCSVFILE}.tmp
@@ -89,10 +89,10 @@ function create_update_cms {
                         init_cms Create
                 done
         else
-                cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" > ../${_ADMINCSVFILE}.tmp
-                cat ../${_SZCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" > ../${_SZCSVFILE}.tmp
-                cat ../${_SIPCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" > ../${_SIPCSVFILE}.tmp
-                cat ../${_MEDIACSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" > ../${_MEDIACSVFILE}.tmp
+                cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                cat ../${_SZCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+                cat ../${_SIPCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SIPCSVFILE}.tmp
+                cat ../${_MEDIACSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_MEDIACSVFILE}.tmp
 
                 #####
                 # Verify that in the CSV files there are the same amout of Ports
@@ -245,8 +245,8 @@ function create_update_lvu {
                 #####
                 # Load the CSV Files
                 #####
-                sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" > ../${_ADMINCSVFILE}.tmp
-                sed -n -e ${_INSTACE}p ../${_SZCSVFILE} | sed -e "s/\^M//g" > ../${_SZCSVFILE}.tmp
+                sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                sed -n -e ${_INSTACE}p ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
                 IFS=","
                 exec 3<../${_ADMINCSVFILE}.tmp
                 exec 4<../${_SZCSVFILE}.tmp
@@ -268,8 +268,8 @@ function create_update_lvu {
                         init_lvu Create
                 done
         else
-                cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" > ../${_ADMINCSVFILE}.tmp
-                cat ../${_SZCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" > ../${_SZCSVFILE}.tmp
+                cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                cat ../${_SZCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
 
                 #####
                 # Verify that in the CSV files there are the same amout of Ports
@@ -392,8 +392,8 @@ function create_update_omu {
 		#####
 		# Load the CSV Files
 		#####
-	        sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" > ../${_ADMINCSVFILE}.tmp
-	        sed -n -e ${_INSTACE}p ../${_SZCSVFILE} | sed -e "s/\^M//g" > ../${_SZCSVFILE}.tmp
+	        sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+	        sed -n -e ${_INSTACE}p ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
 	        IFS=","
 	        exec 3<../${_ADMINCSVFILE}.tmp
 	        exec 4<../${_SZCSVFILE}.tmp
@@ -415,8 +415,8 @@ function create_update_omu {
 			init_omu Create
 		done
 	else
-	        cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" > ../${_ADMINCSVFILE}.tmp
-	        cat ../${_SZCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" > ../${_SZCSVFILE}.tmp
+	        cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+	        cat ../${_SZCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
 
 		#####
 		# Verify that in the CSV files there are the same amout of Ports
@@ -539,8 +539,8 @@ function create_update_vmasu {
                 #####
                 # Load the CSV Files
                 #####
-                sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" > ../${_ADMINCSVFILE}.tmp
-                sed -n -e ${_INSTACE}p ../${_SZCSVFILE} | sed -e "s/\^M//g" > ../${_SZCSVFILE}.tmp
+                sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                sed -n -e ${_INSTACE}p ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
                 IFS=","
                 exec 3<../${_ADMINCSVFILE}.tmp
                 exec 4<../${_SZCSVFILE}.tmp
@@ -562,8 +562,8 @@ function create_update_vmasu {
                         init_vmasu Create
                 done
         else
-                cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" > ../${_ADMINCSVFILE}.tmp
-                cat ../${_SZCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" > ../${_SZCSVFILE}.tmp
+                cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                cat ../${_SZCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
 
                 #####
                 # Verify that in the CSV files there are the same amout of Ports
@@ -686,7 +686,7 @@ function create_update_mau {
                 #####
                 # Load the CSV Files
                 #####
-                sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" > ../${_ADMINCSVFILE}.tmp
+                sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
                 IFS=","
                 exec 3<../${_ADMINCSVFILE}.tmp
                 while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3
@@ -707,7 +707,7 @@ function create_update_mau {
                         init_mau Create
                 done
         else
-                cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" > ../${_ADMINCSVFILE}.tmp
+                cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
 
                 #####
                 # Load the CSV Files
@@ -1288,7 +1288,7 @@ then
 	#####
 	# Release the the port cleaning up the security group
 	#####
-	cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" > ../${_ADMINCSVFILE}.tmp
+	cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
 	IFS=","
 	exec 3<../${_ADMINCSVFILE}.tmp
 	while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3
