@@ -57,6 +57,9 @@ parameters:
     type: string
     description: Admin Network VLAN ID none will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggind
     default: none
+  nova_az:
+    type: string
+    description: Availability Zone for Nova
 
 resources:
 #  tenant_network_port:
@@ -72,6 +75,7 @@ resources:
     properties:
       name: { get_param: unit_name }
       flavor: { get_param: mau_flavor_name }
+      availability_zone: { get_param: nova_az }
       networks:
         #- port: { get_resource: tenant_network_port }
         - port: { get_param: admin_network_port }

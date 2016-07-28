@@ -68,6 +68,10 @@ parameter_defaults:
   vm-asu_image_source: cinder
   mau_image_source: glance
 
+  # Nova and Cinder Availability Zone
+  nova_az: nova
+  cinder_az: nova
+
   #####
   # Glance Source Section
   # *_local_boot: Boot from Local Disk instead of using Cinder for Boot from Volume
