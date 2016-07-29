@@ -199,6 +199,16 @@ then
 	fi
 	echo -e "${GREEN} [OK]${NC}"
 	
+
+	echo -e -n "Verifing if Server Group Quota ...\t\t"
+	_GROUPS=$(cat ../environment/common.yaml|grep server_group_quantity|awk '{s+=$2} END {print s}')
+	_GROUPSQUOTA=$(nova quota-show|grep server_groups|awk '{print $4}')	
+	if (( "${_GROUPS}" > "${_GROUPSQUOTA}" ))
+	then
+		exit_for_error "Error, In the environemnt file has been defined to create ${_GROUPS} Server Groups but the user quota can only allow to have up to ${_GROUPSQUOTA} Server Groups. Recude the number or call the Administrator to increase the Quota." true
+	fi
+	echo -e "${GREEN} [OK]${NC}"
+
 	#####
 	# Create or Update the Stack
 	# All of the path have a ".." in front since we are in the deploy directory in this phase
