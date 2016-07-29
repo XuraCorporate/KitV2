@@ -170,10 +170,10 @@ function init_cms {
 		mac_validation ${_SIP_MAC}
 		mac_validation ${_MEDIA_MAC}
 
-                port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
-                port_validation ${_SZ_PORTID} ${_SZ_MAC}
-                port_validation ${_SIP_PORTID} ${_SIP_MAC}
-                port_validation ${_MEDIA_PORTID} ${_MEDIA_MAC}
+                port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC} ${_ACTION}
+                port_validation ${_SZ_PORTID} ${_SZ_MAC} ${_ACTION}
+                port_validation ${_SIP_PORTID} ${_SIP_MAC} ${_ACTION}
+                port_validation ${_MEDIA_PORTID} ${_MEDIA_MAC} ${_ACTION}
 
 		ip_validation ${_ADMIN_IP}
 		ip_validation ${_SZ_IP}
@@ -331,8 +331,8 @@ function init_lvu {
                 mac_validation ${_ADMIN_MAC}
                 mac_validation ${_SZ_MAC}
 
-                port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
-                port_validation ${_SZ_PORTID} ${_SZ_MAC}
+                port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC} ${_ACTION}
+                port_validation ${_SZ_PORTID} ${_SZ_MAC} ${_ACTION}
 
 		ip_validation ${_ADMIN_IP}
 		ip_validation ${_SZ_IP}
@@ -478,8 +478,8 @@ function init_omu {
                 mac_validation ${_ADMIN_MAC}
                 mac_validation ${_SZ_MAC}
 
-		port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
-		port_validation ${_SZ_PORTID} ${_SZ_MAC}
+		port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC} ${_ACTION}
+		port_validation ${_SZ_PORTID} ${_SZ_MAC} ${_ACTION}
 
 		ip_validation ${_ADMIN_IP}
 		ip_validation ${_SZ_IP}
@@ -625,8 +625,8 @@ function init_vmasu {
                 mac_validation ${_ADMIN_MAC}
                 mac_validation ${_SZ_MAC}
 
-                port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
-                port_validation ${_SZ_PORTID} ${_SZ_MAC}
+                port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC} ${_ACTION}
+                port_validation ${_SZ_PORTID} ${_SZ_MAC} ${_ACTION}
 
                 ip_validation ${_ADMIN_IP}
                 ip_validation ${_SZ_IP}
@@ -754,7 +754,7 @@ function init_mau {
                 #####
                 mac_validation ${_ADMIN_MAC}
 
-                port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC}
+                port_validation ${_ADMIN_PORTID} ${_ADMIN_MAC} ${_ACTION}
 
                 ip_validation ${_ADMIN_IP}
 
@@ -805,33 +805,41 @@ function init_mau {
 # - Given Image Name and Image ID
 #####
 function validation {
-	_UNITTOVALIDATE=$1
-	_IMAGE=$(cat ../environment/common.yaml|grep "$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image"|grep -v -E "image_id|image_source|image_volume_size"|awk '{print $2}'|sed "s/\"//g")
-	_IMAGEID=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image_id'/ {print $2}'|sed "s/\"//g")
-	_VOLUMEID=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_volume_id'/ {print $2}'|sed "s/\"//g")
-	_FLAVOR=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_flavor_name'/ {print $2}'|sed "s/\"//g")
-	_SOURCE=$(cat ../environment/common.yaml|grep "$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_image_source"|awk '{print $2}'|sed "s/\"//g")
+	_UNITTOBEVALIDATED=$1
+	_IMAGE=$(cat ../environment/common.yaml|grep "$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_image"|grep -v -E "image_id|image_source|image_volume_size"|awk '{print $2}'|sed "s/\"//g")
+	_IMAGEID=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_image_id'/ {print $2}'|sed "s/\"//g")
+	_VOLUMEID=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_volume_id'/ {print $2}'|sed "s/\"//g")
+	_FLAVOR=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_flavor_name'/ {print $2}'|sed "s/\"//g")
+	_SOURCE=$(cat ../environment/common.yaml|grep "$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_image_source"|awk '{print $2}'|sed "s/\"//g")
 
 	#####
-	# Check the Image Id and the Image Name is the same 
+	# _SOURCE=glance -> Check the Image Id and the Image Name is the same 
+	# _SOURCE=cinder -> Check the Volume Id, the Given size and if the Volume snapshot/clone feature is present 
 	#####
 	if [[ "${_SOURCE}" == "glance" ]]
 	then
+		if $(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+		then
+			echo -e "${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from the local hypervisor disk (aka Ephemeral Disk)${NC}"
+		else
+			echo -e "${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from Volume (aka from the SAN)${NC}"
+		fi
 		echo -e -n "Validating chosen Glance Image ${_IMAGE} ...\t\t"
-		glance image-show ${_IMAGEID}|grep "${_IMAGE}" >/dev/null 2>&1 || exit_for_error "Error, Image for Unit ${_UNITTOVALIDATE} not present or mismatch between ID and Name." true hard
+		glance image-show ${_IMAGEID}|grep "${_IMAGE}" >/dev/null 2>&1 || exit_for_error "Error, Image for Unit ${_UNITTOBEVALIDATED} not present or mismatch between ID and Name." true hard
 		echo -e "${GREEN} [OK]${NC}"
 	elif [[ "${_SOURCE}" == "cinder" ]]
 	then
+		echo -e "${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from Volume (aka from the SAN)${NC}"
 		echo -e -n "Validating chosen Cinder Volume ${_VOLUMEID} ...\t\t"
-		cinder show ${_VOLUMEID} >/dev/null 2>&1 || exit_for_error "Error, Volume for Unit ${_UNITTOVALIDATE} not present." true hard
+		cinder show ${_VOLUMEID} >/dev/null 2>&1 || exit_for_error "Error, Volume for Unit ${_UNITTOBEVALIDATED} not present." true hard
 		echo -e "${GREEN} [OK]${NC}"
 
 		echo -e -n "Validating given volume size ...\t\t"
 		_VOLUME_SIZE=$(cinder show ${_VOLUMEID}|awk '/size/ {print $4}'|sed "s/ //g")
-		_VOLUME_GIVEN_SIZE=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOVALIDATE}" | awk '{print tolower($0)}')_volume_size'/ {print $2}'|sed "s/\"//g")
+		_VOLUME_GIVEN_SIZE=$(cat ../environment/common.yaml|awk '/'$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_volume_size'/ {print $2}'|sed "s/\"//g")
 		if (( "${_VOLUME_GIVEN_SIZE}" < "${_VOLUME_SIZE}" ))
 		then
-			exit_for_error "Error, Volume for Unit ${_UNITTOVALIDATE} with UUID ${_VOLUMEID} has a size of ${_VOLUME_SIZE} which cannot fit into the given input size of ${_VOLUME_GIVEN_SIZE}." true hard
+			exit_for_error "Error, Volume for Unit ${_UNITTOBEVALIDATED} with UUID ${_VOLUMEID} has a size of ${_VOLUME_SIZE} which cannot fit into the given input size of ${_VOLUME_GIVEN_SIZE}." true hard
 		fi
 		echo -e "${GREEN} [OK]${NC}"
 
@@ -840,11 +848,11 @@ function validation {
 		# https://wiki.openstack.org/wiki/CinderSupportMatrix
 		# e.g. Feature not available with standard NFS driver
 		#####
-		echo -e -n "Validating if volume cloning/snapshotting is available ...\t\t"
+		echo -e -n "Validating if volume cloning/snapshotting feature is available ...\t\t"
 		#####
 		# Creating a new volume from the given one
 		#####
-		cinder create --source-volid ${_VOLUMEID} --display-name "temp-${_VOLUMEID}" ${_VOLUME_SIZE} >/dev/null 2>&1 || exit_for_error "Error, During volume cloning/snapshotting creation." true hard
+		cinder create --source-volid ${_VOLUMEID} --display-name "temp-${_VOLUMEID}" ${_VOLUME_SIZE} >/dev/null 2>&1 || exit_for_error "Error, During volume cloning/snapshotting. With the current Cinder's backend Glance has to be used." true hard
 		
 		#####
 		# Wait until the volume created is in error or available states
@@ -860,7 +868,7 @@ function validation {
 			elif [[ "${_VOLUME_SOURCE_STATUS}" == "error" ]]
 			then
 				cinder delete temp-${_VOLUMEID} >/dev/null 2>&1
-				exit_for_error "Error, the system does not support volume cloning/snapshotting." true hard
+				exit_for_error "Error, the system does not support volume cloning/snapshotting. With the current Cinder's backend Glance has to be used." true hard
 			fi
 		done
 	else
@@ -871,7 +879,7 @@ function validation {
 	# Check the given flavor is available
 	#####
 	echo -e -n "Validating chosen Flavor ${_FLAVOR} ...\t\t"
-	nova flavor-show "${_FLAVOR}" >/dev/null 2>&1 || exit_for_error "Error, Flavor for Unit ${_UNITTOVALIDATE} not present." true hard
+	nova flavor-show "${_FLAVOR}" >/dev/null 2>&1 || exit_for_error "Error, Flavor for Unit ${_UNITTOBEVALIDATED} not present." true hard
 	echo -e "${GREEN} [OK]${NC}"
 }
 
@@ -881,7 +889,7 @@ function validation {
 # - Does the given VLAN ID is valid?
 #####
 function net_validation {
-        _UNITTOVALIDATE=$1
+        _UNITTOBEVALIDATED=$1
 	_NET=$2
         _NETWORK=$(cat ../environment/common.yaml|awk '/'${_NET}'_network_name/ {print $2}'|sed "s/\"//g")
         _VLAN=$(cat ../environment/common.yaml|awk '/'${_NET}'_network_vlan/ {print $2}'|sed "s/\"//g")
@@ -918,6 +926,7 @@ function net_validation {
 function port_validation {
 	_PORT=$1
 	_MAC=$2
+	_UNITACTION=$3
 
 	#####
 	# Check of the port exist
@@ -930,7 +939,7 @@ function port_validation {
 	# Check if the port is in use
 	#####
 	echo -e -n "Validating Port ${_PORT} is not in use ...\t\t"
-	if [[ "$(neutron port-show --field device_id --format value ${_PORT})" != "" ]]
+	if [[ "$(neutron port-show --field device_id --format value ${_PORT})" != "" && "${_UNITACTION}" != "Update" ]]
 	then
 		exit_for_error "Error, Port with ID ${_PORT} is in use." false break
 	fi
@@ -953,7 +962,7 @@ function ip_validation {
         #####
         # Check if the given IP or NetMask is valid
         #####
-        echo -e -n "Validating ${_IP} ...\t\t"
+        echo -e -n "Validating IP Address ${_IP} ...\t\t"
 	echo ${_IP}|grep -E "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" >/dev/null 2>&1
         if [[ "${?}" != "0" ]]
         then
@@ -985,7 +994,7 @@ function mac_validation {
         #####
         # Check if the given IP or NetMask is valid
         #####
-        echo -e -n "Validating ${_MAC} ...\t\t"
+        echo -e -n "Validating MAC Address ${_MAC} ...\t\t"
         echo ${_MAC}|grep -E "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})" >/dev/null 2>&1
         if [[ "${?}" != "0" ]]
         then
