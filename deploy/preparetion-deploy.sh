@@ -198,7 +198,6 @@ then
 		exit_for_error "Error, The Stack does not exist." true
 	fi
 	echo -e "${GREEN} [OK]${NC}"
-	
 
 	echo -e -n "Verifing if Server Group Quota ...\t\t"
 	_GROUPS=$(cat ../environment/common.yaml|grep server_group_quantity|awk '{s+=$2} END {print s}')
