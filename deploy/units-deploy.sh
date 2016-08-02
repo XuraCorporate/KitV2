@@ -60,17 +60,17 @@ function create_update_cms {
 	#####
 	# Load the CSV Files for all of the Instances
 	#####
-	if [[ "${_INSTANCESTARTEND}" == "false" ]]
+	if [[ "${_INSTANCEEND}" == "false" ]]
 	then
                 cat ../${_ADMINCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
                 cat ../${_SZCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
                 cat ../${_SIPCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SIPCSVFILE}.tmp
                 cat ../${_MEDIACSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_MEDIACSVFILE}.tmp
 	else
-                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
-                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_SIPCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SIPCSVFILE}.tmp
-                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_MEDIACSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_MEDIACSVFILE}.tmp
+                sed -n -e "${_INSTANCESTART},${_INSTANCEEND}p" ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                sed -n -e "${_INSTANCESTART},${_INSTANCEEND}p" ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+                sed -n -e "${_INSTANCESTART},${_INSTANCEEND}p" ../${_SIPCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SIPCSVFILE}.tmp
+                sed -n -e "${_INSTANCESTART},${_INSTANCEEND}p" ../${_MEDIACSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_MEDIACSVFILE}.tmp
 	fi
 
         #####
@@ -134,11 +134,24 @@ function create_update_cms {
                 exec 6<../${_MEDIACSVFILE}.tmp
                 while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3 && read _SZ_PORTID _SZ_MAC _SZ_IP <&4 && read _SIP_PORTID _SIP_MAC _SIP_IP <&5 && read _MEDIA_PORTID _MEDIA_MAC _MEDIA_IP <&6
                 do
-
-                        #####
-                        # After the checks create the CMS with the right parameters
-                        #####
-                        init_cms ${_ACTION}
+			if [[ "${_ACTION}" != "Delete" ]]
+			then
+				#####
+				# After the checks create the CMS with the right parameters
+				#####
+				init_cms ${_ACTION}
+			else
+			        #####
+			        # Release the port cleaning up the security group
+			        #####
+			        echo "Cleaning up Neutron port"
+			        neutron port-update --no-security-groups ${_ADMIN_PORTID}
+			        #####
+			        # Delete Stack
+			        #####
+				heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+        			_INSTANCESTART=$(($_INSTANCESTART+1))
+			fi
                 done
         fi
         exec 3<&-
@@ -251,13 +264,13 @@ function create_update_lvu {
         #####
         # Load the CSV Files for all of the Instances
         #####
-        if [[ "${_INSTANCESTARTEND}" == "false" ]]
+        if [[ "${_INSTANCEEND}" == "false" ]]
         then
                 cat ../${_ADMINCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
                 cat ../${_SZCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
         else
-                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+                sed -n -e "${_INSTANCESTART},${_INSTANCEEND}p" ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                sed -n -e "${_INSTANCESTART},${_INSTANCEEND}p" ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
         fi
 
         #####
@@ -305,11 +318,24 @@ function create_update_lvu {
                 exec 4<../${_SZCSVFILE}.tmp
                 while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3 && read _SZ_PORTID _SZ_MAC _SZ_IP <&4
                 do
-
-                        #####
-                        # After the checks create the LVU with the right parameters
-                        #####
-                        init_lvu ${_ACTION}
+                        if [[ "${_ACTION}" != "Delete" ]]
+                        then
+                                #####
+                                # After the checks create the LVU with the right parameters
+                                #####
+                                init_lvu ${_ACTION}
+                        else
+                                #####
+                                # Release the port cleaning up the security group
+                                #####
+                                echo "Cleaning up Neutron port"
+                                neutron port-update --no-security-groups ${_ADMIN_PORTID}
+                                #####
+                                # Delete Stack
+                                #####
+                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                                _INSTANCESTART=$(($_INSTANCESTART+1))
+                        fi
                 done
         fi
         exec 3<&-
@@ -404,13 +430,13 @@ function create_update_omu {
         #####
         # Load the CSV Files for all of the Instances
         #####
-        if [[ "${_INSTANCESTARTEND}" == "false" ]]
+        if [[ "${_INSTANCEEND}" == "false" ]]
         then
                 cat ../${_ADMINCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
                 cat ../${_SZCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
         else
-                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+                sed -n -e "${_INSTANCESTART},${_INSTANCEEND}p" ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                sed -n -e "${_INSTANCESTART},${_INSTANCEEND}p" ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
         fi
 
         #####
@@ -458,11 +484,24 @@ function create_update_omu {
 	        exec 4<../${_SZCSVFILE}.tmp
 	        while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3 && read _SZ_PORTID _SZ_MAC _SZ_IP <&4
 	        do
-
-			#####
-			# After the checks create the OMU with the right parameters
-			#####
-			init_omu ${_ACTION}
+                        if [[ "${_ACTION}" != "Delete" ]]
+                        then
+                                #####
+                                # After the checks create the OMU with the right parameters
+                                #####
+                                init_omu ${_ACTION}
+                        else
+                                #####
+                                # Release the port cleaning up the security group
+                                #####
+                                echo "Cleaning up Neutron port"
+                                neutron port-update --no-security-groups ${_ADMIN_PORTID}
+                                #####
+                                # Delete Stack
+                                #####
+                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                                _INSTANCESTART=$(($_INSTANCESTART+1))
+                        fi
 	        done
 	fi
 	exec 3<&-
@@ -557,13 +596,13 @@ function create_update_vmasu {
         #####
         # Load the CSV Files for all of the Instances
         #####
-        if [[ "${_INSTANCESTARTEND}" == "false" ]]
+        if [[ "${_INSTANCEEND}" == "false" ]]
         then
                 cat ../${_ADMINCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
                 cat ../${_SZCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
         else
-                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+                sed -n -e "${_INSTANCESTART},${_INSTANCEEND}p" ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                sed -n -e "${_INSTANCESTART},${_INSTANCEEND}p" ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
         fi
 
         #####
@@ -611,11 +650,24 @@ function create_update_vmasu {
                 exec 4<../${_SZCSVFILE}.tmp
                 while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3 && read _SZ_PORTID _SZ_MAC _SZ_IP <&4
                 do
-
-                        #####
-                        # After the checks create the VM-ASU with the right parameters
-                        #####
-                        init_vmasu ${_ACTION}
+                        if [[ "${_ACTION}" != "Delete" ]]
+                        then
+                                #####
+                                # After the checks create the VM-ASU with the right parameters
+                                #####
+                                init_vmasu ${_ACTION}
+                        else
+                                #####
+                                # Release the port cleaning up the security group
+                                #####
+                                echo "Cleaning up Neutron port"
+                                neutron port-update --no-security-groups ${_ADMIN_PORTID}
+                                #####
+                                # Delete Stack
+                                #####
+                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                                _INSTANCESTART=$(($_INSTANCESTART+1))
+                        fi
                 done
         fi
         exec 3<&-
@@ -710,11 +762,11 @@ function create_update_mau {
         #####
         # Load the CSV Files for all of the Instances
         #####
-        if [[ "${_INSTANCESTARTEND}" == "false" ]]
+        if [[ "${_INSTANCEEND}" == "false" ]]
         then
                 cat ../${_ADMINCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
         else
-                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                sed -n -e "${_INSTANCESTART},${_INSTANCEEND}p" ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
         fi
 
         if [[ "${_ACTION}" == "Replace" ]]
@@ -749,11 +801,24 @@ function create_update_mau {
                 exec 3<../${_ADMINCSVFILE}.tmp
                 while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3
                 do
-
-                        #####
-                        # After the checks create the MAU with the right parameters
-                        #####
-                        init_mau ${_ACTION}
+                        if [[ "${_ACTION}" != "Delete" ]]
+                        then
+                                #####
+                                # After the checks create the MAU with the right parameters
+                                #####
+                                init_mau ${_ACTION}
+                        else
+                                #####
+                                # Release the port cleaning up the security group
+                                #####
+                                echo "Cleaning up Neutron port"
+                                neutron port-update --no-security-groups ${_ADMIN_PORTID}
+                                #####
+                                # Delete Stack
+                                #####
+                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                                _INSTANCESTART=$(($_INSTANCESTART+1))
+                        fi
                 done
         fi
         exec 3<&-
@@ -1117,7 +1182,7 @@ then
 fi
 
 echo ${_INSTANCEEND}|grep -E "[0-9]{1,99}" > /dev/null 2>&1
-if [[ "${?}" != "0" ]]
+if [[ "${?}" != "0" && ${_INSTANCEEND} != "false" ]]
 then
 	input_error_log
 	echo "Error, Not valid Instance to End with."
@@ -1138,6 +1203,8 @@ _MEDIACSVFILE=$(echo ${_CSVFILEPATH}/media.csv)
 # - Does it exist?
 # - Is it readable?
 # - Does it have a size higher than 0Byte?
+# - Does it have the given starting line?
+# - Does it have the given ending line?
 #####
 echo -e -n "Verifing if Admin CSV file is good ...\t\t"
 if [ ! -f ${_ADMINCSVFILE} ] || [ ! -r ${_ADMINCSVFILE} ] || [ ! -s ${_ADMINCSVFILE} ]
@@ -1150,27 +1217,76 @@ then
 fi
 echo -e "${GREEN} [OK]${NC}"
 
+echo -e -n "Verifing if Admin CSV file has the given starting line ${_INSTANCESTART} ...\t\t"
+if [[ "$(sed -n -e "${_INSTANCESTART}p" ${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
+then
+	echo -e "${RED}"
+	echo "Wrapper for ${_UNIT} Unit Creation"
+	echo "CSV File for Admin Network does not have the given starting line"
+	echo -e "${NC}"
+	exit 1
+fi
+echo -e "${GREEN} [OK]${NC}"
+
+if [[ "${_INSTANCEEND}" != "false" ]]
+then
+	echo -e -n "Verifing if Admin CSV file has the given ending line ${_INSTANCEEND} ...\t\t"
+	if [[ "$(sed -n -e "${_INSTANCEEND}p" ${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
+	then
+		echo -e "${RED}"
+		echo "Wrapper for ${_UNIT} Unit Creation"
+		echo "CSV File for Admin Network does not have the given ending line"
+		echo -e "${NC}"
+		exit 1
+	fi
+	echo -e "${GREEN} [OK]${NC}"
+fi
+
 #####
 # Check if the Secure Zone CSV File except for the MAU Unit
 # - Does it exist?
 # - Is it readable?
 # - Does it have a size higher than 0Byte?
+# - Does it have the given starting line?
+# - Does it have the given ending line?
 #####
 if [[ ! "${_UNIT}" == "MAU" ]]
 then
 	echo -e -n "Verifing if Secure Zone CSV file is good ...\t\t"
-fi
-if [ ! -f ${_SZCSVFILE} ] || [ ! -r ${_SZCSVFILE} ] || [ ! -s ${_SZCSVFILE} ] && [[ ! "${_UNIT}" == "MAU" ]]
-then
-	echo -e "${RED}"
-	echo "Wrapper for ${_UNIT} Unit Creation"
-	echo "CSV File for Secure Zone Network with mapping Portid,MacAddress,FixedIP does not exist."
-	echo -e "${NC}"
-	exit 1
-fi
-if [[ ! "${_UNIT}" == "MAU" ]]
-then
+	if [ ! -f ${_SZCSVFILE} ] || [ ! -r ${_SZCSVFILE} ] || [ ! -s ${_SZCSVFILE} ]
+	then
+		echo -e "${RED}"
+		echo "Wrapper for ${_UNIT} Unit Creation"
+		echo "CSV File for Secure Zone Network with mapping Portid,MacAddress,FixedIP does not exist."
+		echo -e "${NC}"
+		exit 1
+	fi
 	echo -e "${GREEN} [OK]${NC}"
+	
+	echo -e -n "Verifing if Secure Zone CSV file has the given starting line ${_INSTANCESTART} ...\t\t"
+	if [[ "$(sed -n -e "${_INSTANCESTART}p" ${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
+	then
+	        echo -e "${RED}"
+	        echo "Wrapper for ${_UNIT} Unit Creation"
+	        echo "CSV File for Secure Zone does not have the given starting line"
+	        echo -e "${NC}"
+	        exit 1
+	fi
+	echo -e "${GREEN} [OK]${NC}"
+	
+	if [[ "${_INSTANCEEND}" != "false" ]]
+	then
+	        echo -e -n "Verifing if Secure Zone CSV file has the given ending line ${_INSTANCEEND} ...\t\t"
+	        if [[ "$(sed -n -e "${_INSTANCEEND}p" ${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
+	        then
+	                echo -e "${RED}"
+	                echo "Wrapper for ${_UNIT} Unit Creation"
+	                echo "CSV File for Secure Zone Network does not have the given ending line"
+	                echo -e "${NC}"
+	                exit 1
+	        fi
+	        echo -e "${GREEN} [OK]${NC}"
+	fi
 fi
 
 #####
@@ -1178,22 +1294,46 @@ fi
 # - Does it exist?
 # - Is it readable?
 # - Does it have a size higher than 0Byte?
+# - Does it have the given starting line?
+# - Does it have the given ending line?
 #####
 if [[ "${_UNIT}" == "CMS" ]]
 then
 	echo -e -n "Verifing if SIP CSV file is good ...\t\t"
-fi
-if [ ! -f ${_SIPINTCSVFILE} ] || [ ! -r ${_SIPINTCSVFILE} ] || [ ! -s ${_SIPINTCSVFILE} ] && [[ "${_UNIT}" == "CMS" ]]
-then
-	echo -e "${RED}"
-	echo "Wrapper for ${_UNIT} Unit Creation"
-	echo "CSV File for SIP Internal Network with mapping Portid,MacAddress,FixedIP does not exist."
-	echo -e "${NC}"
-	exit 1
-fi
-if [[ "${_UNIT}" == "CMS" ]]
-then
+	if [ ! -f ${_SIPINTCSVFILE} ] || [ ! -r ${_SIPINTCSVFILE} ] || [ ! -s ${_SIPINTCSVFILE} ]
+	then
+		echo -e "${RED}"
+		echo "Wrapper for ${_UNIT} Unit Creation"
+		echo "CSV File for SIP Internal Network with mapping Portid,MacAddress,FixedIP does not exist."
+		echo -e "${NC}"
+		exit 1
+	fi
 	echo -e "${GREEN} [OK]${NC}"
+	
+	echo -e -n "Verifing if SIP CSV file has the given starting line ${_INSTANCESTART} ...\t\t"
+	if [[ "$(sed -n -e "${_INSTANCESTART}p" ${_SIPINTCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
+	then
+	        echo -e "${RED}"
+	        echo "Wrapper for ${_UNIT} Unit Creation"
+	        echo "CSV File for SIP Network does not have the given starting line"
+	        echo -e "${NC}"
+	        exit 1
+	fi
+	echo -e "${GREEN} [OK]${NC}"
+	
+	if [[ "${_INSTANCEEND}" != "false" ]]
+	then
+	        echo -e -n "Verifing if SIP CSV file has the given ending line ${_INSTANCEEND} ...\t\t"
+	        if [[ "$(sed -n -e "${_INSTANCEEND}p" ${_SIPINTCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
+	        then
+	                echo -e "${RED}"
+	                echo "Wrapper for ${_UNIT} Unit Creation"
+	                echo "CSV File for SIP Network does not have the given ending line"
+	                echo -e "${NC}"
+	                exit 1
+	        fi
+	        echo -e "${GREEN} [OK]${NC}"
+	fi
 fi
 
 #####
@@ -1201,22 +1341,46 @@ fi
 # - Does it exist?
 # - Is it readable?
 # - Does it have a size higher than 0Byte?
+# - Does it have the given starting line?
+# - Does it have the given ending line?
 #####
 if [[ "${_UNIT}" == "CMS" ]]
 then
 	echo -e -n "Verifing if Media CSV file is good ...\t\t"
-fi
-if [ ! -f ${_MEDIACSVFILE} ] || [ ! -r ${_MEDIACSVFILE} ] || [ ! -s ${_MEDIACSVFILE} ] && [[ "${_UNIT}" == "CMS" ]]
-then
-	echo -e "${RED}"
-	echo "Wrapper for ${_UNIT} Unit Creation"
-	echo "CSV File for Media Network with mapping Portid,MacAddress,FixedIP does not exist."
-	echo -e "${NC}"
-	exit 1
-fi
-if [[ "${_UNIT}" == "CMS" ]]
-then
+	if [ ! -f ${_MEDIACSVFILE} ] || [ ! -r ${_MEDIACSVFILE} ] || [ ! -s ${_MEDIACSVFILE} ]
+	then
+		echo -e "${RED}"
+		echo "Wrapper for ${_UNIT} Unit Creation"
+		echo "CSV File for Media Network with mapping Portid,MacAddress,FixedIP does not exist."
+		echo -e "${NC}"
+		exit 1
+	fi
 	echo -e "${GREEN} [OK]${NC}"
+	
+	echo -e -n "Verifing if Media CSV file has the given starting line ${_INSTANCESTART} ...\t\t"
+	if [[ "$(sed -n -e "${_INSTANCESTART}p" ${_MEDIACSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
+	then
+	        echo -e "${RED}"
+	        echo "Wrapper for ${_UNIT} Unit Creation"
+	        echo "CSV File for Media Network does not have the given starting line"
+	        echo -e "${NC}"
+	        exit 1
+	fi
+	echo -e "${GREEN} [OK]${NC}"
+	
+	if [[ "${_INSTANCEEND}" != "false" ]]
+	then
+	        echo -e -n "Verifing if Media CSV file has the given ending line ${_INSTANCEEND} ...\t\t"
+	        if [[ "$(sed -n -e "${_INSTANCEEND}p" ${_MEDIACSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
+	        then
+	                echo -e "${RED}"
+	                echo "Wrapper for ${_UNIT} Unit Creation"
+	                echo "CSV File for Media Network does not have the given ending line"
+	                echo -e "${NC}"
+	                exit 1
+	        fi
+	        echo -e "${GREEN} [OK]${NC}"
+	fi
 fi
 
 #####
@@ -1349,34 +1513,7 @@ then
 	done
 	cd ${_CURRENTDIR}
 	exit 0
-elif [[ "${_ACTION}" == "Delete" ]]
-then
-	#####
-	# Release the port cleaning up the security group
-	#####
-	cat ../${_ADMINCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-	_OLDIFS=$IFS
-	IFS=","
-	exec 3<../${_ADMINCSVFILE}.tmp
-	while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3
-	do	
-		echo "Cleaning up Neutron port"
-        	neutron port-update --no-security-groups ${_ADMIN_PORTID}
-	done
-	exec 3<&-
-	rm -rf ../${_ADMINCSVFILE}.tmp
-	IFS=${_OLDIFS}
-
-	#####
-	# Delete each Stack of the same Unit
-	#####
-	for _STACKID in $(heat stack-list|awk '/'${_STACKNAME}'/ {print $2}')
-	do
-		heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKID} || exit_for_error "Error, During Stack ${_ACTION}." true hard
-	done
-	cd ${_CURRENTDIR}
-	exit 0
-elif [[ "${_ACTION}" == "Create" || "${_ACTION}" == "Update" || "${_ACTION}" == "Replace" ]]
+elif [[ "${_ACTION}" == "Create" || "${_ACTION}" == "Update" || "${_ACTION}" == "Replace" || "${_ACTION}" == "Delete" ]]
 then
 	#####
 	# Validate the Input values (falvor, image etc)
@@ -1398,6 +1535,7 @@ then
 		# Validate the network for CMS
 		#####
 		create_update_cms
+		echo -e "${GREEN}DONE${NC}"
 		cd ${_CURRENTDIR}
 		exit 0
 	elif [[ ${_UNIT} == "LVU" ]]
@@ -1412,6 +1550,7 @@ then
 		# Init the LVU Creation
 		#####
 		create_update_lvu
+		echo -e "${GREEN}DONE${NC}"
 		cd ${_CURRENTDIR}
 		exit 0
 	elif [[ ${_UNIT} == "OMU" ]]
@@ -1426,6 +1565,7 @@ then
 		# Ini the OMU Creation
 		#####
 		create_update_omu
+		echo -e "${GREEN}DONE${NC}"
 		cd ${_CURRENTDIR}
 		exit 0
 	elif [[ ${_UNIT} == "VM-ASU" ]]
@@ -1440,6 +1580,7 @@ then
 		# Init the VM-ASU Creation
 		#####
 		create_update_vmasu
+		echo -e "${GREEN}DONE${NC}"
 		cd ${_CURRENTDIR}
 		exit 0
 	elif [[ ${_UNIT} == "MAU" ]]
@@ -1453,10 +1594,12 @@ then
 		# Init the MAU Creation
 		#####
 		create_update_mau
+		echo -e "${GREEN}DONE${NC}"
 		cd ${_CURRENTDIR}
 		exit 0
 	fi
 fi
+echo -e "${GREEN}DONE${NC}"
  
 exit 0
 
