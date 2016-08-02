@@ -1300,7 +1300,7 @@ fi
 if [[ "${_UNIT}" == "CMS" ]]
 then
 	echo -e -n "Verifing if SIP CSV file is good ...\t\t"
-	if [ ! -f ${_SIPINTCSVFILE} ] || [ ! -r ${_SIPINTCSVFILE} ] || [ ! -s ${_SIPINTCSVFILE} ]
+	if [ ! -f ${_SIPCSVFILE} ] || [ ! -r ${_SIPCSVFILE} ] || [ ! -s ${_SIPCSVFILE} ]
 	then
 		echo -e "${RED}"
 		echo "Wrapper for ${_UNIT} Unit Creation"
@@ -1311,7 +1311,7 @@ then
 	echo -e "${GREEN} [OK]${NC}"
 	
 	echo -e -n "Verifing if SIP CSV file has the given starting line ${_INSTANCESTART} ...\t\t"
-	if [[ "$(sed -n -e "${_INSTANCESTART}p" ${_SIPINTCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
+	if [[ "$(sed -n -e "${_INSTANCESTART}p" ${_SIPCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
 	then
 	        echo -e "${RED}"
 	        echo "Wrapper for ${_UNIT} Unit Creation"
@@ -1324,7 +1324,7 @@ then
 	if [[ "${_INSTANCEEND}" != "false" ]]
 	then
 	        echo -e -n "Verifing if SIP CSV file has the given ending line ${_INSTANCEEND} ...\t\t"
-	        if [[ "$(sed -n -e "${_INSTANCEEND}p" ${_SIPINTCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
+	        if [[ "$(sed -n -e "${_INSTANCEEND}p" ${_SIPCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
 	        then
 	                echo -e "${RED}"
 	                echo "Wrapper for ${_UNIT} Unit Creation"
