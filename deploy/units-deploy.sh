@@ -10,7 +10,7 @@ NC='\033[0m' # No Color
 function input_error_log {
 	echo -e ${RED}
 	echo "Wrapper for ${_UNIT} Unit Creation"
-	echo "Usage bash $0 <OpenStack RC environment file> <Create/Update/List/Delete/Replace> <CMS/LVU/OMU/VM-ASU/MAU> [Instace to start with or replace to - default 1] [Path to the CSV Files - default "environment/${_UNITLOWER}"] [StackName - default ${_UNITLOWER}]"
+	echo "Usage bash $0 <OpenStack RC environment file> <Create/Update/List/Delete/Replace> <CMS/LVU/OMU/VM-ASU/MAU> [Instance to start with - default 1] [Instance to end with - default false aka continue until the end of the CSV file] [Path to the CSV Files - default "environment/${_UNITLOWER}"] [StackName - default ${_UNITLOWER}]"
 }
 
 #####
@@ -57,15 +57,50 @@ function exit_for_error {
 # Function to Create CMS Unit
 #####
 function create_update_cms {
+	#####
+	# Load the CSV Files for all of the Instances
+	#####
+	if [[ "${_INSTANCESTARTEND}" == "false" ]]
+	then
+                cat ../${_ADMINCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                cat ../${_SZCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+                cat ../${_SIPCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SIPCSVFILE}.tmp
+                cat ../${_MEDIACSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_MEDIACSVFILE}.tmp
+	else
+                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_SIPCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SIPCSVFILE}.tmp
+                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_MEDIACSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_MEDIACSVFILE}.tmp
+	fi
+
+        #####
+        # Verify that in the CSV files there are the same amout of Ports
+        #####
+        _ADMIN_PORT_NUMBER=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
+        _SZ_PORT_NUMBER=$(cat ../${_SZCSVFILE}.tmp|wc -l)
+        _SIP_PORT_NUMBER=$(cat ../${_SIPCSVFILE}.tmp|wc -l)
+        _MEDIA_PORT_NUMBER=$(cat ../${_MEDIACSVFILE}.tmp|wc -l)
+        echo -e -n "Validating number of Ports ...\t\t"
+        if [[ "${_ADMIN_PORT_NUMBER}" != "${_SZ_PORT_NUMBER}" ]]
+        then
+                exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Secure Zone, which has ${_SZ_PORT_NUMBER} Port(s)" true hard
+        fi
+        if [[ "${_ADMIN_PORT_NUMBER}" != "${_SIP_PORT_NUMBER}" ]]
+        then
+                exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and SIP, which has ${_SIP_PORT_NUMBER} Port(s)" true hard
+        fi
+        if [[ "${_ADMIN_PORT_NUMBER}" != "${_MEDIA_PORT_NUMBER}" ]]
+        then
+                exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Media, which has ${_MEDIA_PORT_NUMBER} Port(s)" true hard
+        fi
+        echo -e "${GREEN} [OK]${NC}"
+
+
         if [[ "${_ACTION}" == "Replace" ]]
         then
                 #####
-                # Load the CSV Files
+                # Load into environment the CSV Files
                 #####
-                sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-                sed -n -e ${_INSTACE}p ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
-                sed -n -e ${_INSTACE}p ../${_SIPCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SIPCSVFILE}.tmp
-                sed -n -e ${_INSTACE}p ../${_MEDIACSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_MEDIACSVFILE}.tmp
                 IFS=","
                 exec 3<../${_ADMINCSVFILE}.tmp
                 exec 4<../${_SZCSVFILE}.tmp
@@ -76,12 +111,12 @@ function create_update_cms {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
 
                         #####
                         # Wait until has been deleted
                         #####
-                        while :; do heat resource-list ${_STACKNAME}${_INSTACE} >/dev/null 2>&1 || break; done
+                        while :; do heat resource-list ${_STACKNAME}${_INSTANCESTART} >/dev/null 2>&1 || break; done
 
                         #####
                         # Create it again
@@ -89,35 +124,8 @@ function create_update_cms {
                         init_cms Create
                 done
         else
-                cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-                cat ../${_SZCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
-                cat ../${_SIPCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SIPCSVFILE}.tmp
-                cat ../${_MEDIACSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_MEDIACSVFILE}.tmp
-
                 #####
-                # Verify that in the CSV files there are the same amout of Ports
-                #####
-                _ADMIN_PORT_NUMBER=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
-                _SZ_PORT_NUMBER=$(cat ../${_SZCSVFILE}.tmp|wc -l)
-                _SIP_PORT_NUMBER=$(cat ../${_SIPCSVFILE}.tmp|wc -l)
-                _MEDIA_PORT_NUMBER=$(cat ../${_MEDIACSVFILE}.tmp|wc -l)
-                echo -e -n "Validating number of Ports ...\t\t"
-                if [[ "${_ADMIN_PORT_NUMBER}" != "${_SZ_PORT_NUMBER}" ]]
-                then
-                        exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Secure Zone, which has ${_SZ_PORT_NUMBER} Port(s)" true hard
-                fi
-                if [[ "${_ADMIN_PORT_NUMBER}" != "${_SIP_PORT_NUMBER}" ]]
-                then
-                        exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and SIP, which has ${_SIP_PORT_NUMBER} Port(s)" true hard
-                fi
-                if [[ "${_ADMIN_PORT_NUMBER}" != "${_MEDIA_PORT_NUMBER}" ]]
-                then
-                        exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Media, which has ${_MEDIA_PORT_NUMBER} Port(s)" true hard
-                fi
-                echo -e "${GREEN} [OK]${NC}"
-
-                #####
-                # Load the CSV Files
+                # Load into environment the CSV Files
                 #####
                 IFS=","
                 exec 3<../${_ADMINCSVFILE}.tmp
@@ -150,15 +158,15 @@ function init_cms {
         # Verify if the stack already exist. A double create will fail
         # Verify if the stack exist in order to be updated
         #####
-        echo -e -n "Verifing if ${_STACKNAME}${_INSTACE} is already loaded ...\t\t"
-        heat resource-list ${_STACKNAME}${_INSTACE} > /dev/null 2>&1
+        echo -e -n "Verifing if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
+        heat resource-list ${_STACKNAME}${_INSTANCESTART} > /dev/null 2>&1
         _STATUS=${?}
         if [[ "${_ACTION}" == "Create" && "${_STATUS}" == "0" ]]
         then
-                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTACE} already exist." false soft
+                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTANCESTART} already exist." false soft
         elif [[ "${_ACTION}" == "Update" && "${_STATUS}" != "0" ]]
         then
-                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTACE} does not exist." false soft
+                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTANCESTART} does not exist." false soft
         else
                 echo -e "${GREEN} [OK]${NC}"
 
@@ -216,7 +224,7 @@ function init_cms {
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../environment/common.yaml \
-                 --parameters "unit_name=${_STACKNAME}${_INSTACE}" \
+                 --parameters "unit_name=${_STACKNAME}${_INSTANCESTART}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -230,23 +238,44 @@ function init_cms {
                  --parameters "media_network_mac=${_MEDIA_MAC}" \
                  --parameters "media_network_ip=${_MEDIA_IP}" \
                  --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
-                 ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                 ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
         fi
-        _INSTACE=$(($_INSTACE+1))
+        _INSTANCESTART=$(($_INSTANCESTART+1))
 }
 
 #####
 # Function to Create LVU
 #####
 function create_update_lvu {
+        #####
+        # Load the CSV Files for all of the Instances
+        #####
+        if [[ "${_INSTANCESTARTEND}" == "false" ]]
+        then
+                cat ../${_ADMINCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                cat ../${_SZCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+        else
+                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+        fi
+
+        #####
+        # Verify that in the CSV files there are the same amout of Ports
+        #####
+        _ADMIN_PORT_NUMBER=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
+        _SZ_PORT_NUMBER=$(cat ../${_SZCSVFILE}.tmp|wc -l)
+        echo -e -n "Validating number of Ports ...\t\t"
+        if [[ "${_ADMIN_PORT_NUMBER}" != "${_SZ_PORT_NUMBER}" ]]
+        then
+                exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Secure Zone, which has ${_SZ_PORT_NUMBER} Port(s)" true hard
+        fi
+        echo -e "${GREEN} [OK]${NC}"
         if [[ "${_ACTION}" == "Replace" ]]
         then
                 #####
-                # Load the CSV Files
+                # Load into environment the CSV Files
                 #####
-                sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-                sed -n -e ${_INSTACE}p ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
                 IFS=","
                 exec 3<../${_ADMINCSVFILE}.tmp
                 exec 4<../${_SZCSVFILE}.tmp
@@ -255,12 +284,12 @@ function create_update_lvu {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
 
                         #####
                         # Wait until has been deleted
                         #####
-                        while :; do heat resource-list ${_STACKNAME}${_INSTACE} >/dev/null 2>&1 || break; done
+                        while :; do heat resource-list ${_STACKNAME}${_INSTANCESTART} >/dev/null 2>&1 || break; done
 
                         #####
                         # Create it again
@@ -268,23 +297,8 @@ function create_update_lvu {
                         init_lvu Create
                 done
         else
-                cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-                cat ../${_SZCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
-
                 #####
-                # Verify that in the CSV files there are the same amout of Ports
-                #####
-                _ADMIN_PORT_NUMBER=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
-                _SZ_PORT_NUMBER=$(cat ../${_SZCSVFILE}.tmp|wc -l)
-                echo -e -n "Validating number of Ports ...\t\t"
-                if [[ "${_ADMIN_PORT_NUMBER}" != "${_SZ_PORT_NUMBER}" ]]
-                then
-                        exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Secure Zone, which has ${_SZ_PORT_NUMBER} Port(s)" true hard
-                fi
-                echo -e "${GREEN} [OK]${NC}"
-
-                #####
-                # Load the CSV Files
+                # Load into environment the CSV Files
                 #####
                 IFS=","
                 exec 3<../${_ADMINCSVFILE}.tmp
@@ -313,15 +327,15 @@ function init_lvu {
         # Verify if the stack already exist. A double create will fail
         # Verify if the stack exist in order to be updated
         #####
-        echo -e -n "Verifing if ${_STACKNAME}${_INSTACE} is already loaded ...\t\t"
-        heat resource-list ${_STACKNAME}${_INSTACE} > /dev/null 2>&1
+        echo -e -n "Verifing if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
+        heat resource-list ${_STACKNAME}${_INSTANCESTART} > /dev/null 2>&1
         _STATUS=${?}
         if [[ "${_ACTION}" == "Create" && "${_STATUS}" == "0" ]]
         then
-                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTACE} already exist." false soft
+                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTANCESTART} already exist." false soft
         elif [[ "${_ACTION}" == "Update" && "${_STATUS}" != "0" ]]
         then
-                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTACE} does not exist." false soft
+                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTANCESTART} does not exist." false soft
         else
                 echo -e "${GREEN} [OK]${NC}"
 
@@ -369,7 +383,7 @@ function init_lvu {
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../environment/common.yaml \
-                 --parameters "unit_name=${_STACKNAME}${_INSTACE}" \
+                 --parameters "unit_name=${_STACKNAME}${_INSTANCESTART}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -377,23 +391,44 @@ function init_lvu {
                  --parameters "sz_network_mac=${_SZ_MAC}" \
                  --parameters "sz_network_ip=${_SZ_IP}" \
                  --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
-                 ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                 ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
         fi
-        _INSTACE=$(($_INSTACE+1))
+        _INSTANCESTART=$(($_INSTANCESTART+1))
 }
 
 #####
 # Function to Create OMU Unit
 #####
 function create_update_omu {
+        #####
+        # Load the CSV Files for all of the Instances
+        #####
+        if [[ "${_INSTANCESTARTEND}" == "false" ]]
+        then
+                cat ../${_ADMINCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                cat ../${_SZCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+        else
+                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+        fi
+
+        #####
+        # Verify that in the CSV files there are the same amout of Ports
+        #####
+        _ADMIN_PORT_NUMBER=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
+        _SZ_PORT_NUMBER=$(cat ../${_SZCSVFILE}.tmp|wc -l)
+        echo -e -n "Validating number of Ports ...\t\t"
+        if [[ "${_ADMIN_PORT_NUMBER}" != "${_SZ_PORT_NUMBER}" ]]
+        then
+                exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Secure Zone, which has ${_SZ_PORT_NUMBER} Port(s)" true hard
+        fi
+        echo -e "${GREEN} [OK]${NC}"
 	if [[ "${_ACTION}" == "Replace" ]]
 	then
 		#####
-		# Load the CSV Files
+		# Load into environment the CSV Files
 		#####
-	        sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-	        sed -n -e ${_INSTACE}p ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
 	        IFS=","
 	        exec 3<../${_ADMINCSVFILE}.tmp
 	        exec 4<../${_SZCSVFILE}.tmp
@@ -402,12 +437,12 @@ function create_update_omu {
 			#####
 			# Delete the old stack
 			#####
-	                heat stack-delete ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+	                heat stack-delete ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
 
 			#####
 			# Wait until has been deleted
 			#####
-	                while :; do heat resource-list ${_STACKNAME}${_INSTACE} >/dev/null 2>&1 || break; done
+	                while :; do heat resource-list ${_STACKNAME}${_INSTANCESTART} >/dev/null 2>&1 || break; done
 
 			#####
 			# Create it again
@@ -415,23 +450,8 @@ function create_update_omu {
 			init_omu Create
 		done
 	else
-	        cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-	        cat ../${_SZCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
-
 		#####
-		# Verify that in the CSV files there are the same amout of Ports
-		#####
-		_ADMIN_PORT_NUMBER=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
-		_SZ_PORT_NUMBER=$(cat ../${_SZCSVFILE}.tmp|wc -l)
-		echo -e -n "Validating number of Ports ...\t\t"
-		if [[ "${_ADMIN_PORT_NUMBER}" != "${_SZ_PORT_NUMBER}" ]]
-		then
-			exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Secure Zone, which has ${_SZ_PORT_NUMBER} Port(s)" true hard
-		fi
-		echo -e "${GREEN} [OK]${NC}"
-
-		#####
-		# Load the CSV Files
+		# Load into environment the CSV Files
 		#####
 	        IFS=","
 	        exec 3<../${_ADMINCSVFILE}.tmp
@@ -460,15 +480,15 @@ function init_omu {
 	# Verify if the stack already exist. A double create will fail
 	# Verify if the stack exist in order to be updated
 	#####
-	echo -e -n "Verifing if ${_STACKNAME}${_INSTACE} is already loaded ...\t\t"
-	heat resource-list ${_STACKNAME}${_INSTACE} > /dev/null 2>&1
+	echo -e -n "Verifing if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
+	heat resource-list ${_STACKNAME}${_INSTANCESTART} > /dev/null 2>&1
 	_STATUS=${?}
 	if [[ "${_ACTION}" == "Create" && "${_STATUS}" == "0" ]]
 	then
-                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTACE} already exist." false soft
+                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTANCESTART} already exist." false soft
 	elif [[ "${_ACTION}" == "Update" && "${_STATUS}" != "0" ]]
 	then
-                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTACE} does not exist." false soft
+                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTANCESTART} does not exist." false soft
         else 
 		echo -e "${GREEN} [OK]${NC}"
 
@@ -516,7 +536,7 @@ function init_omu {
 		heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
 		 --template-file ${_HOT} \
 		 --environment-file ../environment/common.yaml \
-		 --parameters "unit_name=${_STACKNAME}${_INSTACE}" \
+		 --parameters "unit_name=${_STACKNAME}${_INSTANCESTART}" \
 		 --parameters "admin_network_port=${_ADMIN_PORTID}" \
 		 --parameters "admin_network_mac=${_ADMIN_MAC}" \
 		 --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -524,23 +544,44 @@ function init_omu {
 		 --parameters "sz_network_mac=${_SZ_MAC}" \
 		 --parameters "sz_network_ip=${_SZ_IP}" \
 		 --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
-		 ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+		 ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
 		#--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
 	fi
-	_INSTACE=$(($_INSTACE+1))
+	_INSTANCESTART=$(($_INSTANCESTART+1))
 }
 
 #####
 # Function to Create VM-ASU
 #####
 function create_update_vmasu {
+        #####
+        # Load the CSV Files for all of the Instances
+        #####
+        if [[ "${_INSTANCESTARTEND}" == "false" ]]
+        then
+                cat ../${_ADMINCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                cat ../${_SZCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+        else
+                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+        fi
+
+        #####
+        # Verify that in the CSV files there are the same amout of Ports
+        #####
+        _ADMIN_PORT_NUMBER=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
+        _SZ_PORT_NUMBER=$(cat ../${_SZCSVFILE}.tmp|wc -l)
+        echo -e -n "Validating number of Ports ...\t\t"
+        if [[ "${_ADMIN_PORT_NUMBER}" != "${_SZ_PORT_NUMBER}" ]]
+        then
+                exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Secure Zone, which has ${_SZ_PORT_NUMBER} Port(s)" true hard
+        fi
+        echo -e "${GREEN} [OK]${NC}"
         if [[ "${_ACTION}" == "Replace" ]]
         then
                 #####
-                # Load the CSV Files
+                # Load into environment the CSV Files
                 #####
-                sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-                sed -n -e ${_INSTACE}p ../${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
                 IFS=","
                 exec 3<../${_ADMINCSVFILE}.tmp
                 exec 4<../${_SZCSVFILE}.tmp
@@ -549,12 +590,12 @@ function create_update_vmasu {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
 
                         #####
                         # Wait until has been deleted
                         #####
-                        while :; do heat resource-list ${_STACKNAME}${_INSTACE} >/dev/null 2>&1 || break; done
+                        while :; do heat resource-list ${_STACKNAME}${_INSTANCESTART} >/dev/null 2>&1 || break; done
 
                         #####
                         # Create it again
@@ -562,23 +603,8 @@ function create_update_vmasu {
                         init_vmasu Create
                 done
         else
-                cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-                cat ../${_SZCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
-
                 #####
-                # Verify that in the CSV files there are the same amout of Ports
-                #####
-                _ADMIN_PORT_NUMBER=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
-                _SZ_PORT_NUMBER=$(cat ../${_SZCSVFILE}.tmp|wc -l)
-                echo -e -n "Validating number of Ports ...\t\t"
-                if [[ "${_ADMIN_PORT_NUMBER}" != "${_SZ_PORT_NUMBER}" ]]
-                then
-                        exit_for_error "Error, Inconsitent port number between Admin, which has ${_ADMIN_PORT_NUMBER} Port(s), and Secure Zone, which has ${_SZ_PORT_NUMBER} Port(s)" true hard
-                fi
-                echo -e "${GREEN} [OK]${NC}"
-
-                #####
-                # Load the CSV Files
+                # Load into environment the CSV Files
                 #####
                 IFS=","
                 exec 3<../${_ADMINCSVFILE}.tmp
@@ -607,15 +633,15 @@ function init_vmasu {
         # Verify if the stack already exist. A double create will fail
         # Verify if the stack exist in order to be updated
         #####
-        echo -e -n "Verifing if ${_STACKNAME}${_INSTACE} is already loaded ...\t\t"
-        heat resource-list ${_STACKNAME}${_INSTACE} > /dev/null 2>&1
+        echo -e -n "Verifing if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
+        heat resource-list ${_STACKNAME}${_INSTANCESTART} > /dev/null 2>&1
         _STATUS=${?}
         if [[ "${_ACTION}" == "Create" && "${_STATUS}" == "0" ]]
         then
-                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTACE} already exist." false soft
+                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTANCESTART} already exist." false soft
         elif [[ "${_ACTION}" == "Update" && "${_STATUS}" != "0" ]]
         then
-                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTACE} does not exist." false soft
+                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTANCESTART} does not exist." false soft
         else
                 echo -e "${GREEN} [OK]${NC}"
 
@@ -663,7 +689,7 @@ function init_vmasu {
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../environment/common.yaml \
-                 --parameters "unit_name=${_STACKNAME}${_INSTACE}" \
+                 --parameters "unit_name=${_STACKNAME}${_INSTANCESTART}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -671,22 +697,31 @@ function init_vmasu {
                  --parameters "sz_network_mac=${_SZ_MAC}" \
                  --parameters "sz_network_ip=${_SZ_IP}" \
                  --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
-                 ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                 ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
         fi
-        _INSTACE=$(($_INSTACE+1))
+        _INSTANCESTART=$(($_INSTANCESTART+1))
 }
 
 #####
 # Function to Create MAU
 #####
 function create_update_mau {
+        #####
+        # Load the CSV Files for all of the Instances
+        #####
+        if [[ "${_INSTANCESTARTEND}" == "false" ]]
+        then
+                cat ../${_ADMINCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+        else
+                sed -n '${_INSTANCESTART},${_INSTANCESTARTEND}p' ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+        fi
+
         if [[ "${_ACTION}" == "Replace" ]]
         then
                 #####
-                # Load the CSV Files
+                # Load into environment the CSV Files
                 #####
-                sed -n -e ${_INSTACE}p ../${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
                 IFS=","
                 exec 3<../${_ADMINCSVFILE}.tmp
                 while read _ADMIN_PORTID _ADMIN_MAC _ADMIN_IP <&3
@@ -694,12 +729,12 @@ function create_update_mau {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
 
                         #####
                         # Wait until has been deleted
                         #####
-                        while :; do heat resource-list ${_STACKNAME}${_INSTACE} >/dev/null 2>&1 || break; done
+                        while :; do heat resource-list ${_STACKNAME}${_INSTANCESTART} >/dev/null 2>&1 || break; done
 
                         #####
                         # Create it again
@@ -707,10 +742,8 @@ function create_update_mau {
                         init_mau Create
                 done
         else
-                cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
-
                 #####
-                # Load the CSV Files
+                # Load into environment the CSV Files
                 #####
                 IFS=","
                 exec 3<../${_ADMINCSVFILE}.tmp
@@ -737,15 +770,15 @@ function init_mau {
         # Verify if the stack already exist. A double create will fail
         # Verify if the stack exist in order to be updated
         #####
-        echo -e -n "Verifing if ${_STACKNAME}${_INSTACE} is already loaded ...\t\t"
-        heat resource-list ${_STACKNAME}${_INSTACE} > /dev/null 2>&1
+        echo -e -n "Verifing if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
+        heat resource-list ${_STACKNAME}${_INSTANCESTART} > /dev/null 2>&1
         _STATUS=${?}
         if [[ "${_ACTION}" == "Create" && "${_STATUS}" == "0" ]]
         then
-                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTACE} already exist." false soft
+                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTANCESTART} already exist." false soft
         elif [[ "${_ACTION}" == "Update" && "${_STATUS}" != "0" ]]
         then
-                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTACE} does not exist." false soft
+                exit_for_error "Error, The Stack ${_STACKNAME}${_INSTANCESTART} does not exist." false soft
         else
                 echo -e "${GREEN} [OK]${NC}"
 
@@ -788,15 +821,15 @@ function init_mau {
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../environment/common.yaml \
-                 --parameters "unit_name=${_STACKNAME}${_INSTACE}" \
+                 --parameters "unit_name=${_STACKNAME}${_INSTANCESTART}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
                  --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
-                 ${_STACKNAME}${_INSTACE} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                 ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
         fi
-        _INSTACE=$(($_INSTACE+1))
+        _INSTANCESTART=$(($_INSTANCESTART+1))
 }
 
 #####
@@ -1010,9 +1043,10 @@ _RCFILE=$1
 _ACTION=$2
 _UNIT=$3
 _UNITLOWER=$(echo "${_UNIT}" | awk '{print tolower($0)}')
-_INSTACE=${4-1}
-_CSVFILEPATH=${5-environment/${_UNITLOWER}}
-_STACKNAME=${6-${_UNITLOWER}}
+_INSTANCESTART=${4-1}
+[[ "${5}" != "" ]] && _INSTANCEEND=${5} || _INSTANCEEND=false
+_CSVFILEPATH=${6-environment/${_UNITLOWER}}
+_STACKNAME=${7-${_UNITLOWER}}
 
 #####
 # Verity if any input values are present
@@ -1047,7 +1081,7 @@ then
 	echo "\"Update\" - To update the stack ${_STACKNAME}"
 	echo "\"List\" - To list the resource in the stack ${_STACKNAME}"
 	echo "\"Delete\" - To delete the stack ${_STACKNAME} - WARNING cannot be reversed!"
-	echo "\"Replace\" - To replace a specific stack - This will delete it and then recreate it"
+	echo "\"Replace\" - To replace the stack - This deletes it and then will recreate it from scratch"
         echo -e ${NC}
 	exit 1
 fi
@@ -1065,6 +1099,28 @@ then
 	echo "\"OMU\""
 	echo "\"VM-ASU\""
 	echo "\"MAU\""
+        echo -e ${NC}
+	exit 1
+fi
+
+#####
+# Check instance to start
+# Check instance to end
+#####
+echo ${_INSTANCESTART}|grep -E "[0-9]{1,99}" > /dev/null 2>&1
+if [[ "${?}" != "0" ]]
+then
+	input_error_log
+	echo "Error, Not valid Instance to Start with."
+        echo -e ${NC}
+	exit 1
+fi
+
+echo ${_INSTANCEEND}|grep -E "[0-9]{1,99}" > /dev/null 2>&1
+if [[ "${?}" != "0" ]]
+then
+	input_error_log
+	echo "Error, Not valid Instance to End with."
         echo -e ${NC}
 	exit 1
 fi
@@ -1298,7 +1354,7 @@ then
 	#####
 	# Release the port cleaning up the security group
 	#####
-	cat ../${_ADMINCSVFILE}|tail -n+${_INSTACE} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+	cat ../${_ADMINCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
 	_OLDIFS=$IFS
 	IFS=","
 	exec 3<../${_ADMINCSVFILE}.tmp
