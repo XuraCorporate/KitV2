@@ -286,15 +286,18 @@ This phase is responsible of:
 
 # Phase 3 - Understanding the Wrapper
 The shell script "deploy/units-deploy.sh" is a Wrapper which calls Neutron, Nova and Heat to orchestrate various actions:
-- Create
-- Update
-- Delete
-- List
-- Replace
+- Create a unit or a group of units
+- Update a unit or a group of units
+- Delete a unit or a group of units
+- List all of the units from the same group
+- Replace a unit or a group of units
 
-For each of those actions will be perform various checks about consistency, correct input data, available data, etc
+Each Action (Create/Update/Delete/Replace) by design will perform the chosen operation for all of the Neutron Ports in the CSV files.
+If an Action has to be execute from a specific Port and until a specific Port, this can also be done (see example below).
+For each of those actions (except for list) will be perform various checks about consistency, correct input data, available data, Neutron, Nova, Glance, Cinder etc
 
-The only action that is specific for one instance is the Replace action.
+What it is important to remeber is that a port from a CSV files must be deleted.
+Those files have the Neutron Ports and on those Neutron ports the VM will be built. If a CSV file will not have anymore a port of a running VM a lot of things could happen but certainly is that the wrapper will not work as designed.
 
 ## Phase 3.1 - (Anti-)Affinity Rules
 In OpenStack until the Mitaka version the Affinity and the Anti-Affinity rules were mandatory actions.
@@ -396,127 +399,335 @@ Limitations:
 - If you want to create one VM per each unit type all of the VMs will be in the same physical host
 - Given the previous limitation, with the current implementation, all of the VM with the same index (aka OMU1 -> 1 is the index) will be always together
 
-## Phase 3.2 - Create a Unit Type Group
+## Phase 3.2 - Create one Unit Type
 ```
-$ bash deploy/units-deploy.sh kitv2rc Create OMU
-Updated port: c5f4aca6-2706-4cad-9dcb-968652edeca2
-Updated port: c5f4aca6-2706-4cad-9dcb-968652edeca2
-Updated port: 624d74c2-3a73-4d76-905b-82692622f39f
+$ bash deploy/units-deploy.sh kitv2rc Create CMS 1 1
+Verifing if Admin CSV file is good ...           [OK]
+Verifing if Admin CSV file has the given starting line 1 ...             [OK]
+Verifing if Admin CSV file has the given ending line 1 ...               [OK]
+Verifing if Secure Zone CSV file is good ...             [OK]
+Verifing if Secure Zone CSV file has the given starting line 1 ...               [OK]
+Verifing if Secure Zone CSV file has the given ending line 1 ...                 [OK]
+Verifing if SIP CSV file is good ...             [OK]
+Verifing if SIP CSV file has the given starting line 1 ...               [OK]
+Verifing if SIP CSV file has the given ending line 1 ...                 [OK]
+Verifing if Media CSV file is good ...           [OK]
+Verifing if Media CSV file has the given starting line 1 ...             [OK]
+Verifing if Media CSV file has the given ending line 1 ...               [OK]
+Verifing heat binary ...                 [OK]
+Verifing nova binary ...                 [OK]
+Verifing neutron binary ...              [OK]
+Verifing glance binary ...               [OK]
+Verifing cinder binary ...               [OK]
+Verifing git binary ...          [OK]
+Verifing dos2unix binary ...             [OK]
+Verifing md5sum binary ...               [OK]
+Eventually converting files in Standard Unix format ...          [OK]
+Loading environment file ...             [OK]
+Verifing OpenStack credential ...                [OK]
+Verifing Preparetion Stack ...           [OK]
+Verifing Admin Security Group ...                [OK]
+Verifing (Anti-)Affinity rules ...               [OK]
+Performing Action Create
+Validation phase
+The Unit CMS will boot from the local hypervisor disk (aka Ephemeral Disk)
+Validating chosen Glance Image Image_for_Stack_1 ...             [OK]
+Validating chosen Flavor m1.small ...            [OK]
+Validating chosen Network provider-vlan723 ...           [OK]
+Validating VLAN none for chosen Network provider-vlan723 ...             [OK]
+Validating chosen Network provider-vlan724 ...           [OK]
+Validating VLAN none for chosen Network provider-vlan724 ...             [OK]
+Validating chosen Network provider-vlan726 ...           [OK]
+Validating VLAN none for chosen Network provider-vlan726 ...             [OK]
+Validating chosen Network provider-vlan725 ...           [OK]
+Validating VLAN none for chosen Network provider-vlan725 ...             [OK]
+Validating number of Ports ...           [OK]
+Verifing if cms1 is already loaded ...           [OK]
+Validating MAC Address fa:16:3e:c3:a5:4a ...             [OK]
+Validating MAC Address fa:16:3e:8a:2d:8b ...             [OK]
+Validating MAC Address fa:16:3e:72:c0:96 ...             [OK]
+Validating MAC Address fa:16:3e:e3:b4:27 ...             [OK]
+Validating Port 4f356a67-4dbc-49fa-a7ff-a295e91d697f exist ...           [OK]
+Validating Port 4f356a67-4dbc-49fa-a7ff-a295e91d697f is not in use ...           [OK]
+Validating Port 4f356a67-4dbc-49fa-a7ff-a295e91d697f MAC Address ...             [OK]
+Validating Port 11d9bfe4-a483-4900-953a-6b3e0518171a exist ...           [OK]
+Validating Port 11d9bfe4-a483-4900-953a-6b3e0518171a is not in use ...           [OK]
+Validating Port 11d9bfe4-a483-4900-953a-6b3e0518171a MAC Address ...             [OK]
+Validating Port e1463f31-5185-4d76-9ae7-b5fa80d0801a exist ...           [OK]
+Validating Port e1463f31-5185-4d76-9ae7-b5fa80d0801a is not in use ...           [OK]
+Validating Port e1463f31-5185-4d76-9ae7-b5fa80d0801a MAC Address ...             [OK]
+Validating Port a011a91f-0fa0-4d42-a6c4-28e5f2078c36 exist ...           [OK]
+Validating Port a011a91f-0fa0-4d42-a6c4-28e5f2078c36 is not in use ...           [OK]
+Validating Port a011a91f-0fa0-4d42-a6c4-28e5f2078c36 MAC Address ...             [OK]
+Validating IP Address 10.107.203.204 ...                 [OK]
+Validating IP Address 10.107.204.204 ...                 [OK]
+Validating IP Address 10.107.205.204 ...                 [OK]
+Validating IP Address 10.107.206.204 ...                 [OK]
+Updated port: 4f356a67-4dbc-49fa-a7ff-a295e91d697f
+Updated port: 4f356a67-4dbc-49fa-a7ff-a295e91d697f
+Updated port: 11d9bfe4-a483-4900-953a-6b3e0518171a
+Updated port: e1463f31-5185-4d76-9ae7-b5fa80d0801a
+Updated port: a011a91f-0fa0-4d42-a6c4-28e5f2078c36
 +--------------------------------------+------------------+--------------------+----------------------+
 | id                                   | stack_name       | stack_status       | creation_time        |
 +--------------------------------------+------------------+--------------------+----------------------+
-| 96961593-cde7-4c4e-b895-b3f405412a03 | PreparetionStack | CREATE_COMPLETE    | 2016-07-19T11:33:44Z |
-| a389e59c-dbe6-485e-892a-187623d28eaa | omu1             | CREATE_IN_PROGRESS | 2016-07-19T16:37:15Z |
+| 6b6eb67a-92d2-423d-95bd-47f1168172af | PreparetionStack | UPDATE_COMPLETE    | 2016-07-29T09:44:27Z |
+| f22e73e6-d19c-4ae2-beb1-1e9b13bd96db | omu1             | CREATE_COMPLETE    | 2016-08-02T13:58:28Z |
+| 992c2143-a165-4585-a637-674e4b09082a | mau1             | CREATE_COMPLETE    | 2016-08-02T14:05:14Z |
+| 3c55aa3a-6b7b-4b8f-92fd-7424855b7563 | cms1             | CREATE_IN_PROGRESS | 2016-08-02T14:36:19Z |
 +--------------------------------------+------------------+--------------------+----------------------+
-Updated port: a5b544f6-2ca7-44f3-814b-4ec466700b02
-Updated port: a5b544f6-2ca7-44f3-814b-4ec466700b02
-Updated port: 11a0cf62-3ec3-4bd9-8cfd-3cdf0110b930
-+--------------------------------------+------------------+--------------------+----------------------+
-| id                                   | stack_name       | stack_status       | creation_time        |
-+--------------------------------------+------------------+--------------------+----------------------+
-| 96961593-cde7-4c4e-b895-b3f405412a03 | PreparetionStack | CREATE_COMPLETE    | 2016-07-19T11:33:44Z |
-| a389e59c-dbe6-485e-892a-187623d28eaa | omu1             | CREATE_IN_PROGRESS | 2016-07-19T16:37:15Z |
-| 7d62a0a4-1334-4fb7-a40c-0e1273a7ad12 | omu2             | CREATE_IN_PROGRESS | 2016-07-19T16:37:25Z |
-+--------------------------------------+------------------+--------------------+----------------------+
-
 ```
 Action performed by the Wrapper:
 - Read the CSV files
 - Update the Security Group of each Port
 - Create OMU Unit Types for each Port available
 
-## Phase 3.3 - List a Unit Type Group
+## Phase 3.3 - Create a group of the same Unit Type
 ```
-$ bash deploy/units-deploy.sh kitv2rc List OMU
-+---------------+--------------------------------------+------------------+-----------------+----------------------+-----------------+
-| resource_name | physical_resource_id                 | resource_type    | resource_status | updated_time         | parent_resource |
-+---------------+--------------------------------------+------------------+-----------------+----------------------+-----------------+
-| omu_unit      | 0df76423-ce88-4413-8b54-9c5a53a572c5 | OS::Nova::Server | CREATE_COMPLETE | 2016-07-19T16:37:15Z |                 |
-+---------------+--------------------------------------+------------------+-----------------+----------------------+-----------------+
-+---------------+--------------------------------------+------------------+-----------------+----------------------+-----------------+
-| resource_name | physical_resource_id                 | resource_type    | resource_status | updated_time         | parent_resource |
-+---------------+--------------------------------------+------------------+-----------------+----------------------+-----------------+
-| omu_unit      | 45a4afe9-c660-4413-ae45-2319e2a54eb3 | OS::Nova::Server | CREATE_COMPLETE | 2016-07-19T16:37:25Z |                 |
-+---------------+--------------------------------------+------------------+-----------------+----------------------+-----------------+
-```
-Action performed by the Wrapper:
-- Display the resource status for each Heat Stack (Each Unit has a dedicated Heat Stack in order to accomplish the requirement to have static Port assignment)
-
-## Phase 3.4 - Update a Unit Type Group
-```
-$ bash deploy/units-deploy.sh kitv2rc Update OMU
-Updated port: c5f4aca6-2706-4cad-9dcb-968652edeca2
-Updated port: c5f4aca6-2706-4cad-9dcb-968652edeca2
-Updated port: 624d74c2-3a73-4d76-905b-82692622f39f
-+--------------------------------------+------------------+--------------------+----------------------+
-| id                                   | stack_name       | stack_status       | creation_time        |
-+--------------------------------------+------------------+--------------------+----------------------+
-| 96961593-cde7-4c4e-b895-b3f405412a03 | PreparetionStack | CREATE_COMPLETE    | 2016-07-19T11:33:44Z |
-| a389e59c-dbe6-485e-892a-187623d28eaa | omu1             | UPDATE_IN_PROGRESS | 2016-07-19T16:37:15Z |
-| 7d62a0a4-1334-4fb7-a40c-0e1273a7ad12 | omu2             | CREATE_COMPLETE    | 2016-07-19T16:37:25Z |
-+--------------------------------------+------------------+--------------------+----------------------+
+$ bash deploy/units-deploy.sh kitv2rc Create LVU
+Verifing if Admin CSV file is good ...           [OK]
+Verifing if Admin CSV file has the given starting line 1 ...             [OK]
+Verifing if Secure Zone CSV file is good ...             [OK]
+Verifing if Secure Zone CSV file has the given starting line 1 ...               [OK]
+Verifing heat binary ...                 [OK]
+Verifing nova binary ...                 [OK]
+Verifing neutron binary ...              [OK]
+Verifing glance binary ...               [OK]
+Verifing cinder binary ...               [OK]
+Verifing git binary ...          [OK]
+Verifing dos2unix binary ...             [OK]
+Verifing md5sum binary ...               [OK]
+Eventually converting files in Standard Unix format ...          [OK]
+Loading environment file ...             [OK]
+Verifing OpenStack credential ...                [OK]
+Verifing Preparetion Stack ...           [OK]
+Verifing Admin Security Group ...                [OK]
+Verifing (Anti-)Affinity rules ...               [OK]
+Performing Action Create
+Validation phase
+The Unit LVU will boot from the local hypervisor disk (aka Ephemeral Disk)
+Validating chosen Glance Image Image_for_Stack_1 ...             [OK]
+Validating chosen Flavor m1.small ...            [OK]
+Validating chosen Network provider-vlan723 ...           [OK]
+Validating VLAN none for chosen Network provider-vlan723 ...             [OK]
+Validating chosen Network provider-vlan724 ...           [OK]
+Validating VLAN none for chosen Network provider-vlan724 ...             [OK]
+Validating number of Ports ...           [OK]
+Verifing if lvu1 is already loaded ...           [OK]
+Validating MAC Address fa:16:3e:80:30:09 ...             [OK]
+Validating MAC Address fa:16:3e:a4:c1:41 ...             [OK]
+Validating Port a5b544f6-2ca7-44f3-814b-4ec466700b02 exist ...           [OK]
+Validating Port a5b544f6-2ca7-44f3-814b-4ec466700b02 is not in use ...           [OK]
+Validating Port a5b544f6-2ca7-44f3-814b-4ec466700b02 MAC Address ...             [OK]
+Validating Port 11a0cf62-3ec3-4bd9-8cfd-3cdf0110b930 exist ...           [OK]
+Validating Port 11a0cf62-3ec3-4bd9-8cfd-3cdf0110b930 is not in use ...           [OK]
+Validating Port 11a0cf62-3ec3-4bd9-8cfd-3cdf0110b930 MAC Address ...             [OK]
+Validating IP Address 10.107.203.201 ...                 [OK]
+Validating IP Address 10.107.204.201 ...                 [OK]
 Updated port: a5b544f6-2ca7-44f3-814b-4ec466700b02
 Updated port: a5b544f6-2ca7-44f3-814b-4ec466700b02
 Updated port: 11a0cf62-3ec3-4bd9-8cfd-3cdf0110b930
 +--------------------------------------+------------------+--------------------+----------------------+
 | id                                   | stack_name       | stack_status       | creation_time        |
 +--------------------------------------+------------------+--------------------+----------------------+
-| 96961593-cde7-4c4e-b895-b3f405412a03 | PreparetionStack | CREATE_COMPLETE    | 2016-07-19T11:33:44Z |
-| a389e59c-dbe6-485e-892a-187623d28eaa | omu1             | UPDATE_COMPLETE    | 2016-07-19T16:37:15Z |
-| 7d62a0a4-1334-4fb7-a40c-0e1273a7ad12 | omu2             | UPDATE_IN_PROGRESS | 2016-07-19T16:37:25Z |
+| 6b6eb67a-92d2-423d-95bd-47f1168172af | PreparetionStack | UPDATE_COMPLETE    | 2016-07-29T09:44:27Z |
+| 992c2143-a165-4585-a637-674e4b09082a | mau1             | CREATE_COMPLETE    | 2016-08-02T14:05:14Z |
+| 3c55aa3a-6b7b-4b8f-92fd-7424855b7563 | cms1             | CREATE_COMPLETE    | 2016-08-02T14:36:19Z |
+| 6bbebb7d-96d5-4475-ab2e-3b9492033083 | lvu1             | CREATE_IN_PROGRESS | 2016-08-02T14:42:04Z |
 +--------------------------------------+------------------+--------------------+----------------------+
+Verifing if lvu2 is already loaded ...           [OK]
+Validating MAC Address fa:16:3e:f2:d8:80 ...             [OK]
+Validating MAC Address fa:16:3e:95:7d:00 ...             [OK]
+Validating Port 7f003fab-42c5-4cb6-b3b5-4c2d97618abf exist ...           [OK]
+Validating Port 7f003fab-42c5-4cb6-b3b5-4c2d97618abf is not in use ...           [OK]
+Validating Port 7f003fab-42c5-4cb6-b3b5-4c2d97618abf MAC Address ...             [OK]
+Validating Port 7052a57d-e7e0-40aa-a0d2-77b4c1cd1087 exist ...           [OK]
+Validating Port 7052a57d-e7e0-40aa-a0d2-77b4c1cd1087 is not in use ...           [OK]
+Validating Port 7052a57d-e7e0-40aa-a0d2-77b4c1cd1087 MAC Address ...             [OK]
+Validating IP Address 10.107.203.200 ...                 [OK]
+Validating IP Address 10.107.204.200 ...                 [OK]
+Updated port: 7f003fab-42c5-4cb6-b3b5-4c2d97618abf
+Updated port: 7f003fab-42c5-4cb6-b3b5-4c2d97618abf
+Updated port: 7052a57d-e7e0-40aa-a0d2-77b4c1cd1087
++--------------------------------------+------------------+--------------------+----------------------+
+| id                                   | stack_name       | stack_status       | creation_time        |
++--------------------------------------+------------------+--------------------+----------------------+
+| 6b6eb67a-92d2-423d-95bd-47f1168172af | PreparetionStack | UPDATE_COMPLETE    | 2016-07-29T09:44:27Z |
+| 992c2143-a165-4585-a637-674e4b09082a | mau1             | CREATE_COMPLETE    | 2016-08-02T14:05:14Z |
+| 3c55aa3a-6b7b-4b8f-92fd-7424855b7563 | cms1             | CREATE_COMPLETE    | 2016-08-02T14:36:19Z |
+| 6bbebb7d-96d5-4475-ab2e-3b9492033083 | lvu1             | CREATE_IN_PROGRESS | 2016-08-02T14:42:04Z |
+| d8a6ebf6-615b-4aac-8133-fdd1fc8d26d7 | lvu2             | CREATE_IN_PROGRESS | 2016-08-02T14:42:35Z |
++--------------------------------------+------------------+--------------------+----------------------+
+DONE
+```
+Action performed by the Wrapper:
+- Read the CSV files
+- Update the Security Group of each Port
+- Create OMU Unit Types for each Port available
+
+## Phase 3.4 - List a Unit Type Group
+```
+$ bash deploy/units-deploy.sh kitv2rc List LVU
+Verifing if Admin CSV file is good ...           [OK]
+Verifing if Admin CSV file has the given starting line 1 ...             [OK]
+Verifing if Secure Zone CSV file is good ...             [OK]
+Verifing if Secure Zone CSV file has the given starting line 1 ...               [OK]
+Verifing heat binary ...                 [OK]
+Verifing nova binary ...                 [OK]
+Verifing neutron binary ...              [OK]
+Verifing glance binary ...               [OK]
+Verifing cinder binary ...               [OK]
+Verifing git binary ...          [OK]
+Verifing dos2unix binary ...             [OK]
+Verifing md5sum binary ...               [OK]
+Eventually converting files in Standard Unix format ...          [OK]
+Loading environment file ...             [OK]
+Verifing OpenStack credential ...                [OK]
+Verifing Preparetion Stack ...           [OK]
+Verifing Admin Security Group ...                [OK]
+Verifing (Anti-)Affinity rules ...               [OK]
+Performing Action List
++---------------+--------------------------------------+------------------+-----------------+----------------------+-----------------+
+| resource_name | physical_resource_id                 | resource_type    | resource_status | updated_time         | parent_resource |
++---------------+--------------------------------------+------------------+-----------------+----------------------+-----------------+
+| lvu_unit      | 73737866-522a-45eb-ae50-18ceed604496 | OS::Nova::Server | CREATE_COMPLETE | 2016-08-02T14:42:04Z |                 |
++---------------+--------------------------------------+------------------+-----------------+----------------------+-----------------+
++---------------+--------------------------------------+------------------+-----------------+----------------------+-----------------+
+| resource_name | physical_resource_id                 | resource_type    | resource_status | updated_time         | parent_resource |
++---------------+--------------------------------------+------------------+-----------------+----------------------+-----------------+
+| lvu_unit      | f72583b3-f193-4056-973a-49899d0d7091 | OS::Nova::Server | CREATE_COMPLETE | 2016-08-02T14:42:35Z |                 |
++---------------+--------------------------------------+------------------+-----------------+----------------------+-----------------+
+```
+Action performed by the Wrapper:
+- Display the resource status for each Heat Stack (Each Unit has a dedicated Heat Stack in order to accomplish the requirement to have static Port assignment)
+
+## Phase 3.5 - Update one Unit
+```
+$ bash deploy/units-deploy.sh kitv2rc Update LVU 2
+Verifing if Admin CSV file is good ...           [OK]
+Verifing if Admin CSV file has the given starting line 2 ...             [OK]
+Verifing if Secure Zone CSV file is good ...             [OK]
+Verifing if Secure Zone CSV file has the given starting line 2 ...               [OK]
+Verifing heat binary ...                 [OK]
+Verifing nova binary ...                 [OK]
+Verifing neutron binary ...              [OK]
+Verifing glance binary ...               [OK]
+Verifing cinder binary ...               [OK]
+Verifing git binary ...          [OK]
+Verifing dos2unix binary ...             [OK]
+Verifing md5sum binary ...               [OK]
+Eventually converting files in Standard Unix format ...          [OK]
+Loading environment file ...             [OK]
+Verifing OpenStack credential ...                [OK]
+Verifing Preparetion Stack ...           [OK]
+Verifing Admin Security Group ...                [OK]
+Verifing (Anti-)Affinity rules ...               [OK]
+Performing Action Update
+Validation phase
+The Unit LVU will boot from the local hypervisor disk (aka Ephemeral Disk)
+Validating chosen Glance Image Image_for_Stack_1 ...             [OK]
+Validating chosen Flavor m1.small ...            [OK]
+Validating chosen Network provider-vlan723 ...           [OK]
+Validating VLAN none for chosen Network provider-vlan723 ...             [OK]
+Validating chosen Network provider-vlan724 ...           [OK]
+Validating VLAN none for chosen Network provider-vlan724 ...             [OK]
+Validating number of Ports ...           [OK]
+Verifing if lvu2 is already loaded ...           [OK]
+Validating MAC Address fa:16:3e:f2:d8:80 ...             [OK]
+Validating MAC Address fa:16:3e:95:7d:00 ...             [OK]
+Validating Port 7f003fab-42c5-4cb6-b3b5-4c2d97618abf exist ...           [OK]
+Validating Port 7f003fab-42c5-4cb6-b3b5-4c2d97618abf is not in use ...           [OK]
+Validating Port 7f003fab-42c5-4cb6-b3b5-4c2d97618abf MAC Address ...             [OK]
+Validating Port 7052a57d-e7e0-40aa-a0d2-77b4c1cd1087 exist ...           [OK]
+Validating Port 7052a57d-e7e0-40aa-a0d2-77b4c1cd1087 is not in use ...           [OK]
+Validating Port 7052a57d-e7e0-40aa-a0d2-77b4c1cd1087 MAC Address ...             [OK]
+Validating IP Address 10.107.203.200 ...                 [OK]
+Validating IP Address 10.107.204.200 ...                 [OK]
+Updated port: 7f003fab-42c5-4cb6-b3b5-4c2d97618abf
+Updated port: 7f003fab-42c5-4cb6-b3b5-4c2d97618abf
+Updated port: 7052a57d-e7e0-40aa-a0d2-77b4c1cd1087
++--------------------------------------+------------------+--------------------+----------------------+
+| id                                   | stack_name       | stack_status       | creation_time        |
++--------------------------------------+------------------+--------------------+----------------------+
+| 6b6eb67a-92d2-423d-95bd-47f1168172af | PreparetionStack | UPDATE_COMPLETE    | 2016-07-29T09:44:27Z |
+| 992c2143-a165-4585-a637-674e4b09082a | mau1             | CREATE_COMPLETE    | 2016-08-02T14:05:14Z |
+| 3c55aa3a-6b7b-4b8f-92fd-7424855b7563 | cms1             | CREATE_COMPLETE    | 2016-08-02T14:36:19Z |
+| 6bbebb7d-96d5-4475-ab2e-3b9492033083 | lvu1             | CREATE_COMPLETE    | 2016-08-02T14:42:04Z |
+| d8a6ebf6-615b-4aac-8133-fdd1fc8d26d7 | lvu2             | UPDATE_IN_PROGRESS | 2016-08-02T14:42:35Z |
++--------------------------------------+------------------+--------------------+----------------------+
+DONE
 ```
 Action performed by the Wrapper:
 - Read the CSV files
 - Update the Security Group of each Port
 - Update OMU Unit Types for each Port available
 
-## Phase 3.5 - Replace a specific Unit Type in a Group
+## Phase 3.6 - Replace one Unit
 ```
-$ bash deploy/units-deploy.sh kitv2rc Replace OMU 1
+$ bash deploy/units-deploy.sh kitv2rc Replace LVU 1 1
+Verifing if Admin CSV file is good ...           [OK]
+Verifing if Admin CSV file has the given starting line 1 ...             [OK]
+Verifing if Admin CSV file has the given ending line 1 ...               [OK]
+Verifing if Secure Zone CSV file is good ...             [OK]
+Verifing if Secure Zone CSV file has the given starting line 1 ...               [OK]
+Verifing if Secure Zone CSV file has the given ending line 1 ...                 [OK]
+Verifing heat binary ...                 [OK]
+Verifing nova binary ...                 [OK]
+Verifing neutron binary ...              [OK]
+Verifing glance binary ...               [OK]
+Verifing cinder binary ...               [OK]
+Verifing git binary ...          [OK]
+Verifing dos2unix binary ...             [OK]
+Verifing md5sum binary ...               [OK]
+Eventually converting files in Standard Unix format ...          [OK]
+Loading environment file ...             [OK]
+Verifing OpenStack credential ...                [OK]
+Verifing Preparetion Stack ...           [OK]
+Verifing Admin Security Group ...                [OK]
+Verifing (Anti-)Affinity rules ...               [OK]
+Performing Action Replace
+Validation phase
+The Unit LVU will boot from the local hypervisor disk (aka Ephemeral Disk)
+Validating chosen Glance Image Image_for_Stack_1 ...             [OK]
+Validating chosen Flavor m1.small ...            [OK]
+Validating chosen Network provider-vlan723 ...           [OK]
+Validating VLAN none for chosen Network provider-vlan723 ...             [OK]
+Validating chosen Network provider-vlan724 ...           [OK]
+Validating VLAN none for chosen Network provider-vlan724 ...             [OK]
+Validating number of Ports ...           [OK]
 +--------------------------------------+------------------+--------------------+----------------------+
 | id                                   | stack_name       | stack_status       | creation_time        |
 +--------------------------------------+------------------+--------------------+----------------------+
-| 96961593-cde7-4c4e-b895-b3f405412a03 | PreparetionStack | CREATE_COMPLETE    | 2016-07-19T11:33:44Z |
-| a389e59c-dbe6-485e-892a-187623d28eaa | omu1             | DELETE_IN_PROGRESS | 2016-07-19T16:37:15Z |
-| 7d62a0a4-1334-4fb7-a40c-0e1273a7ad12 | omu2             | UPDATE_COMPLETE    | 2016-07-19T16:37:25Z |
+| 6b6eb67a-92d2-423d-95bd-47f1168172af | PreparetionStack | UPDATE_COMPLETE    | 2016-07-29T09:44:27Z |
+| 992c2143-a165-4585-a637-674e4b09082a | mau1             | CREATE_COMPLETE    | 2016-08-02T14:05:14Z |
+| 3c55aa3a-6b7b-4b8f-92fd-7424855b7563 | cms1             | CREATE_COMPLETE    | 2016-08-02T14:36:19Z |
+| 6bbebb7d-96d5-4475-ab2e-3b9492033083 | lvu1             | DELETE_IN_PROGRESS | 2016-08-02T14:42:04Z |
+| d8a6ebf6-615b-4aac-8133-fdd1fc8d26d7 | lvu2             | UPDATE_COMPLETE    | 2016-08-02T14:42:35Z |
 +--------------------------------------+------------------+--------------------+----------------------+
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-| resource_name | physical_resource_id                 | resource_type    | resource_status    | updated_time         |
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-| omu_unit      | 0df76423-ce88-4413-8b54-9c5a53a572c5 | OS::Nova::Server | DELETE_IN_PROGRESS | 2016-07-19T16:37:15Z |
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-| resource_name | physical_resource_id                 | resource_type    | resource_status    | updated_time         |
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-| omu_unit      | 0df76423-ce88-4413-8b54-9c5a53a572c5 | OS::Nova::Server | DELETE_IN_PROGRESS | 2016-07-19T16:37:15Z |
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-| resource_name | physical_resource_id                 | resource_type    | resource_status    | updated_time         |
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-| omu_unit      | 0df76423-ce88-4413-8b54-9c5a53a572c5 | OS::Nova::Server | DELETE_IN_PROGRESS | 2016-07-19T16:37:15Z |
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-| resource_name | physical_resource_id                 | resource_type    | resource_status    | updated_time         |
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-| omu_unit      | 0df76423-ce88-4413-8b54-9c5a53a572c5 | OS::Nova::Server | DELETE_IN_PROGRESS | 2016-07-19T16:37:15Z |
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-| resource_name | physical_resource_id                 | resource_type    | resource_status    | updated_time         |
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-| omu_unit      | 0df76423-ce88-4413-8b54-9c5a53a572c5 | OS::Nova::Server | DELETE_IN_PROGRESS | 2016-07-19T16:37:15Z |
-+---------------+--------------------------------------+------------------+--------------------+----------------------+
-Stack not found: omu1
-Updated port: c5f4aca6-2706-4cad-9dcb-968652edeca2
-Updated port: c5f4aca6-2706-4cad-9dcb-968652edeca2
-Updated port: 624d74c2-3a73-4d76-905b-82692622f39f
+Verifing if lvu1 is already loaded ...           [OK]
+Validating MAC Address fa:16:3e:80:30:09 ...             [OK]
+Validating MAC Address fa:16:3e:a4:c1:41 ...             [OK]
+Validating Port a5b544f6-2ca7-44f3-814b-4ec466700b02 exist ...           [OK]
+Validating Port a5b544f6-2ca7-44f3-814b-4ec466700b02 is not in use ...           [OK]
+Validating Port a5b544f6-2ca7-44f3-814b-4ec466700b02 MAC Address ...             [OK]
+Validating Port 11a0cf62-3ec3-4bd9-8cfd-3cdf0110b930 exist ...           [OK]
+Validating Port 11a0cf62-3ec3-4bd9-8cfd-3cdf0110b930 is not in use ...           [OK]
+Validating Port 11a0cf62-3ec3-4bd9-8cfd-3cdf0110b930 MAC Address ...             [OK]
+Validating IP Address 10.107.203.201 ...                 [OK]
+Validating IP Address 10.107.204.201 ...                 [OK]
+Updated port: a5b544f6-2ca7-44f3-814b-4ec466700b02
+Updated port: a5b544f6-2ca7-44f3-814b-4ec466700b02
+Updated port: 11a0cf62-3ec3-4bd9-8cfd-3cdf0110b930
 +--------------------------------------+------------------+--------------------+----------------------+
 | id                                   | stack_name       | stack_status       | creation_time        |
 +--------------------------------------+------------------+--------------------+----------------------+
-| 96961593-cde7-4c4e-b895-b3f405412a03 | PreparetionStack | CREATE_COMPLETE    | 2016-07-19T11:33:44Z |
-| 7d62a0a4-1334-4fb7-a40c-0e1273a7ad12 | omu2             | UPDATE_COMPLETE    | 2016-07-19T16:37:25Z |
-| b580a641-903e-4600-aa6a-5446d1e375ed | omu1             | CREATE_IN_PROGRESS | 2016-07-19T16:42:15Z |
+| 6b6eb67a-92d2-423d-95bd-47f1168172af | PreparetionStack | UPDATE_COMPLETE    | 2016-07-29T09:44:27Z |
+| 992c2143-a165-4585-a637-674e4b09082a | mau1             | CREATE_COMPLETE    | 2016-08-02T14:05:14Z |
+| 3c55aa3a-6b7b-4b8f-92fd-7424855b7563 | cms1             | CREATE_COMPLETE    | 2016-08-02T14:36:19Z |
+| d8a6ebf6-615b-4aac-8133-fdd1fc8d26d7 | lvu2             | UPDATE_COMPLETE    | 2016-08-02T14:42:35Z |
+| 9d6ebef8-b7f9-4f60-b48b-e76de1e2d9bd | lvu1             | CREATE_IN_PROGRESS | 2016-08-02T14:48:27Z |
 +--------------------------------------+------------------+--------------------+----------------------+
+DONE
 ```
 Action performed by the Wrapper:
 - Read the CSV files
@@ -525,25 +736,51 @@ Action performed by the Wrapper:
 - Update the Security Group of each Port
 - Create OMU Unit Types for each Port available
 
-## Phase 3.6 - Delete a Unit Type Group
+## Phase 3.7 - Delete a Unit Type Group
 ```
-$ bash deploy/units-deploy.sh kitv2rc Delete OMU
+$ bash deploy/units-deploy.sh kitv2rc Delete LVU 2 2
+Verifing if Admin CSV file is good ...           [OK]
+Verifing if Admin CSV file has the given starting line 2 ...             [OK]
+Verifing if Admin CSV file has the given ending line 2 ...               [OK]
+Verifing if Secure Zone CSV file is good ...             [OK]
+Verifing if Secure Zone CSV file has the given starting line 2 ...               [OK]
+Verifing if Secure Zone CSV file has the given ending line 2 ...                 [OK]
+Verifing heat binary ...                 [OK]
+Verifing nova binary ...                 [OK]
+Verifing neutron binary ...              [OK]
+Verifing glance binary ...               [OK]
+Verifing cinder binary ...               [OK]
+Verifing git binary ...          [OK]
+Verifing dos2unix binary ...             [OK]
+Verifing md5sum binary ...               [OK]
+Eventually converting files in Standard Unix format ...          [OK]
+Loading environment file ...             [OK]
+Verifing OpenStack credential ...                [OK]
+Verifing Preparetion Stack ...           [OK]
+Verifing Admin Security Group ...                [OK]
+Verifing (Anti-)Affinity rules ...               [OK]
+Performing Action Delete
+Validation phase
+The Unit LVU will boot from the local hypervisor disk (aka Ephemeral Disk)
+Validating chosen Glance Image Image_for_Stack_1 ...             [OK]
+Validating chosen Flavor m1.small ...            [OK]
+Validating chosen Network provider-vlan723 ...           [OK]
+Validating VLAN none for chosen Network provider-vlan723 ...             [OK]
+Validating chosen Network provider-vlan724 ...           [OK]
+Validating VLAN none for chosen Network provider-vlan724 ...             [OK]
+Validating number of Ports ...           [OK]
+Cleaning up Neutron port
+Updated port: 7f003fab-42c5-4cb6-b3b5-4c2d97618abf
 +--------------------------------------+------------------+--------------------+----------------------+
 | id                                   | stack_name       | stack_status       | creation_time        |
 +--------------------------------------+------------------+--------------------+----------------------+
-| 96961593-cde7-4c4e-b895-b3f405412a03 | PreparetionStack | CREATE_COMPLETE    | 2016-07-19T11:33:44Z |
-| 7d62a0a4-1334-4fb7-a40c-0e1273a7ad12 | omu2             | DELETE_IN_PROGRESS | 2016-07-19T16:37:25Z |
-| b580a641-903e-4600-aa6a-5446d1e375ed | omu1             | CREATE_COMPLETE    | 2016-07-19T16:42:15Z |
+| 6b6eb67a-92d2-423d-95bd-47f1168172af | PreparetionStack | UPDATE_COMPLETE    | 2016-07-29T09:44:27Z |
+| 992c2143-a165-4585-a637-674e4b09082a | mau1             | CREATE_COMPLETE    | 2016-08-02T14:05:14Z |
+| 3c55aa3a-6b7b-4b8f-92fd-7424855b7563 | cms1             | CREATE_COMPLETE    | 2016-08-02T14:36:19Z |
+| 9d6ebef8-b7f9-4f60-b48b-e76de1e2d9bd | lvu1             | CREATE_COMPLETE    | 2016-08-02T14:48:27Z |
+| 9abfcaca-42bd-48f8-9ee1-dd2e8b51a954 | lvu2             | DELETE_IN_PROGRESS | 2016-08-02T14:50:16Z |
 +--------------------------------------+------------------+--------------------+----------------------+
-+--------------------------------------+------------------+--------------------+----------------------+
-| id                                   | stack_name       | stack_status       | creation_time        |
-+--------------------------------------+------------------+--------------------+----------------------+
-| 96961593-cde7-4c4e-b895-b3f405412a03 | PreparetionStack | CREATE_COMPLETE    | 2016-07-19T11:33:44Z |
-| 7d62a0a4-1334-4fb7-a40c-0e1273a7ad12 | omu2             | DELETE_IN_PROGRESS | 2016-07-19T16:37:25Z |
-| b580a641-903e-4600-aa6a-5446d1e375ed | omu1             | DELETE_IN_PROGRESS | 2016-07-19T16:42:15Z |
-+--------------------------------------+------------------+--------------------+----------------------+
-Updated port: c5f4aca6-2706-4cad-9dcb-968652edeca2
-Updated port: a5b544f6-2ca7-44f3-814b-4ec466700b02
+DONE
 ```
 Action performed by the Wrapper:
 - Read the CSV files
