@@ -144,8 +144,9 @@ function create_update_cms {
 			        #####
 			        # Release the port cleaning up the security group
 			        #####
-			        echo "Cleaning up Neutron port"
-			        neutron port-update --no-security-groups ${_ADMIN_PORTID}
+			        echo -e -n "Cleaning up Neutron Port ...\t\t"
+			        neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+        			echo -e "${GREEN} [OK]${NC}"
 			        #####
 			        # Delete Stack
 			        #####
@@ -204,11 +205,13 @@ function init_cms {
                 #####
                 # Update the port securtiy group
                 #####
-                neutron port-update --no-security-groups ${_ADMIN_PORTID}
-                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID}
-                neutron port-update --no-security-groups ${_SZ_PORTID}
-                neutron port-update --no-security-groups ${_SIP_PORTID}
-                neutron port-update --no-security-groups ${_MEDIA_PORTID}
+		echo -e -n "Updating Neutron Ports for ${_UNIT} ...\t\t"
+                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." true hard
+                neutron port-update --no-security-groups ${_SZ_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port Update." false soft
+                neutron port-update --no-security-groups ${_SIP_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port Update." false soft
+                neutron port-update --no-security-groups ${_MEDIA_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port Update." false soft
+                echo -e "${GREEN} [OK]${NC}"
 
                 #####
                 # Load the Stack and pass the following information
@@ -328,8 +331,9 @@ function create_update_lvu {
                                 #####
                                 # Release the port cleaning up the security group
                                 #####
-                                echo "Cleaning up Neutron port"
-                                neutron port-update --no-security-groups ${_ADMIN_PORTID}
+                                echo -e -n "Cleaning up Neutron Port ...\t\t"
+				neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+				echo -e "${GREEN} [OK]${NC}"
                                 #####
                                 # Delete Stack
                                 #####
@@ -380,9 +384,11 @@ function init_lvu {
                 #####
                 # Update the port securtiy group
                 #####
-                neutron port-update --no-security-groups ${_ADMIN_PORTID}
-                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID}
-                neutron port-update --no-security-groups ${_SZ_PORTID}
+                echo -e -n "Updating Neutron Ports for ${_UNIT} ...\t\t"
+                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." true hard
+                neutron port-update --no-security-groups ${_SZ_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port Update." false soft
+                echo -e "${GREEN} [OK]${NC}"
 
                 #####
                 # Load the Stack and pass the following information
@@ -494,8 +500,9 @@ function create_update_omu {
                                 #####
                                 # Release the port cleaning up the security group
                                 #####
-                                echo "Cleaning up Neutron port"
-                                neutron port-update --no-security-groups ${_ADMIN_PORTID}
+                                echo -e -n "Cleaning up Neutron Port ...\t\t"
+                                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+                                echo -e "${GREEN} [OK]${NC}"
                                 #####
                                 # Delete Stack
                                 #####
@@ -546,9 +553,11 @@ function init_omu {
 		#####
 		# Update the port securtiy group
 		#####
-		neutron port-update --no-security-groups ${_ADMIN_PORTID}
-		neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID}
-		neutron port-update --no-security-groups ${_SZ_PORTID}
+                echo -e -n "Updating Neutron Ports for ${_UNIT} ...\t\t"
+                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." true hard
+                neutron port-update --no-security-groups ${_SZ_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port Update." false soft
+                echo -e "${GREEN} [OK]${NC}"
 
 		#####
 		# Load the Stack and pass the following information
@@ -660,8 +669,9 @@ function create_update_vmasu {
                                 #####
                                 # Release the port cleaning up the security group
                                 #####
-                                echo "Cleaning up Neutron port"
-                                neutron port-update --no-security-groups ${_ADMIN_PORTID}
+                                echo -e -n "Cleaning up Neutron Port ...\t\t"
+                                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+                                echo -e "${GREEN} [OK]${NC}"
                                 #####
                                 # Delete Stack
                                 #####
@@ -712,9 +722,11 @@ function init_vmasu {
                 #####
                 # Update the port securtiy group
                 #####
-                neutron port-update --no-security-groups ${_ADMIN_PORTID}
-                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID}
-                neutron port-update --no-security-groups ${_SZ_PORTID}
+                echo -e -n "Updating Neutron Ports for ${_UNIT} ...\t\t"
+                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." true hard
+                neutron port-update --no-security-groups ${_SZ_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port Update." false soft
+                echo -e "${GREEN} [OK]${NC}"
 
                 #####
                 # Load the Stack and pass the following information
@@ -811,8 +823,9 @@ function create_update_mau {
                                 #####
                                 # Release the port cleaning up the security group
                                 #####
-                                echo "Cleaning up Neutron port"
-                                neutron port-update --no-security-groups ${_ADMIN_PORTID}
+                                echo -e -n "Cleaning up Neutron Port ...\t\t"
+                                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+                                echo -e "${GREEN} [OK]${NC}"
                                 #####
                                 # Delete Stack
                                 #####
@@ -859,8 +872,10 @@ function init_mau {
                 #####
                 # Update the port securtiy group
                 #####
-                neutron port-update --no-security-groups ${_ADMIN_PORTID}
-                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID}
+                echo -e -n "Updating Neutron Ports for ${_UNIT} ...\t\t"
+                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." true hard
+                echo -e "${GREEN} [OK]${NC}"
 
                 #####
                 # Load the Stack and pass the following information
