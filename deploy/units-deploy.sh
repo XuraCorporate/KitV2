@@ -111,7 +111,7 @@ function create_update_cms {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
 
                         #####
                         # Wait until has been deleted
@@ -150,7 +150,7 @@ function create_update_cms {
 			        #####
 			        # Delete Stack
 			        #####
-				heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
+				heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
         			_INSTANCESTART=$(($_INSTANCESTART+1))
 			fi
                 done
@@ -301,7 +301,7 @@ function create_update_lvu {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
 
                         #####
                         # Wait until has been deleted
@@ -338,7 +338,7 @@ function create_update_lvu {
                                 #####
                                 # Delete Stack
                                 #####
-                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
+                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
                                 _INSTANCESTART=$(($_INSTANCESTART+1))
                         fi
                 done
@@ -471,7 +471,7 @@ function create_update_omu {
 			#####
 			# Delete the old stack
 			#####
-	                heat stack-delete ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+	                heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
 
 			#####
 			# Wait until has been deleted
@@ -508,7 +508,7 @@ function create_update_omu {
                                 #####
                                 # Delete Stack
                                 #####
-                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
+                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
                                 _INSTANCESTART=$(($_INSTANCESTART+1))
                         fi
 	        done
@@ -641,7 +641,7 @@ function create_update_vmasu {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
 
                         #####
                         # Wait until has been deleted
@@ -678,7 +678,7 @@ function create_update_vmasu {
                                 #####
                                 # Delete Stack
                                 #####
-                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
+                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
                                 _INSTANCESTART=$(($_INSTANCESTART+1))
                         fi
                 done
@@ -797,7 +797,7 @@ function create_update_mau {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
 
                         #####
                         # Wait until has been deleted
@@ -833,7 +833,7 @@ function create_update_mau {
                                 #####
                                 # Delete Stack
                                 #####
-                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
+                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
                                 _INSTANCESTART=$(($_INSTANCESTART+1))
                         fi
                 done
@@ -1413,6 +1413,18 @@ do
 	which ${_BIN} > /dev/null 2>&1 || exit_for_error "Error, Cannot find python${_BIN}-client." false
 	echo -e "${GREEN} [OK]${NC}"
 done
+
+echo -e -n "Verifing Heat Assume Yes ...\t\t"
+_ASSUMEYES=""
+heat help stack-delete|grep "\-\-yes" >/dev/null 2>&1
+if [[ "${?}" == "0" ]]
+then
+        _ASSUMEYES="--yes"
+        echo -e "${GREEN} [OK]${NC}"
+else
+        echo -e "${YELLOW} [NOT AVAILABLE]${NC}"
+fi
+
 echo -e -n "Verifing git binary ...\t\t"
 which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find git and any changes will be commited." false soft
 echo -e "${GREEN} [OK]${NC}"

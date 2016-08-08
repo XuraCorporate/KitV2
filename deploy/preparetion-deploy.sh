@@ -113,6 +113,18 @@ do
 	which ${_BIN} > /dev/null 2>&1 || exit_for_error "Error, Cannot find python${_BIN}-client." false
 	echo -e "${GREEN} [OK]${NC}"
 done
+
+echo -e -n "Verifing Heat Assume Yes ...\t\t"
+_ASSUMEYES=""
+heat help stack-delete|grep "\-\-yes" >/dev/null 2>&1
+if [[ "${?}" == "0" ]]
+then
+        _ASSUMEYES="--yes"
+        echo -e "${GREEN} [OK]${NC}"
+else
+        echo -e "${YELLOW} [NOT AVAILABLE]${NC}"
+fi
+
 echo -e -n "Verifing git binary ...\t\t"
 which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find git and any changes will be commited." false soft
 echo -e "${GREEN} [OK]${NC}"
@@ -225,7 +237,7 @@ then
 	# $ neutron port-list --column id --format value|xargs -n1 neutron port-update --no-security-group
 	#####
 	heat stack-list|grep -E "(cms|lvu|omu|vm-asu|mau)" >/dev/null 2>&1 && exit_for_error "Error, During Stack ${_ACTION}. Cannot delete it if any Unit Stacks are presents.\nThis is due to:\n - the associated Neutron Security Groups to the Neutron Ports.\n - the associated Nova Server Group to the Nova VMs."
-	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
+	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_ASSUMEYES} ${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
 elif [[ "${_ACTION}" != "Check" ]]
 then
 	#####
