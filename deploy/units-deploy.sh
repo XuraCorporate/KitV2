@@ -237,10 +237,11 @@ function init_cms {
 			_HOT="../templates/${_UNITLOWER}_volume.yaml"
 		fi
 
+        	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../environment/common.yaml \
-                 --parameters "unit_name=${_STACKNAME}${_INSTANCESTART}" \
+                 --parameters "unit_name=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')$(printf "%0*d\n" $((${#_LINES}+1)) ${_INSTANCESTART})" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -412,10 +413,11 @@ function init_lvu {
                         _HOT="../templates/${_UNITLOWER}_volume.yaml"
                 fi
 
+        	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../environment/common.yaml \
-                 --parameters "unit_name=${_STACKNAME}${_INSTANCESTART}" \
+                 --parameters "unit_name=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')$(printf "%0*d\n" $((${#_LINES}+1)) ${_INSTANCESTART})" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -581,10 +583,11 @@ function init_omu {
                         _HOT="../templates/${_UNITLOWER}_volume.yaml"
                 fi
 
+        	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
 		heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
 		 --template-file ${_HOT} \
 		 --environment-file ../environment/common.yaml \
-		 --parameters "unit_name=${_STACKNAME}${_INSTANCESTART}" \
+                 --parameters "unit_name=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')$(printf "%0*d\n" $((${#_LINES}+1)) ${_INSTANCESTART})" \
 		 --parameters "admin_network_port=${_ADMIN_PORTID}" \
 		 --parameters "admin_network_mac=${_ADMIN_MAC}" \
 		 --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -750,10 +753,11 @@ function init_vmasu {
                         _HOT="../templates/${_UNITLOWER}_volume.yaml"
                 fi
 
+        	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../environment/common.yaml \
-                 --parameters "unit_name=${_STACKNAME}${_INSTANCESTART}" \
+                 --parameters "unit_name=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')$(printf "%0*d\n" $((${#_LINES}+1)) ${_INSTANCESTART})" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -898,10 +902,11 @@ function init_mau {
                         _HOT="../templates/${_UNITLOWER}_volume.yaml"
                 fi
 
+        	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../environment/common.yaml \
-                 --parameters "unit_name=${_STACKNAME}${_INSTANCESTART}" \
+                 --parameters "unit_name=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')$(printf "%0*d\n" $((${#_LINES}+1)) ${_INSTANCESTART})" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \

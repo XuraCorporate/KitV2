@@ -17,6 +17,14 @@ parameter_defaults:
   # Place a dot before the domain, it has to be like this ".xura.com"
   domain_name: none
 
+  # Unit Name
+  # After the VM creation it will be <UnitName><Index> e.g. vm-asu01
+  cms_unit_name: cms
+  lvu_unit_name: lvu
+  omu_unit_name: omu
+  vm-asu_unit_name: vm-asu
+  mau_unit_name: mau
+
   # Server Group Policy, has to be "affinity" or "anti-affinity"
   cms_server_group_policy: anti-affinity
   lvu_server_group_policy: anti-affinity
