@@ -1418,7 +1418,7 @@ which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find git and any cha
 echo -e "${GREEN} [OK]${NC}"
 
 echo -e -n "Verifing dos2unix binary ...\t\t"
-which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find dos2unix binary, please install it first." false hard
+which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find dos2unix binary, please install it first\nThe installation will continue BUT the Wrapper cannot ensure the File Unix format consistency." false soft
 echo -e "${GREEN} [OK]${NC}"
 
 echo -e -n "Verifing md5sum binary ...\t\t"
@@ -1432,7 +1432,7 @@ echo -e -n "Eventually converting files in Standard Unix format ...\t\t"
 for _FILE in $(find . -not \( -path ./.git -prune \) -type f)
 do
         _MD5BEFORE=$(md5sum ${_FILE}|awk '{print $1}')
-        dos2unix ${_FILE} >/dev/null 2>&1 || exit_for_error "Error, Cannot convert to Unix format some files" false hard
+        dos2unix ${_FILE} >/dev/null 2>&1
         _MD5AFTER=$(md5sum ${_FILE}|awk '{print $1}')
         #####
         # Verify the MD5 after and before the dos2unix - eventually commit the changes
