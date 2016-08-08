@@ -253,8 +253,9 @@ function init_cms {
 		elif [[ "${_ACTION}" == "Update" ]] # In this case an update might delete the running VM so cannot be put in a new/different server group
 		then
 			_SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
-			if [[ "${_SERVER_GROUP_ID}" == "" ]]
+			if [[ "${_SERVER_GROUP_ID}" == "" ]] && ${_SERVER_GROUP}
 			then
+				exit_for_error "Warning, the Stack ${_STACKNAME}${_INSTANCESTART} has been created without Server Groups so it will keep not using them." false soft
 				_HOT=$(echo ${_HOT}_no_server_group)
 			fi
 		fi
@@ -456,6 +457,7 @@ function init_lvu {
                         _SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
                         if [[ "${_SERVER_GROUP_ID}" == "" ]]
                         then
+				exit_for_error "Warning, the Stack ${_STACKNAME}${_INSTANCESTART} has been created without Server Groups so it will keep not using them." false soft
                                 _HOT=$(echo ${_HOT}_no_server_group)
                         fi
                 fi
@@ -651,6 +653,7 @@ function init_omu {
                         _SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
                         if [[ "${_SERVER_GROUP_ID}" == "" ]]
                         then
+				exit_for_error "Warning, the Stack ${_STACKNAME}${_INSTANCESTART} has been created without Server Groups so it will keep not using them." false soft
                                 _HOT=$(echo ${_HOT}_no_server_group)
                         fi
                 fi
@@ -846,6 +849,7 @@ function init_vmasu {
                         _SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
                         if [[ "${_SERVER_GROUP_ID}" == "" ]]
                         then
+				exit_for_error "Warning, the Stack ${_STACKNAME}${_INSTANCESTART} has been created without Server Groups so it will keep not using them." false soft
                                 _HOT=$(echo ${_HOT}_no_server_group)
                         fi
                 fi
@@ -1020,6 +1024,7 @@ function init_mau {
                         _SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
                         if [[ "${_SERVER_GROUP_ID}" == "" ]]
                         then
+				exit_for_error "Warning, the Stack ${_STACKNAME}${_INSTANCESTART} has been created without Server Groups so it will keep not using them." false soft
                                 _HOT=$(echo ${_HOT}_no_server_group)
                         fi
                 fi
