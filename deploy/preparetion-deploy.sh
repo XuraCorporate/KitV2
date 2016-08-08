@@ -220,6 +220,9 @@ elif [[ "${_ACTION}" != "List" && "${_ACTION}" != "Check" ]]
 then
 	#####
 	# Delete the Stack
+	# To disassociate all of the Neutron ports for any security groups
+	# $ source <openstack rc file>
+	# $ neutron port-list --column id --format value|xargs -n1 neutron port-update --no-security-group
 	#####
 	heat stack-list|grep -E "(cms|lvu|omu|vm-asu|mau)" >/dev/null 2>&1 && exit_for_error "Error, During Stack ${_ACTION}. Cannot delete it if any Unit Stacks are presents.\nThis is due to:\n - the associated Neutron Security Groups to the Neutron Ports.\n - the associated Nova Server Group to the Nova VMs."
 	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
