@@ -222,6 +222,7 @@ function init_cms {
                 # - Hostname
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
+		echo -e -n "Identifying the right HOT to be used ...\t\t"
 		_LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
 		_SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
 		_SERVER_GROUP=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_server_group_enable/ {print $2}'|awk '{print tolower($0)}')
@@ -259,6 +260,7 @@ function init_cms {
 		fi
 
 		_HOT=$(echo ${_HOT}.yaml)
+                echo -e "${GREEN} [OK]${NC}"
 
         	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -421,6 +423,7 @@ function init_lvu {
                 # - Hostname
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
+		echo -e -n "Identifying the right HOT to be used ...\t\t"
                 _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 _SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
                 _SERVER_GROUP=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_server_group_enable/ {print $2}'|awk '{print tolower($0)}')
@@ -458,6 +461,7 @@ function init_lvu {
                 fi
 
                 _HOT=$(echo ${_HOT}.yaml)
+                echo -e "${GREEN} [OK]${NC}"
 
         	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -614,6 +618,7 @@ function init_omu {
 		# - Hostname
 		# - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
 		#####
+		echo -e -n "Identifying the right HOT to be used ...\t\t"
                 _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 _SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
                 _SERVER_GROUP=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_server_group_enable/ {print $2}'|awk '{print tolower($0)}')
@@ -651,6 +656,7 @@ function init_omu {
                 fi
 
                 _HOT=$(echo ${_HOT}.yaml)
+                echo -e "${GREEN} [OK]${NC}"
 
         	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
 		heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -807,6 +813,7 @@ function init_vmasu {
                 # - Hostname
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
+		echo -e -n "Identifying the right HOT to be used ...\t\t"
                 _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 _SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
                 _SERVER_GROUP=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_server_group_enable/ {print $2}'|awk '{print tolower($0)}')
@@ -844,6 +851,7 @@ function init_vmasu {
                 fi
 
                 _HOT=$(echo ${_HOT}.yaml)
+                echo -e "${GREEN} [OK]${NC}"
 
         	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -979,6 +987,7 @@ function init_mau {
                 # - Hostname
                 # - (Anti-)Affinity Group ID from the Group Array which is a modulo math operation (%) betweem the Stack number (1..2..3 etc) and the Available anti-affinity Group. 
                 #####
+		echo -e -n "Identifying the right HOT to be used ...\t\t"
                 _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 _SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
                 _SERVER_GROUP=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_server_group_enable/ {print $2}'|awk '{print tolower($0)}')
@@ -1016,6 +1025,7 @@ function init_mau {
                 fi
 
                 _HOT=$(echo ${_HOT}.yaml)
+                echo -e "${GREEN} [OK]${NC}"
 
         	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
