@@ -33,7 +33,7 @@ function exit_for_error {
 	# If soft no exit
 	#####
 	_EXIT=${3-hard}
-        if ${_CHANGEDIR}
+        if ${_CHANGEDIR} && [[ "${_EXIT}" == "hard" ]]
         then
                 cd ${_CURRENTDIR}
         fi
@@ -150,7 +150,7 @@ function create_update_cms {
 			        #####
 			        # Delete Stack
 			        #####
-				heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+				heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
         			_INSTANCESTART=$(($_INSTANCESTART+1))
 			fi
                 done
@@ -337,7 +337,7 @@ function create_update_lvu {
                                 #####
                                 # Delete Stack
                                 #####
-                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
                                 _INSTANCESTART=$(($_INSTANCESTART+1))
                         fi
                 done
@@ -506,7 +506,7 @@ function create_update_omu {
                                 #####
                                 # Delete Stack
                                 #####
-                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
                                 _INSTANCESTART=$(($_INSTANCESTART+1))
                         fi
 	        done
@@ -675,7 +675,7 @@ function create_update_vmasu {
                                 #####
                                 # Delete Stack
                                 #####
-                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
                                 _INSTANCESTART=$(($_INSTANCESTART+1))
                         fi
                 done
@@ -829,7 +829,7 @@ function create_update_mau {
                                 #####
                                 # Delete Stack
                                 #####
-                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                                heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." false soft
                                 _INSTANCESTART=$(($_INSTANCESTART+1))
                         fi
                 done
