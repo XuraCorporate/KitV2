@@ -224,18 +224,41 @@ function init_cms {
                 #####
 		_LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
 		_SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
+		_SERVER_GROUP=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_server_group_enable/ {print $2}'|awk '{print tolower($0)}')
 		if [[ "${_LOCAL_BOOT}" == "true" && "${_SOURCE_BOOT}" == "cinder" ]]
 		then
 			exit_for_error "Error, Local Boot using a Volume source is not supported in OpenStack." true hard
-		elif [[ "${_SOURCE_BOOT}" == "cinder" ]]
+		elif [[ ${_SERVER_GROUP} != "true" && ${_SERVER_GROUP} != "false" ]]
 		then
-			_HOT="../templates/${_UNITLOWER}_cinder_source.yaml"
+			exit_for_error "Error, Server Group parameters ${_UNITLOWER}_server_group_enable can be only \"true\" or \"false\"." true hard
+		fi	
+
+		if [[ "${_SOURCE_BOOT}" == "cinder" ]]
+		then
+			_HOT="../templates/${_UNITLOWER}_cinder_source"
 		elif "${_LOCAL_BOOT}" # in this case _SOURCE_BOOT=glance
 		then
-			_HOT="../templates/${_UNITLOWER}.yaml"
+			_HOT="../templates/${_UNITLOWER}"
 		else
-			_HOT="../templates/${_UNITLOWER}_volume.yaml"
+			_HOT="../templates/${_UNITLOWER}_volume"
 		fi
+
+		if [[ "${_ACTION}" == "Create" ]] && ${_SERVER_GROUP}
+		then
+			_SERVER_GROUP_ID=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}
+		elif [[ "${_ACTION}" == "Create" ]] && ! ${_SERVER_GROUP} # in this case _SERVER_GROUP=false
+		then
+			_HOT=$(echo ${_HOT}_no_server_group)
+		elif [[ "${_ACTION}" == "Update" ]] # In this case an update might delete the running VM so cannot be put in a new/different server group
+		then
+			_SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
+			if [[ "${_SERVER_GROUP_ID}" == "" ]]
+			then
+				_HOT=$(echo ${_HOT}_no_server_group)
+			fi
+		fi
+
+		_HOT=$(echo ${_HOT}.yaml)
 
         	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -254,7 +277,7 @@ function init_cms {
                  --parameters "media_network_port=${_MEDIA_PORTID}" \
                  --parameters "media_network_mac=${_MEDIA_MAC}" \
                  --parameters "media_network_ip=${_MEDIA_IP}" \
-                 --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
+                 --parameters "antiaffinity_group=${_SERVER_GROUP_ID}" \
                  ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
         fi
@@ -400,18 +423,41 @@ function init_lvu {
                 #####
                 _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 _SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
+                _SERVER_GROUP=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_server_group_enable/ {print $2}'|awk '{print tolower($0)}')
                 if [[ "${_LOCAL_BOOT}" == "true" && "${_SOURCE_BOOT}" == "cinder" ]]
                 then
                         exit_for_error "Error, Local Boot using a Volume source is not supported in OpenStack." true hard
-                elif [[ "${_SOURCE_BOOT}" == "cinder" ]]
+                elif [[ ${_SERVER_GROUP} != "true" && ${_SERVER_GROUP} != "false" ]]
                 then
-                        _HOT="../templates/${_UNITLOWER}_cinder_source.yaml"
+                        exit_for_error "Error, Server Group parameters ${_UNITLOWER}_server_group_enable can be only \"true\" or \"false\"." true hard
+                fi
+
+                if [[ "${_SOURCE_BOOT}" == "cinder" ]]
+                then
+                        _HOT="../templates/${_UNITLOWER}_cinder_source"
                 elif "${_LOCAL_BOOT}" # in this case _SOURCE_BOOT=glance
                 then
-                        _HOT="../templates/${_UNITLOWER}.yaml"
+                        _HOT="../templates/${_UNITLOWER}"
                 else
-                        _HOT="../templates/${_UNITLOWER}_volume.yaml"
+                        _HOT="../templates/${_UNITLOWER}_volume"
                 fi
+
+                if [[ "${_ACTION}" == "Create" ]] && ${_SERVER_GROUP}
+                then
+                        _SERVER_GROUP_ID=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}
+                elif [[ "${_ACTION}" == "Create" ]] && ! ${_SERVER_GROUP} # in this case _SERVER_GROUP=false
+                then
+                        _HOT=$(echo ${_HOT}_no_server_group)
+                elif [[ "${_ACTION}" == "Update" ]] # In this case an update might delete the running VM so cannot be put in a new/different server group
+                then
+                        _SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
+                        if [[ "${_SERVER_GROUP_ID}" == "" ]]
+                        then
+                                _HOT=$(echo ${_HOT}_no_server_group)
+                        fi
+                fi
+
+                _HOT=$(echo ${_HOT}.yaml)
 
         	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -424,7 +470,7 @@ function init_lvu {
                  --parameters "sz_network_port=${_SZ_PORTID}" \
                  --parameters "sz_network_mac=${_SZ_MAC}" \
                  --parameters "sz_network_ip=${_SZ_IP}" \
-                 --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
+                 --parameters "antiaffinity_group=${_SERVER_GROUP_ID}" \
                  ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
         fi
@@ -570,18 +616,41 @@ function init_omu {
 		#####
                 _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 _SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
+                _SERVER_GROUP=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_server_group_enable/ {print $2}'|awk '{print tolower($0)}')
                 if [[ "${_LOCAL_BOOT}" == "true" && "${_SOURCE_BOOT}" == "cinder" ]]
                 then
                         exit_for_error "Error, Local Boot using a Volume source is not supported in OpenStack." true hard
-                elif [[ "${_SOURCE_BOOT}" == "cinder" ]]
+                elif [[ ${_SERVER_GROUP} != "true" && ${_SERVER_GROUP} != "false" ]]
                 then
-                        _HOT="../templates/${_UNITLOWER}_cinder_source.yaml"
+                        exit_for_error "Error, Server Group parameters ${_UNITLOWER}_server_group_enable can be only \"true\" or \"false\"." true hard
+                fi
+
+                if [[ "${_SOURCE_BOOT}" == "cinder" ]]
+                then
+                        _HOT="../templates/${_UNITLOWER}_cinder_source"
                 elif "${_LOCAL_BOOT}" # in this case _SOURCE_BOOT=glance
                 then
-                        _HOT="../templates/${_UNITLOWER}.yaml"
+                        _HOT="../templates/${_UNITLOWER}"
                 else
-                        _HOT="../templates/${_UNITLOWER}_volume.yaml"
+                        _HOT="../templates/${_UNITLOWER}_volume"
                 fi
+
+                if [[ "${_ACTION}" == "Create" ]] && ${_SERVER_GROUP}
+                then
+                        _SERVER_GROUP_ID=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}
+                elif [[ "${_ACTION}" == "Create" ]] && ! ${_SERVER_GROUP} # in this case _SERVER_GROUP=false
+                then
+                        _HOT=$(echo ${_HOT}_no_server_group)
+                elif [[ "${_ACTION}" == "Update" ]] # In this case an update might delete the running VM so cannot be put in a new/different server group
+                then
+                        _SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
+                        if [[ "${_SERVER_GROUP_ID}" == "" ]]
+                        then
+                                _HOT=$(echo ${_HOT}_no_server_group)
+                        fi
+                fi
+
+                _HOT=$(echo ${_HOT}.yaml)
 
         	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
 		heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -594,7 +663,7 @@ function init_omu {
 		 --parameters "sz_network_port=${_SZ_PORTID}" \
 		 --parameters "sz_network_mac=${_SZ_MAC}" \
 		 --parameters "sz_network_ip=${_SZ_IP}" \
-		 --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
+		 --parameters "antiaffinity_group=${_SERVER_GROUP_ID}" \
 		 ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
 		#--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
 	fi
@@ -740,18 +809,41 @@ function init_vmasu {
                 #####
                 _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 _SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
+                _SERVER_GROUP=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_server_group_enable/ {print $2}'|awk '{print tolower($0)}')
                 if [[ "${_LOCAL_BOOT}" == "true" && "${_SOURCE_BOOT}" == "cinder" ]]
                 then
                         exit_for_error "Error, Local Boot using a Volume source is not supported in OpenStack." true hard
-                elif [[ "${_SOURCE_BOOT}" == "cinder" ]]
+                elif [[ ${_SERVER_GROUP} != "true" && ${_SERVER_GROUP} != "false" ]]
                 then
-                        _HOT="../templates/${_UNITLOWER}_cinder_source.yaml"
+                        exit_for_error "Error, Server Group parameters ${_UNITLOWER}_server_group_enable can be only \"true\" or \"false\"." true hard
+                fi
+
+                if [[ "${_SOURCE_BOOT}" == "cinder" ]]
+                then
+                        _HOT="../templates/${_UNITLOWER}_cinder_source"
                 elif "${_LOCAL_BOOT}" # in this case _SOURCE_BOOT=glance
                 then
-                        _HOT="../templates/${_UNITLOWER}.yaml"
+                        _HOT="../templates/${_UNITLOWER}"
                 else
-                        _HOT="../templates/${_UNITLOWER}_volume.yaml"
+                        _HOT="../templates/${_UNITLOWER}_volume"
                 fi
+
+                if [[ "${_ACTION}" == "Create" ]] && ${_SERVER_GROUP}
+                then
+                        _SERVER_GROUP_ID=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}
+                elif [[ "${_ACTION}" == "Create" ]] && ! ${_SERVER_GROUP} # in this case _SERVER_GROUP=false
+                then
+                        _HOT=$(echo ${_HOT}_no_server_group)
+                elif [[ "${_ACTION}" == "Update" ]] # In this case an update might delete the running VM so cannot be put in a new/different server group
+                then
+                        _SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
+                        if [[ "${_SERVER_GROUP_ID}" == "" ]]
+                        then
+                                _HOT=$(echo ${_HOT}_no_server_group)
+                        fi
+                fi
+
+                _HOT=$(echo ${_HOT}.yaml)
 
         	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -764,7 +856,7 @@ function init_vmasu {
                  --parameters "sz_network_port=${_SZ_PORTID}" \
                  --parameters "sz_network_mac=${_SZ_MAC}" \
                  --parameters "sz_network_ip=${_SZ_IP}" \
-                 --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
+                 --parameters "antiaffinity_group=${_SERVER_GROUP_ID}" \
                  ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
         fi
@@ -889,18 +981,41 @@ function init_mau {
                 #####
                 _LOCAL_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 _SOURCE_BOOT=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_image_source/ {print $2}'|awk '{print tolower($0)}')
+                _SERVER_GROUP=$(cat ../environment/common.yaml|awk '/'${_UNITLOWER}'_server_group_enable/ {print $2}'|awk '{print tolower($0)}')
                 if [[ "${_LOCAL_BOOT}" == "true" && "${_SOURCE_BOOT}" == "cinder" ]]
                 then
                         exit_for_error "Error, Local Boot using a Volume source is not supported in OpenStack." true hard
-                elif [[ "${_SOURCE_BOOT}" == "cinder" ]]
+                elif [[ ${_SERVER_GROUP} != "true" && ${_SERVER_GROUP} != "false" ]]
                 then
-                        _HOT="../templates/${_UNITLOWER}_cinder_source.yaml"
+                        exit_for_error "Error, Server Group parameters ${_UNITLOWER}_server_group_enable can be only \"true\" or \"false\"." true hard
+                fi
+
+                if [[ "${_SOURCE_BOOT}" == "cinder" ]]
+                then
+                        _HOT="../templates/${_UNITLOWER}_cinder_source"
                 elif "${_LOCAL_BOOT}" # in this case _SOURCE_BOOT=glance
                 then
-                        _HOT="../templates/${_UNITLOWER}.yaml"
+                        _HOT="../templates/${_UNITLOWER}"
                 else
-                        _HOT="../templates/${_UNITLOWER}_volume.yaml"
+                        _HOT="../templates/${_UNITLOWER}_volume"
                 fi
+
+                if [[ "${_ACTION}" == "Create" ]] && ${_SERVER_GROUP}
+                then
+                        _SERVER_GROUP_ID=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}
+                elif [[ "${_ACTION}" == "Create" ]] && ! ${_SERVER_GROUP} # in this case _SERVER_GROUP=false
+                then
+                        _HOT=$(echo ${_HOT}_no_server_group)
+                elif [[ "${_ACTION}" == "Update" ]] # In this case an update might delete the running VM so cannot be put in a new/different server group
+                then
+                        _SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
+                        if [[ "${_SERVER_GROUP_ID}" == "" ]]
+                        then
+                                _HOT=$(echo ${_HOT}_no_server_group)
+                        fi
+                fi
+
+                _HOT=$(echo ${_HOT}.yaml)
 
         	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -910,7 +1025,7 @@ function init_mau {
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
-                 --parameters "antiaffinity_group=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}" \
+                 --parameters "antiaffinity_group=${_SERVER_GROUP_ID}" \
                  ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
         fi
@@ -1497,11 +1612,11 @@ echo -e "${GREEN} [OK]${NC}"
 # Verify if the Server Groups are available and
 # - Load them into an array
 #####
-echo -e -n "Verifing (Anti-)Affinity rules ...\t\t"
+echo -e -n "Eventually Verifing (Anti-)Affinity rules ...\t\t"
 _GROUPS=./groups.tmp
 nova server-group-list|grep ServerGroup|sort -k4|awk '{print $4,$2}' > ${_GROUPS}
 _GROUPNUMBER=$(cat ${_GROUPS}|grep ${_UNIT}|wc -l)
-if [[ "${_GROUPNUMBER}" == "0" && "${_ACTION}" != "Delete" && "${_ACTION}" != "List" ]]
+if [[ "${_GROUPNUMBER}" == "0" && "${_ACTION}" != "Delete" && "${_ACTION}" != "List" ]] && $(cat environment/common.yaml|awk '/'${_UNITLOWER}'_server_group_enable/ {print $2}'|awk '{print tolower($0)}')
 then
 	exit_for_error "Error, There is any available (Anti-)Affinity Group." false hard
 fi

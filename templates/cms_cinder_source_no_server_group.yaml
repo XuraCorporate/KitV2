@@ -1,0 +1,176 @@
+---
+heat_template_version: 2015-04-30
+
+description: Xura HOT template to deploy CMS unit
+
+parameters:
+  dev_mode:
+    type: boolean
+    description: Dev Mode for the Cloud-Init Script which performs development stuff
+    default: false
+#  keypair_name:
+#    type: string
+#    description: Keypair for the unit
+  unit_name:
+    type: string
+    description: Hostname of the Unit
+  domain_name:
+    type: string
+    description: Domain Name of the Unit
+  antiaffinity_group:
+    type: string
+    description: (Anti-)Affinity Scheduler Group ID
+  cms_flavor_name:
+    type: string
+    description: Flavor Name to be used
+  cms_volume_id:
+    type: string
+    description: Volume ID to be used
+  cms_volume_size:
+    type: number
+    description: Volume Size to be used
+#  tenant_network_name:
+#    type: string
+#    description: Tenant Network Name with DHCP
+#  tenant_network_id:
+#    type: string
+#    description: Tenant Network ID with DHCP
+#  tenant_security_group_name:
+#    type: string
+#    description: Tenant Security Group Name
+  admin_network_port:
+    type: string
+    description: Port ID on Admin Network
+  admin_network_mac:
+    type: string
+    description: Admin Port Mac Address
+  admin_network_ip:
+    type: string
+    description: Admin Network IP Address
+  admin_network_netmask:
+    type: string
+    description: Admin Network Netmask
+  admin_network_vlan:
+    type: string
+    description: Admin Network VLAN ID none will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggind
+    default: none
+  sz_network_port:
+    type: string
+    description: Port ID on Secure Zone Network
+  sz_network_mac:
+    type: string
+    description: Secure Zone Port Mac Address
+  sz_network_ip:
+    type: string
+    description: Secure Zone Network IP Address
+  sz_network_netmask:
+    type: string
+    description: Secure Zone Network Netmask
+  sz_network_vlan:
+    type: string
+    description: Secure Zone Network VLAN ID none will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggind
+    default: none
+  media_network_port:
+    type: string
+    description: Port ID on Media Network
+  media_network_mac:
+    type: string
+    description: Media Port Mac Address
+  media_network_ip:
+    type: string
+    description: Media Network IP Address
+  media_network_netmask:
+    type: string
+    description: Media Network Netmask
+  media_network_gateway:
+    type: string
+    description: Media Network default GW
+  media_network_vlan:
+    type: string
+    description: Media Network VLAN ID none will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggind
+    default: none
+  sip_network_port:
+    type: string
+    description: Port ID on SIP Network
+  sip_network_mac:
+    type: string
+    description: SIP Port Mac Address
+  sip_network_ip:
+    type: string
+    description: SIP Network IP Address
+  sip_network_netmask:
+    type: string
+    description: SIP Network Netmask
+  sip_network_vlan:
+    type: string
+    description: SIP Network VLAN ID none will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggind
+    default: none
+  nova_az:
+    type: string
+    description: Availability Zone for Nova
+  cinder_az:
+    type: string
+    description: Availability Zone for Cinder
+
+resources:
+#  tenant_network_port:
+#    type: OS::Neutron::Port
+#    properties:
+#      # network_id: { get_param: tenant_network_id }
+#      network: { get_param: tenant_network_name }
+#      security_groups:
+#        - { get_param: tenant_security_group_name }
+
+  cms_unit:
+    type: OS::Nova::Server
+    properties:
+      name: { get_param: unit_name }
+      flavor: { get_param: cms_flavor_name }
+      availability_zone: { get_param: nova_az }
+      networks:
+        #- port: { get_resource: tenant_network_port }
+        - port: { get_param: admin_network_port }
+        - port: { get_param: sz_network_port }
+        - port: { get_param: sip_network_port }
+        - port: { get_param: media_network_port }
+      # key_name: { get_param: keypair_name }
+      config_drive: true
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          template: { get_file: ./script/cms_software_config.sh }
+          params:
+            _DEVMODE_: { get_param: dev_mode }
+            _ADMIN_MAC_: { get_param: admin_network_mac }
+            _ADMIN_IP_: { get_param: admin_network_ip }
+            _ADMIN_NETMASK_: { get_param: admin_network_netmask }
+            _ADMIN_VLAN_: { get_param: admin_network_vlan }
+            _SZ_MAC_: { get_param: sz_network_mac }
+            _SZ_IP_: { get_param: sz_network_ip }
+            _SZ_NETMASK_: { get_param: sz_network_netmask }
+            _SZ_VLAN_: { get_param: sz_network_vlan }
+            _SIP_MAC_: { get_param: sip_network_mac }
+            _SIP_IP_: { get_param: sip_network_ip }
+            _SIP_NETMASK_: { get_param: sip_network_netmask }
+            _SIP_VLAN_: { get_param: sip_network_vlan }
+            _MEDIA_MAC_: { get_param: media_network_mac }
+            _MEDIA_IP_: { get_param: media_network_ip }
+            _MEDIA_NETMASK_: { get_param: media_network_netmask }
+            _MEDIA_VLAN_: { get_param: media_network_vlan }
+            _MEDIA_GW_: { get_param: media_network_gateway }
+            _HOSTNAME_: { get_param: unit_name }
+            _DOMAINNAME_: { get_param: domain_name }
+      block_device_mapping_v2:
+        -
+          boot_index: 0
+          delete_on_termination: true
+          device_name: vda
+          volume_id: { get_resource: cms_unit_volume }
+
+  cms_unit_volume:
+    type: OS::Cinder::Volume
+    properties:
+      source_volid: { get_param: cms_volume_id }
+      size: { get_param: cms_volume_size }
+      description: { get_param: unit_name }
+      availability_zone: { get_param: cinder_az }

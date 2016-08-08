@@ -25,6 +25,13 @@ parameter_defaults:
   vm-asu_unit_name: vm-asu
   mau_unit_name: mau
 
+  # Enable or disable the server group policy
+  cms_server_group_enable: true
+  lvu_server_group_enable: true
+  omu_server_group_enable: true
+  vm-asu_server_group_enable: true
+  mau_server_group_enable: true
+
   # Server Group Policy, has to be "affinity" or "anti-affinity"
   cms_server_group_policy: anti-affinity
   lvu_server_group_policy: anti-affinity
