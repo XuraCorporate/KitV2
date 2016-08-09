@@ -158,6 +158,25 @@ done
 echo -e "${GREEN} [OK]${NC}"
 
 #####
+# Verify if there is any duplicated entry in the environment file
+#####
+echo -e -n "Verifing duplicate entries in the environment file ...\t\t"
+_DUPENTRY=$(cat environment/common.yaml|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|uniq -c|grep " 2 "|wc -l)
+if (( "${_DUPENTRY}" > "0" ))
+then
+        echo -e "${RED}Found Duplicate Entries${NC}"
+        _OLDIFS=$IFS
+        IFS=$'\n'
+        for _VALUE in $(cat environment/common.yaml|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|uniq -c|grep " 2 "|awk '{print $2}'|sed 's/://g')
+        do
+                echo -e "${YELLOW}This parameters is present more than once:${NC} ${RED}${_VALUE}${NC}"
+        done
+        IFS=${_OLDIFS}
+        exit_for_error "Error, Please fix the above duplicate entries and then you can continue." false hard
+fi
+echo -e "${GREEN} [OK]${NC}"
+
+#####
 # Unload any previous loaded environment file
 #####
 for _ENV in $(env|grep ^OS|awk -F "=" '{print $1}')
@@ -177,25 +196,6 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 echo -e -n "Verifing OpenStack credential ...\t\t"
 heat stack-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
-echo -e "${GREEN} [OK]${NC}"
-
-#####
-# Verify if there is any duplicated entry in the environment file
-#####
-echo -e -n "Verifing duplicated entries in the environment file ...\t\t"
-_DUPENTRY=$(cat environment/common.yaml|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|uniq -c|grep " 2 "|wc -l)
-if (( "${_DUPENTRY}" > "0" ))
-then
-	echo -e "${RED}Found Duplicate Entries${NC}"	
-	_OLDIFS=$IFS
-	IFS=$'\n'
-	for _VALUE in $(cat environment/common.yaml|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|sed 's/://g')
-	do
-		echo -e "${YELLOW}This parameters is present more than once: ${_VALUE}${NC}"
-	done
-	IFS=${_OLDIFS}
-	exit_for_error "Error, Please fix the above duplicate entries and then you can continue." false hard
-fi
 echo -e "${GREEN} [OK]${NC}"
 
 #####
