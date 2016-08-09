@@ -11,7 +11,7 @@ parameter_defaults:
   ##tenant_security_group_name: TenantSecGroup
 
   #keypair_name: xura-key
-  
+
   # Domain Name
   # It could be a domain name or "none" which will remove the Domain configuration
   # Place a dot before the domain, it has to be like this ".xura.com"
