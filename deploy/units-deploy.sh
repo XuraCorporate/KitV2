@@ -1652,6 +1652,25 @@ IFS=${_OLDIFS}
 echo -e "${GREEN} [OK]${NC}"
 
 #####
+# Verify if there is any duplicated entry in the environment file
+#####
+echo -e -n "Verifing duplicate entries in the environment file ...\t\t"
+_DUPENTRY=$(cat environment/common.yaml|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|uniq -c|grep " 2 "|wc -l)
+if (( "${_DUPENTRY}" > "0" ))
+then
+        echo -e "${RED}Found Duplicate Entries${NC}"      
+        _OLDIFS=$IFS
+        IFS=$'\n'
+        for _VALUE in $(cat environment/common.yaml|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|sed 's/://g')
+        do
+                echo -e "${YELLOW}This parameters is present more than once: ${_VALUE}${NC}"
+        done
+        IFS=${_OLDIFS}
+        exit_for_error "Error, Please fix the above duplicate entries and then you can continue." false hard
+fi
+echo -e "${GREEN} [OK]${NC}"
+
+#####
 # Change directory into the deploy one
 #####
 _CURRENTDIR=$(pwd)
