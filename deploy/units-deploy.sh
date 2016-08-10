@@ -1817,9 +1817,9 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Unload any previous loaded environment file
 #####
-for _ENV in $(env|grep ^OS|awk -F "=" '{print $1}')
+for _BASHENV in $(env|grep ^OS|awk -F "=" '{print $1}')
 do
-        unset ${_ENV}
+        unset ${_BASHENV}
 done
 
 #####
