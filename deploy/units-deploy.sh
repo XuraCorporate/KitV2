@@ -1812,8 +1812,8 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 echo -e -n "Verifing Generic Security Group ...\t\t"
 neutron security-group-show $(cat environment/common.yaml|awk '/generic_security_group_name/ {print $2}') >/dev/null 2>&1 \
-	|| exit_for_error "Error, Cannot find the Generic Security Group." false soft \
-	&& echo -e "${GREEN} [OK]${NC}"
+	&& ( echo -e "${GREEN} [OK]${NC}" ) \
+	|| ( exit_for_error "Error, Cannot find the Generic Security Group." false soft )
 
 #####
 # Verify if the Admin Security Group is available
