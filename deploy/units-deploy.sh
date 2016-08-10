@@ -145,7 +145,7 @@ function create_update_cms {
 			        # Release the port cleaning up the security group
 			        #####
 			        echo -e -n "Cleaning up Neutron Port ...\t\t"
-			        neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+                		port_securitygroupcleanup ${_ADMIN_PORTID} false
         			echo -e "${GREEN} [OK]${NC}"
 			        #####
 			        # Delete Stack
@@ -206,11 +206,23 @@ function init_cms {
                 # Update the port securtiy group
                 #####
 		echo -e -n "Updating Neutron Ports for ${_UNIT} ...\t\t"
-                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
-                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." true hard
-                neutron port-update --no-security-groups ${_SZ_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port Update." false soft
-                neutron port-update --no-security-groups ${_SIP_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port Update." false soft
-                neutron port-update --no-security-groups ${_MEDIA_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port Update." false soft
+		port_securitygroupcleanup ${_ADMIN_PORTID} false
+		port_securitygroup ${_ADMIN_PORTID} \
+			$(cat ../environment/common.yaml|awk '/admin_security_group_enabled/ {print $2}'|awk '{print tolower($0)}') \
+			$(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') \
+			true # This is a true since in production this port will be VIRTIO
+		port_securitygroup ${_SZ_PORTID} \
+			$(cat ../environment/common.yaml|awk '/sz_security_group_enabled/ {print $2}'|awk '{print tolower($0)}') \
+			$(cat ../environment/common.yaml|awk '/sz_security_group_name/ {print $2}') \
+			false # This is a false since in production this port will be SR-IOV
+		port_securitygroup ${_SIP_PORTID} \
+			$(cat ../environment/common.yaml|awk '/sip_security_group_enabled/ {print $2}'|awk '{print tolower($0)}') \
+			$(cat ../environment/common.yaml|awk '/sip_security_group_name/ {print $2}') \
+			false # This is a false since in production this port will be SR-IOV
+		port_securitygroup ${_MEDIA_PORTID} \
+			$(cat ../environment/common.yaml|awk '/media_security_group_enabled/ {print $2}'|awk '{print tolower($0)}') \
+			$(cat ../environment/common.yaml|awk '/media_security_group_name/ {print $2}') \
+			false # This is a false since in production this port will be SR-IOV
                 echo -e "${GREEN} [OK]${NC}"
 
                 #####
@@ -359,7 +371,7 @@ function create_update_lvu {
                                 # Release the port cleaning up the security group
                                 #####
                                 echo -e -n "Cleaning up Neutron Port ...\t\t"
-				neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+                                port_securitygroupcleanup ${_ADMIN_PORTID} false
 				echo -e "${GREEN} [OK]${NC}"
                                 #####
                                 # Delete Stack
@@ -412,9 +424,15 @@ function init_lvu {
                 # Update the port securtiy group
                 #####
                 echo -e -n "Updating Neutron Ports for ${_UNIT} ...\t\t"
-                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
-                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." true hard
-                neutron port-update --no-security-groups ${_SZ_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port Update." false soft
+                port_securitygroupcleanup ${_ADMIN_PORTID} false
+                port_securitygroup ${_ADMIN_PORTID} \
+                        $(cat ../environment/common.yaml|awk '/admin_security_group_enabled/ {print $2}'|awk '{print tolower($0)}') \
+                        $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') \
+                        true # This is a true since in production this port will be VIRTIO
+                port_securitygroup ${_SZ_PORTID} \
+                        $(cat ../environment/common.yaml|awk '/sz_security_group_enabled/ {print $2}'|awk '{print tolower($0)}') \
+                        $(cat ../environment/common.yaml|awk '/sz_security_group_name/ {print $2}') \
+                        false # This is a false since in production this port will be SR-IOV
                 echo -e "${GREEN} [OK]${NC}"
 
                 #####
@@ -555,7 +573,7 @@ function create_update_omu {
                                 # Release the port cleaning up the security group
                                 #####
                                 echo -e -n "Cleaning up Neutron Port ...\t\t"
-                                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+                                port_securitygroupcleanup ${_ADMIN_PORTID} false
                                 echo -e "${GREEN} [OK]${NC}"
                                 #####
                                 # Delete Stack
@@ -608,9 +626,15 @@ function init_omu {
 		# Update the port securtiy group
 		#####
                 echo -e -n "Updating Neutron Ports for ${_UNIT} ...\t\t"
-                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
-                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." true hard
-                neutron port-update --no-security-groups ${_SZ_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port Update." false soft
+                port_securitygroupcleanup ${_ADMIN_PORTID} false
+                port_securitygroup ${_ADMIN_PORTID} \
+                        $(cat ../environment/common.yaml|awk '/admin_security_group_enabled/ {print $2}'|awk '{print tolower($0)}') \
+                        $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') \
+                        true # This is a true since in production this port will be VIRTIO
+                port_securitygroup ${_SZ_PORTID} \
+                        $(cat ../environment/common.yaml|awk '/sz_security_group_enabled/ {print $2}'|awk '{print tolower($0)}') \
+                        $(cat ../environment/common.yaml|awk '/sz_security_group_name/ {print $2}') \
+                        false # This is a false since in production this port will be SR-IOV
                 echo -e "${GREEN} [OK]${NC}"
 
 		#####
@@ -751,7 +775,7 @@ function create_update_vmasu {
                                 # Release the port cleaning up the security group
                                 #####
                                 echo -e -n "Cleaning up Neutron Port ...\t\t"
-                                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+                                port_securitygroupcleanup ${_ADMIN_PORTID} false
                                 echo -e "${GREEN} [OK]${NC}"
                                 #####
                                 # Delete Stack
@@ -804,9 +828,15 @@ function init_vmasu {
                 # Update the port securtiy group
                 #####
                 echo -e -n "Updating Neutron Ports for ${_UNIT} ...\t\t"
-                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
-                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." true hard
-                neutron port-update --no-security-groups ${_SZ_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port Update." false soft
+                port_securitygroupcleanup ${_ADMIN_PORTID} false
+                port_securitygroup ${_ADMIN_PORTID} \
+                        $(cat ../environment/common.yaml|awk '/admin_security_group_enabled/ {print $2}'|awk '{print tolower($0)}') \
+                        $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') \
+                        true # This is a true since in production this port will be VIRTIO
+                port_securitygroup ${_SZ_PORTID} \
+                        $(cat ../environment/common.yaml|awk '/sz_security_group_enabled/ {print $2}'|awk '{print tolower($0)}') \
+                        $(cat ../environment/common.yaml|awk '/sz_security_group_name/ {print $2}') \
+                        false # This is a false since in production this port will be SR-IOV
                 echo -e "${GREEN} [OK]${NC}"
 
                 #####
@@ -932,7 +962,7 @@ function create_update_mau {
                                 # Release the port cleaning up the security group
                                 #####
                                 echo -e -n "Cleaning up Neutron Port ...\t\t"
-                                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
+                                port_securitygroupcleanup ${_ADMIN_PORTID} false
                                 echo -e "${GREEN} [OK]${NC}"
                                 #####
                                 # Delete Stack
@@ -981,8 +1011,11 @@ function init_mau {
                 # Update the port securtiy group
                 #####
                 echo -e -n "Updating Neutron Ports for ${_UNIT} ...\t\t"
-                neutron port-update --no-security-groups ${_ADMIN_PORTID} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." false soft
-                neutron port-update --security-group $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') ${_ADMIN_PORTID} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Update." true hard
+                port_securitygroupcleanup ${_ADMIN_PORTID} false
+                port_securitygroup ${_ADMIN_PORTID} \
+                        $(cat ../environment/common.yaml|awk '/admin_security_group_enabled/ {print $2}'|awk '{print tolower($0)}') \
+                        $(cat ../environment/common.yaml|awk '/admin_security_group_name/ {print $2}') \
+                        true # This is a true since in production this port will be VIRTIO
                 echo -e "${GREEN} [OK]${NC}"
 
                 #####
@@ -1250,6 +1283,31 @@ function mac_validation {
         fi
         echo -e "${GREEN} [OK]${NC}"
 
+}
+function port_securitygroup {
+        _PORT=$1
+	_SECGROUPENABLE=$2
+	_SECGROUPNAME=$3
+	_EXITHARD=$4
+	if ${_SECGROUPENABLE}
+	then
+		if ${_EXITHARD}
+		then
+			neutron port-update --security-group ${_SECGROUPNAME} ${_PORT} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Security Group Update." true hard
+		else
+			neutron port-update --security-group ${_SECGROUPNAME} ${_PORT} > /dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Security Group Update." false soft
+		fi
+	fi
+}
+function port_securitygroupcleanup {
+        _PORT=$1
+	_EXITHARD=$2
+	if ${_EXITHARD}
+	then
+		neutron port-update --no-security-groups ${_PORT} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Security Group Clean Up." true hard
+	else
+		neutron port-update --no-security-groups ${_PORT} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Security Group Clean Up." false soft
+	fi
 }
 #####
 # Write the input args into variable
@@ -1607,6 +1665,120 @@ fi
 echo -e "${GREEN} [OK]${NC}"
 
 #####
+# Verify if the environment file has the right input values
+#####
+echo -e -n "Verifing if the environment file has all of the right input values ...\t\t"
+_EXIT=false
+_CHECKS="environment/common_checks"
+if [ ! -f ${_CHECKS} ] || [ ! -r ${_CHECKS} ] || [ ! -s ${_CHECKS} ]
+then
+	exit_for_error "Error, Missing Environment check file." false hard
+else
+	_OLDIFS=$IFS
+	IFS=$'\n'
+	for _INPUTTOBECHECKED in $(cat ${_CHECKS})
+	do
+		_PARAM=$(echo ${_INPUTTOBECHECKED}|awk '{print $1}')
+		_EXPECTEDVALUE=$(echo ${_INPUTTOBECHECKED}|awk '{print $2}')
+		_PARAMFOUND=$(grep ${_PARAM} environment/common.yaml|awk '{print $1}')
+		_VALUEFOUND=$(grep ${_PARAM} environment/common.yaml|awk '{print $2}'|sed "s/\"//g")
+		#####
+		# Verify that I have all of my parameters
+		#####
+		if [[ "${_PARAMFOUND}" == "" ]]
+		then
+			_EXIT=true
+			echo -e -n "\n${YELLOW}Error, missing parameter ${NC}${RED}${_PARAM}${NC}${YELLOW} in environment file.${NC}"
+		fi
+		#####
+		# Verify that I have for each parameter a value
+		#####
+		if [[ "${_VALUEFOUND}" == "" && "${_PARAMFOUND}" != "" ]]
+		then
+			_EXIT=true
+			echo -e -n "\n${YELLOW}Error, missing value for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file.${NC}"
+		fi
+		#####
+		# Verify that I have the right/expected value
+		#####
+		if [[ "${_EXPECTEDVALUE}" == "string" ]]
+		then
+			echo "${_VALUEFOUND}"|grep -E "[a-zA-Z_-\.]" >/dev/null 2>&1
+			if [[ "${?}" != "0" ]]
+			then
+				_EXIT=true
+				echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+				echo -e -n "\n${RED}It has to be a String with the following characters a-zA-Z_-.${NC}"
+			fi
+		elif [[ "${_EXPECTEDVALUE}" == "boolean" ]]
+	        then
+	                echo "${_VALUEFOUND}"|grep -E "^(true|false|True|False|TRUE|FALSE)$" >/dev/null 2>&1
+	                if [[ "${?}" != "0" ]]
+	                then
+	                        _EXIT=true
+	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+	                        echo -e -n "\n${RED}It has to be a Boolean, e.g. True${NC}"
+	                fi
+	        elif [[ "${_EXPECTEDVALUE}" == "number" ]]
+	        then
+	                echo "${_VALUEFOUND}"|grep -E "[0-9]" >/dev/null 2>&1
+	                if [[ "${?}" != "0" ]]
+	                then
+	                        _EXIT=true
+	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+	                        echo -e -n "\n${RED}It has to be a Number, e.g. 123${NC}"
+	                fi
+	        elif [[ "${_EXPECTEDVALUE}" == "ip" ]]
+	        then
+	                echo "${_VALUEFOUND}"|grep -E "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" >/dev/null 2>&1
+	                if [[ "${?}" != "0" ]]
+	                then
+	                        _EXIT=true
+	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+	                        echo -e -n "\n${RED}It has to be an IP Address, e.g. 192.168.1.1 or a NetMask e.g. 255.255.255.0 or a Network Cidr, e.g. 192.168.1.0/24${NC}"
+	                fi
+	        elif [[ "${_EXPECTEDVALUE}" == "vlan" ]]
+	        then
+	                echo "${_VALUEFOUND}"|grep -E "^(none|[0-9]{1,4})$" >/dev/null 2>&1
+	                if [[ "${?}" != "0" ]]
+	                then
+	                        _EXIT=true
+	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+	                        echo -e -n "\n${RED}It has to be a VLAN ID, between 1 to 4096 or none in case of diabled VLAN configuration${NC}"
+	                fi
+	        elif [[ "${_EXPECTEDVALUE}" == "anti-affinity|affinity" ]]
+	        then
+	                echo "${_VALUEFOUND}"|grep -E "^(anti-affinity|affinity)$" >/dev/null 2>&1
+	                if [[ "${?}" != "0" ]]
+	                then
+	                        _EXIT=true
+	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+	                        echo -e -n "\n${RED}It has to be \"anti-affinity\" or \"affinity\"${NC}"
+	                fi
+		elif [[ "${_EXPECTEDVALUE}" == "glance|cinder" ]]
+	        then
+	                echo "${_VALUEFOUND}"|grep -E "^(glance|cinder)$" >/dev/null 2>&1
+	                if [[ "${?}" != "0" ]]
+	                then
+	                        _EXIT=true
+	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+	                        echo -e -n "\n${RED}It has to be \"glance\" or \"cinder\"${NC}"
+	                fi
+		else
+			_EXIT=true
+			echo -e -n "\n${YELLOW}Error, Expected value to check ${NC}${RED}${_EXPECTEDVALUE}${NC}${YELLOW} is not correct.${NC}"
+		fi
+	done
+fi
+if ${_EXIT}
+then
+	echo -e -n "\n"
+	exit 1
+fi
+IFS=${_OLDIFS}
+echo -e "${GREEN} [OK]${NC}"
+
+#####
 # Unload any previous loaded environment file
 #####
 for _ENV in $(env|grep ^OS|awk -F "=" '{print $1}')
@@ -1634,6 +1806,14 @@ echo -e "${GREEN} [OK]${NC}"
 echo -e -n "Verifing Preparetion Stack ...\t\t"
 heat resource-list PreparetionStack > /dev/null 2>&1 || exit_for_error "Error, Cannot find the Preparetion Stack, so create it first." false hard
 echo -e "${GREEN} [OK]${NC}"
+
+#####
+# Verify if the Generic Security Group is available
+#####
+echo -e -n "Verifing Generic Security Group ...\t\t"
+neutron security-group-show $(cat environment/common.yaml|awk '/generic_security_group_name/ {print $2}') >/dev/null 2>&1 \
+	|| exit_for_error "Error, Cannot find the Generic Security Group." false soft \
+	&& echo -e "${GREEN} [OK]${NC}"
 
 #####
 # Verify if the Admin Security Group is available

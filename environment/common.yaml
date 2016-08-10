@@ -17,6 +17,9 @@ parameter_defaults:
   # Place a dot before the domain, it has to be like this ".xura.com"
   domain_name: none
 
+  # Generic Security Group that opens all of the communication
+  generic_security_group_name: NoFiltering
+
   # Unit Name
   # After the VM creation it will be <UnitName><Index> e.g. vm-asu01
   cms_unit_name: cms
@@ -51,6 +54,7 @@ parameter_defaults:
   admin_network_cidr: "10.107.203.0/24"
   admin_network_netmask: "255.255.255.0"
   admin_network_gateway: "10.107.203.1"
+  admin_security_group_enabled: true
   admin_security_group_name: AdminSecGroup
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
   admin_network_vlan: none
@@ -59,6 +63,9 @@ parameter_defaults:
   sz_network_name: "provider-vlan724"
   sz_network_cidr: "10.107.204.0/24"
   sz_network_netmask: "255.255.255.0"
+  sz_security_group_enabled: true
+  # With OpenStaqck liberty a security group is necessary in order to have network communications - in production this will be an SR-IOV port but for testing purpose it is required 
+  sz_security_group_name: NoFiltering
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
   sz_network_vlan: none
 
@@ -66,6 +73,9 @@ parameter_defaults:
   sip_network_name: "provider-vlan725"
   sip_network_cidr: "10.107.205.0/24"
   sip_network_netmask: "255.255.255.0"
+  sip_security_group_enabled: true
+  # With OpenStaqck liberty a security group is necessary in order to have network communications - in production this will be an SR-IOV port but for testing purpose it is required 
+  sip_security_group_name: NoFiltering
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
   sip_network_vlan: none
 
@@ -74,6 +84,9 @@ parameter_defaults:
   media_network_cidr: "10.107.206.0/24"
   media_network_netmask: "255.255.255.0"
   media_network_gateway: "10.107.206.1" # For CMS
+  media_security_group_enabled: true
+  # With OpenStaqck liberty a security group is necessary in order to have network communications - in production this will be an SR-IOV port but for testing purpose it is required 
+  media_security_group_name: NoFiltering
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
   media_network_vlan: none
 

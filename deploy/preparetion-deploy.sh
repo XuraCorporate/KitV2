@@ -177,6 +177,120 @@ fi
 echo -e "${GREEN} [OK]${NC}"
 
 #####
+# Verify if the environment file has the right input values
+#####
+echo -e -n "Verifing if the environment file has all of the right input values ...\t\t"
+_EXIT=false
+_CHECKS="environment/common_checks"
+if [ ! -f ${_CHECKS} ] || [ ! -r ${_CHECKS} ] || [ ! -s ${_CHECKS} ]
+then
+	exit_for_error "Error, Missing Environment check file." false hard
+else
+	_OLDIFS=$IFS
+	IFS=$'\n'
+	for _INPUTTOBECHECKED in $(cat ${_CHECKS})
+	do
+		_PARAM=$(echo ${_INPUTTOBECHECKED}|awk '{print $1}')
+		_EXPECTEDVALUE=$(echo ${_INPUTTOBECHECKED}|awk '{print $2}')
+		_PARAMFOUND=$(grep ${_PARAM} environment/common.yaml|awk '{print $1}')
+		_VALUEFOUND=$(grep ${_PARAM} environment/common.yaml|awk '{print $2}'|sed "s/\"//g")
+		#####
+		# Verify that I have all of my parameters
+		#####
+		if [[ "${_PARAMFOUND}" == "" ]]
+		then
+			_EXIT=true
+			echo -e -n "\n${YELLOW}Error, missing parameter ${NC}${RED}${_PARAM}${NC}${YELLOW} in environment file.${NC}"
+		fi
+		#####
+		# Verify that I have for each parameter a value
+		#####
+		if [[ "${_VALUEFOUND}" == "" && "${_PARAMFOUND}" != "" ]]
+		then
+			_EXIT=true
+			echo -e -n "\n${YELLOW}Error, missing value for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file.${NC}"
+		fi
+		#####
+		# Verify that I have the right/expected value
+		#####
+		if [[ "${_EXPECTEDVALUE}" == "string" ]]
+		then
+			echo "${_VALUEFOUND}"|grep -E "[a-zA-Z_-\.]" >/dev/null 2>&1
+			if [[ "${?}" != "0" ]]
+			then
+				_EXIT=true
+				echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+				echo -e -n "\n${RED}It has to be a String with the following characters a-zA-Z_-.${NC}"
+			fi
+		elif [[ "${_EXPECTEDVALUE}" == "boolean" ]]
+	        then
+	                echo "${_VALUEFOUND}"|grep -E "^(true|false|True|False|TRUE|FALSE)$" >/dev/null 2>&1
+	                if [[ "${?}" != "0" ]]
+	                then
+	                        _EXIT=true
+	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+	                        echo -e -n "\n${RED}It has to be a Boolean, e.g. True${NC}"
+	                fi
+	        elif [[ "${_EXPECTEDVALUE}" == "number" ]]
+	        then
+	                echo "${_VALUEFOUND}"|grep -E "[0-9]" >/dev/null 2>&1
+	                if [[ "${?}" != "0" ]]
+	                then
+	                        _EXIT=true
+	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+	                        echo -e -n "\n${RED}It has to be a Number, e.g. 123${NC}"
+	                fi
+	        elif [[ "${_EXPECTEDVALUE}" == "ip" ]]
+	        then
+	                echo "${_VALUEFOUND}"|grep -E "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" >/dev/null 2>&1
+	                if [[ "${?}" != "0" ]]
+	                then
+	                        _EXIT=true
+	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+	                        echo -e -n "\n${RED}It has to be an IP Address, e.g. 192.168.1.1 or a NetMask e.g. 255.255.255.0 or a Network Cidr, e.g. 192.168.1.0/24${NC}"
+	                fi
+	        elif [[ "${_EXPECTEDVALUE}" == "vlan" ]]
+	        then
+	                echo "${_VALUEFOUND}"|grep -E "^(none|[0-9]{1,4})$" >/dev/null 2>&1
+	                if [[ "${?}" != "0" ]]
+	                then
+	                        _EXIT=true
+	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+	                        echo -e -n "\n${RED}It has to be a VLAN ID, between 1 to 4096 or none in case of diabled VLAN configuration${NC}"
+	                fi
+	        elif [[ "${_EXPECTEDVALUE}" == "anti-affinity|affinity" ]]
+	        then
+	                echo "${_VALUEFOUND}"|grep -E "^(anti-affinity|affinity)$" >/dev/null 2>&1
+	                if [[ "${?}" != "0" ]]
+	                then
+	                        _EXIT=true
+	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+	                        echo -e -n "\n${RED}It has to be \"anti-affinity\" or \"affinity\"${NC}"
+	                fi
+		elif [[ "${_EXPECTEDVALUE}" == "glance|cinder" ]]
+	        then
+	                echo "${_VALUEFOUND}"|grep -E "^(glance|cinder)$" >/dev/null 2>&1
+	                if [[ "${?}" != "0" ]]
+	                then
+	                        _EXIT=true
+	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+	                        echo -e -n "\n${RED}It has to be \"glance\" or \"cinder\"${NC}"
+	                fi
+		else
+			_EXIT=true
+			echo -e -n "\n${YELLOW}Error, Expected value to check ${NC}${RED}${_EXPECTEDVALUE}${NC}${YELLOW} is not correct.${NC}"
+		fi
+	done
+fi
+if ${_EXIT}
+then
+	echo -e -n "\n"
+	exit 1
+fi
+IFS=${_OLDIFS}
+echo -e "${GREEN} [OK]${NC}"
+
+#####
 # Unload any previous loaded environment file
 #####
 for _ENV in $(env|grep ^OS|awk -F "=" '{print $1}')

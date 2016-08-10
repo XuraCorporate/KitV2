@@ -22,6 +22,9 @@ parameters:
   admin_security_group_name:
     type: string
     description: Admin Network Security Group Name
+  generic_security_group_name:
+    type: string
+    description: Generic Network Security Group Name
   cms_server_group_policy:
     type: string
     default: anti-affinity
@@ -109,6 +112,16 @@ resources:
     properties:
       description: Admin Network Security Group
       name: { get_param: admin_security_group_name }
+      rules:
+        - direction: egress
+          remote_ip_prefix: "0.0.0.0/0"
+        - direction: ingress
+          remote_ip_prefix: "0.0.0.0/0"
+  GenericSecurityGroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Generic Network Security Group
+      name: { get_param: generic_security_group_name }
       rules:
         - direction: egress
           remote_ip_prefix: "0.0.0.0/0"
