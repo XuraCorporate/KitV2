@@ -72,6 +72,8 @@ _RCFILE=$1
 _ACTION=$2
 _STACKNAME=PreparetionStack
 #_STACKNAME=${3-PreparetionStack}
+_ENV="environment/common.yaml"
+_CHECKS="environment/common_checks"
 
 #####
 # Check RC File
@@ -158,16 +160,26 @@ done
 echo -e "${GREEN} [OK]${NC}"
 
 #####
+# Verify if there is the environment file
+#####
+echo -e -n "Verifying if there is the environment file ...\t\t"
+if [ ! -f ${_ENV} ] || [ ! -r ${_ENV} ] || [ ! -s ${_ENV} ]
+then
+	exit_for_error "Error, Environment file missing." false hard
+fi
+echo -e "${GREEN} [OK]${NC}"
+
+#####
 # Verify if there is any duplicated entry in the environment file
 #####
 echo -e -n "Verifying duplicate entries in the environment file ...\t\t"
-_DUPENTRY=$(cat environment/common.yaml|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|uniq -c|grep " 2 "|wc -l)
+_DUPENTRY=$(cat ${_ENV}|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|uniq -c|grep " 2 "|wc -l)
 if (( "${_DUPENTRY}" > "0" ))
 then
         echo -e "${RED}Found Duplicate Entries${NC}"
         _OLDIFS=$IFS
         IFS=$'\n'
-        for _VALUE in $(cat environment/common.yaml|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|uniq -c|grep " 2 "|awk '{print $2}'|sed 's/://g')
+        for _VALUE in $(cat ${_ENV}|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|uniq -c|grep " 2 "|awk '{print $2}'|sed 's/://g')
         do
                 echo -e "${YELLOW}This parameters is present more than once:${NC} ${RED}${_VALUE}${NC}"
         done
@@ -177,11 +189,34 @@ fi
 echo -e "${GREEN} [OK]${NC}"
 
 #####
+# Verify if there is a test for each entry in the environment file
+#####
+echo -e -n "Verifying if there is a test for each entry in the environment file ...\t\t"
+_EXIT=false
+_OLDIFS=$IFS
+IFS=$'\n'
+for _ENVVALUE in $(cat ${_ENV}|grep -v -E '^[[:space:]]*$|#|^$'|grep -v -E "parameter_defaults|[-]{3}"|awk '{print $1}')
+do
+	grep ${_ENVVALUE} ${_CHECKS} >/dev/null 2>&1
+	if [[ "${?}" != "0" ]]
+	then
+		_EXIT=true
+		echo -e -n "\n${YELLOW}Error, missing test for parameter ${NC}${RED}${_ENVVALUE}${NC}${YELLOW} in environment check file ${_CHECKS}${NC}"
+	fi
+done
+if ${_EXIT}
+then
+	echo -e -n "\n"
+	exit 1
+fi
+IFS=${_OLDIFS}
+echo -e "${GREEN} [OK]${NC}"
+
+#####
 # Verify if the environment file has the right input values
 #####
 echo -e -n "Verifying if the environment file has all of the right input values ...\t\t"
 _EXIT=false
-_CHECKS="environment/common_checks"
 if [ ! -f ${_CHECKS} ] || [ ! -r ${_CHECKS} ] || [ ! -s ${_CHECKS} ]
 then
 	exit_for_error "Error, Missing Environment check file." false hard
@@ -192,8 +227,8 @@ else
 	do
 		_PARAM=$(echo ${_INPUTTOBECHECKED}|awk '{print $1}')
 		_EXPECTEDVALUE=$(echo ${_INPUTTOBECHECKED}|awk '{print $2}')
-		_PARAMFOUND=$(grep ${_PARAM} environment/common.yaml|awk '{print $1}')
-		_VALUEFOUND=$(grep ${_PARAM} environment/common.yaml|awk '{print $2}'|sed "s/\"//g")
+		_PARAMFOUND=$(grep ${_PARAM} ${_ENV}|awk '{print $1}')
+		_VALUEFOUND=$(grep ${_PARAM} ${_ENV}|awk '{print $2}'|sed "s/\"//g")
 		#####
 		# Verify that I have all of my parameters
 		#####
@@ -345,7 +380,7 @@ then
 	echo -e "${GREEN} [OK]${NC}"
 
 	echo -e -n "Verifying if Server Group Quota ...\t\t"
-	_GROUPS=$(cat ../environment/common.yaml|grep server_group_quantity|awk '{s+=$2} END {print s}')
+	_GROUPS=$(cat ../${_ENV}|grep server_group_quantity|awk '{s+=$2} END {print s}')
 	_GROUPSQUOTA=$(nova quota-show|grep server_groups|awk '{print $4}')	
 	if (( "${_GROUPS}" > "${_GROUPSQUOTA}" ))
 	then
@@ -359,7 +394,7 @@ then
 	#####
 	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') \
 	 --template-file ../templates/preparation.yaml \
-	 --environment-file ../environment/common.yaml \
+	 --environment-file ../${_ENV} \
 	${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
 elif [[ "${_ACTION}" != "List" && "${_ACTION}" != "Check" ]]
 then
