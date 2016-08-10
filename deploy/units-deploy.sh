@@ -172,7 +172,7 @@ function init_cms {
         # Verify if the stack already exist. A double create will fail
         # Verify if the stack exist in order to be updated
         #####
-        echo -e -n "Verifing if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
+        echo -e -n "Verifying if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
         heat resource-list ${_STACKNAME}${_INSTANCESTART} > /dev/null 2>&1
         _STATUS=${?}
         if [[ "${_ACTION}" == "Create" && "${_STATUS}" == "0" ]]
@@ -396,7 +396,7 @@ function init_lvu {
         # Verify if the stack already exist. A double create will fail
         # Verify if the stack exist in order to be updated
         #####
-        echo -e -n "Verifing if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
+        echo -e -n "Verifying if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
         heat resource-list ${_STACKNAME}${_INSTANCESTART} > /dev/null 2>&1
         _STATUS=${?}
         if [[ "${_ACTION}" == "Create" && "${_STATUS}" == "0" ]]
@@ -598,7 +598,7 @@ function init_omu {
 	# Verify if the stack already exist. A double create will fail
 	# Verify if the stack exist in order to be updated
 	#####
-	echo -e -n "Verifing if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
+	echo -e -n "Verifying if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
 	heat resource-list ${_STACKNAME}${_INSTANCESTART} > /dev/null 2>&1
 	_STATUS=${?}
 	if [[ "${_ACTION}" == "Create" && "${_STATUS}" == "0" ]]
@@ -800,7 +800,7 @@ function init_vmasu {
         # Verify if the stack already exist. A double create will fail
         # Verify if the stack exist in order to be updated
         #####
-        echo -e -n "Verifing if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
+        echo -e -n "Verifying if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
         heat resource-list ${_STACKNAME}${_INSTANCESTART} > /dev/null 2>&1
         _STATUS=${?}
         if [[ "${_ACTION}" == "Create" && "${_STATUS}" == "0" ]]
@@ -986,7 +986,7 @@ function init_mau {
         # Verify if the stack already exist. A double create will fail
         # Verify if the stack exist in order to be updated
         #####
-        echo -e -n "Verifing if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
+        echo -e -n "Verifying if ${_STACKNAME}${_INSTANCESTART} is already loaded ...\t\t"
         heat resource-list ${_STACKNAME}${_INSTANCESTART} > /dev/null 2>&1
         _STATUS=${?}
         if [[ "${_ACTION}" == "Create" && "${_STATUS}" == "0" ]]
@@ -1414,7 +1414,7 @@ _MEDIACSVFILE=$(echo ${_CSVFILEPATH}/media.csv)
 # - Does it have the given starting line?
 # - Does it have the given ending line?
 #####
-echo -e -n "Verifing if Admin CSV file is good ...\t\t"
+echo -e -n "Verifying if Admin CSV file is good ...\t\t"
 if [ ! -f ${_ADMINCSVFILE} ] || [ ! -r ${_ADMINCSVFILE} ] || [ ! -s ${_ADMINCSVFILE} ]
 then
 	echo -e "${RED}"
@@ -1425,7 +1425,7 @@ then
 fi
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n "Verifing if Admin CSV file has the given starting line ${_INSTANCESTART} ...\t\t"
+echo -e -n "Verifying if Admin CSV file has the given starting line ${_INSTANCESTART} ...\t\t"
 if [[ "$(sed -n -e "${_INSTANCESTART}p" ${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
 then
 	echo -e "${RED}"
@@ -1438,7 +1438,7 @@ echo -e "${GREEN} [OK]${NC}"
 
 if [[ "${_INSTANCEEND}" != "false" ]]
 then
-	echo -e -n "Verifing if Admin CSV file has the given ending line ${_INSTANCEEND} ...\t\t"
+	echo -e -n "Verifying if Admin CSV file has the given ending line ${_INSTANCEEND} ...\t\t"
 	if [[ "$(sed -n -e "${_INSTANCEEND}p" ${_ADMINCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
 	then
 		echo -e "${RED}"
@@ -1460,7 +1460,7 @@ fi
 #####
 if [[ ! "${_UNIT}" == "MAU" ]]
 then
-	echo -e -n "Verifing if Secure Zone CSV file is good ...\t\t"
+	echo -e -n "Verifying if Secure Zone CSV file is good ...\t\t"
 	if [ ! -f ${_SZCSVFILE} ] || [ ! -r ${_SZCSVFILE} ] || [ ! -s ${_SZCSVFILE} ]
 	then
 		echo -e "${RED}"
@@ -1471,7 +1471,7 @@ then
 	fi
 	echo -e "${GREEN} [OK]${NC}"
 	
-	echo -e -n "Verifing if Secure Zone CSV file has the given starting line ${_INSTANCESTART} ...\t\t"
+	echo -e -n "Verifying if Secure Zone CSV file has the given starting line ${_INSTANCESTART} ...\t\t"
 	if [[ "$(sed -n -e "${_INSTANCESTART}p" ${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
 	then
 	        echo -e "${RED}"
@@ -1484,7 +1484,7 @@ then
 	
 	if [[ "${_INSTANCEEND}" != "false" ]]
 	then
-	        echo -e -n "Verifing if Secure Zone CSV file has the given ending line ${_INSTANCEEND} ...\t\t"
+	        echo -e -n "Verifying if Secure Zone CSV file has the given ending line ${_INSTANCEEND} ...\t\t"
 	        if [[ "$(sed -n -e "${_INSTANCEEND}p" ${_SZCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
 	        then
 	                echo -e "${RED}"
@@ -1507,7 +1507,7 @@ fi
 #####
 if [[ "${_UNIT}" == "CMS" ]]
 then
-	echo -e -n "Verifing if SIP CSV file is good ...\t\t"
+	echo -e -n "Verifying if SIP CSV file is good ...\t\t"
 	if [ ! -f ${_SIPCSVFILE} ] || [ ! -r ${_SIPCSVFILE} ] || [ ! -s ${_SIPCSVFILE} ]
 	then
 		echo -e "${RED}"
@@ -1518,7 +1518,7 @@ then
 	fi
 	echo -e "${GREEN} [OK]${NC}"
 	
-	echo -e -n "Verifing if SIP CSV file has the given starting line ${_INSTANCESTART} ...\t\t"
+	echo -e -n "Verifying if SIP CSV file has the given starting line ${_INSTANCESTART} ...\t\t"
 	if [[ "$(sed -n -e "${_INSTANCESTART}p" ${_SIPCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
 	then
 	        echo -e "${RED}"
@@ -1531,7 +1531,7 @@ then
 	
 	if [[ "${_INSTANCEEND}" != "false" ]]
 	then
-	        echo -e -n "Verifing if SIP CSV file has the given ending line ${_INSTANCEEND} ...\t\t"
+	        echo -e -n "Verifying if SIP CSV file has the given ending line ${_INSTANCEEND} ...\t\t"
 	        if [[ "$(sed -n -e "${_INSTANCEEND}p" ${_SIPCSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
 	        then
 	                echo -e "${RED}"
@@ -1554,7 +1554,7 @@ fi
 #####
 if [[ "${_UNIT}" == "CMS" ]]
 then
-	echo -e -n "Verifing if Media CSV file is good ...\t\t"
+	echo -e -n "Verifying if Media CSV file is good ...\t\t"
 	if [ ! -f ${_MEDIACSVFILE} ] || [ ! -r ${_MEDIACSVFILE} ] || [ ! -s ${_MEDIACSVFILE} ]
 	then
 		echo -e "${RED}"
@@ -1565,7 +1565,7 @@ then
 	fi
 	echo -e "${GREEN} [OK]${NC}"
 	
-	echo -e -n "Verifing if Media CSV file has the given starting line ${_INSTANCESTART} ...\t\t"
+	echo -e -n "Verifying if Media CSV file has the given starting line ${_INSTANCESTART} ...\t\t"
 	if [[ "$(sed -n -e "${_INSTANCESTART}p" ${_MEDIACSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
 	then
 	        echo -e "${RED}"
@@ -1578,7 +1578,7 @@ then
 	
 	if [[ "${_INSTANCEEND}" != "false" ]]
 	then
-	        echo -e -n "Verifing if Media CSV file has the given ending line ${_INSTANCEEND} ...\t\t"
+	        echo -e -n "Verifying if Media CSV file has the given ending line ${_INSTANCEEND} ...\t\t"
 	        if [[ "$(sed -n -e "${_INSTANCEEND}p" ${_MEDIACSVFILE} | sed -e "s/\^M//g" | grep -v "^$")" == "" ]]
 	        then
 	                echo -e "${RED}"
@@ -1597,12 +1597,12 @@ fi
 _BINS="heat nova neutron glance cinder"
 for _BIN in ${_BINS}
 do
-	echo -e -n "Verifing ${_BIN} binary ...\t\t"
+	echo -e -n "Verifying ${_BIN} binary ...\t\t"
 	which ${_BIN} > /dev/null 2>&1 || exit_for_error "Error, Cannot find python${_BIN}-client." false
 	echo -e "${GREEN} [OK]${NC}"
 done
 
-echo -e -n "Verifing Heat Assume Yes ...\t\t"
+echo -e -n "Verifying Heat Assume Yes ...\t\t"
 _ASSUMEYES=""
 heat help stack-delete|grep "\-\-yes" >/dev/null 2>&1
 if [[ "${?}" == "0" ]]
@@ -1613,15 +1613,15 @@ else
         echo -e "${YELLOW} [NOT AVAILABLE]${NC}"
 fi
 
-echo -e -n "Verifing git binary ...\t\t"
+echo -e -n "Verifying git binary ...\t\t"
 which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find git and any changes will be commited." false soft
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n "Verifing dos2unix binary ...\t\t"
+echo -e -n "Verifying dos2unix binary ...\t\t"
 which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find dos2unix binary, please install it first\nThe installation will continue BUT the Wrapper cannot ensure the File Unix format consistency." false soft
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n "Verifing md5sum binary ...\t\t"
+echo -e -n "Verifying md5sum binary ...\t\t"
 which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find md5sum binary." false hard
 echo -e "${GREEN} [OK]${NC}"
 
@@ -1648,7 +1648,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if there is any duplicated entry in the environment file
 #####
-echo -e -n "Verifing duplicate entries in the environment file ...\t\t"
+echo -e -n "Verifying duplicate entries in the environment file ...\t\t"
 _DUPENTRY=$(cat environment/common.yaml|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|uniq -c|grep " 2 "|wc -l)
 if (( "${_DUPENTRY}" > "0" ))
 then
@@ -1667,7 +1667,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if the environment file has the right input values
 #####
-echo -e -n "Verifing if the environment file has all of the right input values ...\t\t"
+echo -e -n "Verifying if the environment file has all of the right input values ...\t\t"
 _EXIT=false
 _CHECKS="environment/common_checks"
 if [ ! -f ${_CHECKS} ] || [ ! -r ${_CHECKS} ] || [ ! -s ${_CHECKS} ]
@@ -1796,21 +1796,21 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if the given credential are valid. This will also check if the use can contact Heat
 #####
-echo -e -n "Verifing OpenStack credential ...\t\t"
+echo -e -n "Verifying OpenStack credential ...\t\t"
 heat stack-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
 #####
 # Verify if the PreparetionStack is available.
 #####
-echo -e -n "Verifing Preparetion Stack ...\t\t"
+echo -e -n "Verifying Preparetion Stack ...\t\t"
 heat resource-list PreparetionStack > /dev/null 2>&1 || exit_for_error "Error, Cannot find the Preparetion Stack, so create it first." false hard
 echo -e "${GREEN} [OK]${NC}"
 
 #####
 # Verify if the Generic Security Group is available
 #####
-echo -e -n "Verifing Generic Security Group ...\t\t"
+echo -e -n "Verifying Generic Security Group ...\t\t"
 neutron security-group-show $(cat environment/common.yaml|awk '/generic_security_group_name/ {print $2}') >/dev/null 2>&1 \
 	|| exit_for_error "Error, Cannot find the Generic Security Group." false soft \
 	&& echo -e "${GREEN} [OK]${NC}"
@@ -1818,7 +1818,7 @@ neutron security-group-show $(cat environment/common.yaml|awk '/generic_security
 #####
 # Verify if the Admin Security Group is available
 #####
-echo -e -n "Verifing Admin Security Group ...\t\t"
+echo -e -n "Verifying Admin Security Group ...\t\t"
 neutron security-group-show $(cat environment/common.yaml|awk '/admin_security_group_name/ {print $2}') >/dev/null 2>&1 || exit_for_error "Error, Cannot find the Admin Security Group." false hard
 echo -e "${GREEN} [OK]${NC}"
 
@@ -1826,7 +1826,7 @@ echo -e "${GREEN} [OK]${NC}"
 # Verify if the Server Groups are available and
 # - Load them into an array
 #####
-echo -e -n "Eventually Verifing (Anti-)Affinity rules ...\t\t"
+echo -e -n "Eventually Verifying (Anti-)Affinity rules ...\t\t"
 _GROUPS=./groups.tmp
 nova server-group-list|grep ServerGroup|sort -k4|awk '{print $4,$2}' > ${_GROUPS}
 _GROUPNUMBER=$(cat ${_GROUPS}|grep ${_UNIT}|wc -l)

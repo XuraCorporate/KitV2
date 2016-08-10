@@ -46,11 +46,11 @@ function exit_for_error {
 # Function to check the OpenStack environment
 #####
 function check {
-#	echo -e -n "Verifing access to the Nova API ...\t\t"
+#	echo -e -n "Verifying access to the Nova API ...\t\t"
 #	nova list > /dev/null 2>&1 || exit_for_error "Error, Cannot access to the Nova API." false
 #	echo -e "${GREEN} [OK]${NC}"
 #	
-#	echo -e -n "Verifing access to the Neutron API ...\t\t"
+#	echo -e -n "Verifying access to the Neutron API ...\t\t"
 #	neutron net-list > /dev/null 2>&1 || exit_for_error "Error, Cannot access to the Nova API." false
 #	echo -e "${GREEN} [OK]${NC}"
 	echo "Not yet implemented."
@@ -109,12 +109,12 @@ fi
 _BINS="heat nova neutron glance"
 for _BIN in ${_BINS}
 do
-	echo -e -n "Verifing ${_BIN} binary ...\t\t"
+	echo -e -n "Verifying ${_BIN} binary ...\t\t"
 	which ${_BIN} > /dev/null 2>&1 || exit_for_error "Error, Cannot find python${_BIN}-client." false
 	echo -e "${GREEN} [OK]${NC}"
 done
 
-echo -e -n "Verifing Heat Assume Yes ...\t\t"
+echo -e -n "Verifying Heat Assume Yes ...\t\t"
 _ASSUMEYES=""
 heat help stack-delete|grep "\-\-yes" >/dev/null 2>&1
 if [[ "${?}" == "0" ]]
@@ -125,15 +125,15 @@ else
         echo -e "${YELLOW} [NOT AVAILABLE]${NC}"
 fi
 
-echo -e -n "Verifing git binary ...\t\t"
+echo -e -n "Verifying git binary ...\t\t"
 which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find git and any changes will be commited." false soft
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n "Verifing dos2unix binary ...\t\t"
+echo -e -n "Verifying dos2unix binary ...\t\t"
 which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find dos2unix binary, please install it\nThe installation will continue BUT the Wrapper cannot ensure the File Unix format consistency." false soft
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n "Verifing md5sum binary ...\t\t"
+echo -e -n "Verifying md5sum binary ...\t\t"
 which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find md5sum binary." false hard
 echo -e "${GREEN} [OK]${NC}"
 
@@ -160,7 +160,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if there is any duplicated entry in the environment file
 #####
-echo -e -n "Verifing duplicate entries in the environment file ...\t\t"
+echo -e -n "Verifying duplicate entries in the environment file ...\t\t"
 _DUPENTRY=$(cat environment/common.yaml|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|uniq -c|grep " 2 "|wc -l)
 if (( "${_DUPENTRY}" > "0" ))
 then
@@ -179,7 +179,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if the environment file has the right input values
 #####
-echo -e -n "Verifing if the environment file has all of the right input values ...\t\t"
+echo -e -n "Verifying if the environment file has all of the right input values ...\t\t"
 _EXIT=false
 _CHECKS="environment/common_checks"
 if [ ! -f ${_CHECKS} ] || [ ! -r ${_CHECKS} ] || [ ! -s ${_CHECKS} ]
@@ -308,7 +308,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if the given credential are valid. This will also check if the use can contact Heat
 #####
-echo -e -n "Verifing OpenStack credential ...\t\t"
+echo -e -n "Verifying OpenStack credential ...\t\t"
 heat stack-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
@@ -332,7 +332,7 @@ then
 	# Verify if the stack already exist. A double create will fail
 	# Verify if the stack exist in order to be updated
 	#####
-	echo -e -n "Verifing if ${_STACKNAME} is already loaded ...\t\t"
+	echo -e -n "Verifying if ${_STACKNAME} is already loaded ...\t\t"
 	heat resource-list ${_STACKNAME} > /dev/null 2>&1
 	_STATUS=${?}
 	if [[ "${_ACTION}" == "Create" && "${_STATUS}" == "0" ]]
@@ -344,7 +344,7 @@ then
 	fi
 	echo -e "${GREEN} [OK]${NC}"
 
-	echo -e -n "Verifing if Server Group Quota ...\t\t"
+	echo -e -n "Verifying if Server Group Quota ...\t\t"
 	_GROUPS=$(cat ../environment/common.yaml|grep server_group_quantity|awk '{s+=$2} END {print s}')
 	_GROUPSQUOTA=$(nova quota-show|grep server_groups|awk '{print $4}')	
 	if (( "${_GROUPS}" > "${_GROUPSQUOTA}" ))
