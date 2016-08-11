@@ -173,13 +173,13 @@ echo -e "${GREEN} [OK]${NC}"
 # Verify if there is any duplicated entry in the environment file
 #####
 echo -e -n "Verifying duplicate entries in the environment file ...\t\t"
-_DUPENTRY=$(cat ${_ENV}|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|uniq -c|grep " 2 "|wc -l)
+_DUPENTRY=$(cat ${_ENV}|grep -v -E '^[[:space:]]*$|^$'|awk '{print $1}'|grep -v "#"|sort|uniq -c|grep " 2 "|wc -l)
 if (( "${_DUPENTRY}" > "0" ))
 then
         echo -e "${RED}Found Duplicate Entries${NC}"
         _OLDIFS=$IFS
         IFS=$'\n'
-        for _VALUE in $(cat ${_ENV}|grep -v -E '^[[:space:]]*$|#|^$'|awk '{print $1}'|sort|uniq -c|grep " 2 "|awk '{print $2}'|sed 's/://g')
+        for _VALUE in $(cat ${_ENV}|grep -v -E '^[[:space:]]*$|^$'|awk '{print $1}'|grep -v "#"|sort|uniq -c|grep " 2 "|awk '{print $2}'|sed 's/://g')
         do
                 echo -e "${YELLOW}This parameters is present more than once:${NC} ${RED}${_VALUE}${NC}"
         done
@@ -195,7 +195,7 @@ echo -e -n "Verifying if there is a test for each entry in the environment file 
 _EXIT=false
 _OLDIFS=$IFS
 IFS=$'\n'
-for _ENVVALUE in $(cat ${_ENV}|grep -v -E '^[[:space:]]*$|#|^$'|grep -v -E "parameter_defaults|[-]{3}"|awk '{print $1}')
+for _ENVVALUE in $(cat ${_ENV}|grep -v -E '^[[:space:]]*$|^$'|grep -v -E "parameter_defaults|[-]{3}"|awk '{print $1}'|grep -v "#")
 do
 	grep ${_ENVVALUE} ${_CHECKS} >/dev/null 2>&1
 	if [[ "${?}" != "0" ]]

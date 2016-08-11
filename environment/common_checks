@@ -43,6 +43,7 @@ sip_network_vlan: vlan
 media_network_name: string
 media_network_cidr: ip
 media_network_netmask: ip
+media_network_gateway: ip
 media_security_group_enabled: boolean
 media_security_group_name: string
 media_network_vlan: vlan
@@ -83,3 +84,8 @@ vm-asu_volume_id: string
 vm-asu_volume_size: number
 mau_volume_id: string
 mau_volume_size: number
+cms_image_id: string
+lvu_image_id: string
+omu_image_id: string
+vm-asu_image_id: string
+mau_image_id: string
