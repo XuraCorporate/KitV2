@@ -22,11 +22,13 @@ parameter_defaults:
 
   # Unit Name
   # After the VM creation it will be <UnitName><Index> e.g. vm-asu01
-  cms_unit_name: cms
+  cms_unit_name: cms-sip
   lvu_unit_name: lvu
-  omu_unit_name: omu
+  omu_unit_name: omu-au
   vm-asu_unit_name: vm-asu
   mau_unit_name: mau
+  dsu_unit_name: dsu
+  smu_unit_name: smu
 
   # Enable or disable the server group policy
   cms_server_group_enable: true
@@ -34,6 +36,8 @@ parameter_defaults:
   omu_server_group_enable: true
   vm-asu_server_group_enable: true
   mau_server_group_enable: true
+  dsu_server_group_enable: false
+  smu_server_group_enable: false
 
   # Server Group Policy, has to be "affinity" or "anti-affinity"
   cms_server_group_policy: anti-affinity
@@ -41,6 +45,8 @@ parameter_defaults:
   omu_server_group_policy: anti-affinity
   vm-asu_server_group_policy: anti-affinity
   mau_server_group_policy: anti-affinity
+  dsu_server_group_policy: anti-affinity
+  smu_server_group_policy: anti-affinity
 
   # Count for Server Groups per Unit
   cms_server_group_quantity: 2
@@ -48,20 +54,22 @@ parameter_defaults:
   omu_server_group_quantity: 2
   vm-asu_server_group_quantity: 2
   mau_server_group_quantity: 2
+  dsu_server_group_quantity: 2
+  smu_server_group_quantity: 2
 
   # Admin Network Section
-  admin_network_name: "provider-vlan723"
-  admin_network_cidr: "10.107.203.0/24"
+  admin_network_name: "provider2"
+  admin_network_cidr: "10.107.154.0/24"
   admin_network_netmask: "255.255.255.0"
-  admin_network_gateway: "10.107.203.1"
+  admin_network_gateway: "10.107.154.1"
   admin_security_group_enabled: true
   admin_security_group_name: AdminSecGroup
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
   admin_network_vlan: none
 
   # Secure Zone Network Section 
-  sz_network_name: "provider-vlan724"
-  sz_network_cidr: "10.107.204.0/24"
+  sz_network_name: "provider1"
+  sz_network_cidr: "10.107.153.0/24"
   sz_network_netmask: "255.255.255.0"
   sz_security_group_enabled: true
   # With OpenStaqck liberty a security group is necessary in order to have network communications - in production this will be an SR-IOV port but for testing purpose it is required 
@@ -96,6 +104,8 @@ parameter_defaults:
   omu_flavor_name: m1.small
   vm-asu_flavor_name: m1.small
   mau_flavor_name: m1.small
+  dsu_flavor_name: DSU
+  smu_flavor_name: DSU
 
   # Source Image to be used for the VM boot.
   # The Image can come from a Glance Image or from a Cinder Volume.
@@ -106,6 +116,8 @@ parameter_defaults:
   omu_image_source: glance
   vm-asu_image_source: glance
   mau_image_source: glance
+  dsu_image_source: glance
+  smu_image_source: glance
 
   # Nova and Cinder Availability Zone
   nova_az: nova
@@ -138,6 +150,14 @@ parameter_defaults:
   mau_image_volume_size: 20
   mau_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   mau_image: Image_for_Stack_1
+  dsu_local_boot: True
+  dsu_image_volume_size: 20
+  dsu_image_id: 535d5fee-93d4-4f99-84f2-242dfca13dd9 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  dsu_image: platform
+  smu_local_boot: True
+  smu_image_volume_size: 20
+  smu_image_id: 535d5fee-93d4-4f99-84f2-242dfca13dd9 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  smu_image: platform
 
   #####
   # Cinder Source Section
@@ -153,4 +173,8 @@ parameter_defaults:
   vm-asu_volume_size: 20
   mau_volume_id: d8842665-3408-42d6-9ae8-78468b8b39a9
   mau_volume_size: 8
+  dsu_volume_id: d8842665-3408-42d6-9ae8-78468b8b39a9
+  dsu_volume_size: 8
+  smu_volume_id: d8842665-3408-42d6-9ae8-78468b8b39a9
+  smu_volume_size: 8
 

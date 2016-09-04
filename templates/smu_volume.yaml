@@ -1,0 +1,125 @@
+---
+heat_template_version: 2015-04-30
+
+description: Xura HOT template to deploy SMU unit
+
+parameters:
+  dev_mode:
+    type: boolean
+    description: Dev Mode for the Cloud-Init Script which performs development stuff
+    default: false
+#  keypair_name:
+#    type: string
+#    description: Keypair for the unit
+  unit_name:
+    type: string
+    description: Hostname of the Unit
+  domain_name:
+    type: string
+    description: Domain Name of the Unit
+  antiaffinity_group:
+    type: string
+    description: (Anti-)Affinity Scheduler Group ID
+  smu_flavor_name:
+    type: string
+    description: Flavor Name to be used
+  smu_image_id:
+    type: string
+    description: Image ID to be used - in case of block device mapping
+  smu_image_volume_size:
+    type: number
+    description: Volume size to be used by the image
+#  tenant_network_name:
+#    type: string
+#    description: Tenant Network Name with DHCP
+#  tenant_network_id:
+#    type: string
+#    description: Tenant Network ID with DHCP
+#  tenant_security_group_name:
+#    type: string
+#    description: Tenant Security Group Name
+  admin_network_port:
+    type: string
+    description: Port ID on Admin Network
+  admin_network_mac:
+    type: string
+    description: Admin Port Mac Address
+  admin_network_ip:
+    type: string
+    description: Admin Network IP Address
+  admin_network_netmask:
+    type: string
+    description: Admin Network Netmask
+  admin_network_gateway:
+    type: string
+    description: Admin Network default GW
+  admin_network_vlan:
+    type: string
+    description: Admin Network VLAN ID none will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggind
+    default: none
+  sz_network_port:
+    type: string
+    description: Port ID on Secure Zone Network
+  sz_network_mac:
+    type: string
+    description: Secure Zone Port Mac Address
+  sz_network_ip:
+    type: string
+    description: Secure Zone Network IP Address
+  sz_network_netmask:
+    type: string
+    description: Secure Zone Network Netmask
+  sz_network_vlan:
+    type: string
+    description: Secure Zone Network VLAN ID none will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggind
+    default: none
+  nova_az:
+    type: string
+    description: Availability Zone for Nova
+
+resources:
+#  tenant_network_port:
+#    type: OS::Neutron::Port
+#    properties:
+#      # network_id: { get_param: tenant_network_id }
+#      network: { get_param: tenant_network_name }
+#      security_groups:
+#        - { get_param: tenant_security_group_name }
+
+  smu_unit:
+    type: OS::Nova::Server
+    properties:
+      name: { get_param: unit_name }
+      flavor: { get_param: smu_flavor_name }
+      availability_zone: { get_param: nova_az }
+      networks:
+        #- port: { get_resource: tenant_network_port }
+        - port: { get_param: admin_network_port }
+        - port: { get_param: sz_network_port }
+      # key_name: { get_param: keypair_name }
+      config_drive: true
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          template: { get_file: ./script/smu_software_config.sh }
+          params:
+            _DEVMODE_: { get_param: dev_mode }
+            _ADMIN_MAC_: { get_param: admin_network_mac }
+            _ADMIN_IP_: { get_param: admin_network_ip }
+            _ADMIN_NETMASK_: { get_param: admin_network_netmask }
+            _ADMIN_GW_: { get_param: admin_network_gateway }
+            _ADMIN_VLAN_: { get_param: admin_network_vlan }
+            _SZ_MAC_: { get_param: sz_network_mac }
+            _SZ_IP_: { get_param: sz_network_ip }
+            _SZ_NETMASK_: { get_param: sz_network_netmask }
+            _SZ_VLAN_: { get_param: sz_network_vlan }
+            _HOSTNAME_: { get_param: unit_name }
+            _DOMAINNAME_: { get_param: domain_name }
+      scheduler_hints: { group: {get_param: antiaffinity_group } }
+      block_device_mapping_v2:
+        -
+          boot_index: 0
+          delete_on_termination: true
+          device_name: vda
+          image_id: { get_param: smu_image_id }
+          volume_size: { get_param: smu_image_volume_size }
