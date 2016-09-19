@@ -1467,7 +1467,12 @@ function init_smu {
 				_HOT=$(echo ${_HOT}_no_server_group)
 			fi
 		fi
-
+		
+		#####   Change of smu host name !
+		
+		smuHostName=$(perl -n -e '/$ARGV[0]_unit_name.+?(\S+)$/ and printf("${1}1%s",chr(96 + $ARGV[1]))' ../${_ENV} ${_UNITLOWER} ${_INSTANCESTART} 2>/dev/null) 
+		echo -e "${GREEN}Note - $NC SMU Hostname will be $smuHostName "
+		
 		_HOT=$(echo ${_HOT}.yaml)
                 echo -e "${GREEN} [OK]${NC}"
 
@@ -1475,7 +1480,7 @@ function init_smu {
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../${_ENV} \
-                 --parameters "unit_name=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')$(printf "%0*d\n" $((${#_LINES}+1)) ${_INSTANCESTART})" \
+                 --parameters "unit_name=$smuHostName" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
