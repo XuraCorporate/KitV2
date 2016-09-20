@@ -1635,7 +1635,7 @@ function port_validation {
 	# Check if the port is in use
 	#####
 	echo -e -n "Validating Port ${_PORT} is not in use ...\t\t"
-	if [[ "$(neutron port-show --field device_id --format value ${_PORT})" != "" && "${_UNITACTION}" != "Update" ]]
+	if [[ "$(neutron port-show --field device_owner --format value ${_PORT})" == "compute:nova" && "${_UNITACTION}" != "Update" ]]
 	then
 		exit_for_error "Error, Port with ID ${_PORT} is in use." false break
 	fi
