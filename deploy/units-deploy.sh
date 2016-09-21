@@ -111,7 +111,7 @@ function create_update_cms {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} 2>/dev/null || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
                         #####
                         # Wait until has been deleted
@@ -360,7 +360,7 @@ function create_update_lvu {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} 2>/dev/null || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
                         #####
                         # Wait until has been deleted
@@ -583,7 +583,7 @@ function create_update_omu {
 			#####
 			# Delete the old stack
 			#####
-	                heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
+	                heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} 2>/dev/null || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
 			#####
 			# Wait until has been deleted
@@ -806,7 +806,7 @@ function create_update_vmasu {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} 2>/dev/null || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
                         #####
                         # Wait until has been deleted
@@ -1015,7 +1015,7 @@ function create_update_mau {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} 2>/dev/null || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
                         #####
                         # Wait until has been deleted
@@ -1227,7 +1227,7 @@ function create_update_dsu {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} 2>/dev/null || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
                         #####
                         # Wait until has been deleted
@@ -1453,7 +1453,7 @@ function create_update_smu {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} 2>/dev/null || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
                         #####
                         # Wait until has been deleted
