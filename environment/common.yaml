@@ -22,13 +22,46 @@ parameter_defaults:
 
   # Unit Name
   # After the VM creation it will be <UnitName><Index> e.g. vm-asu01
+  # cms_unit_name: Name of the Unit
+  # cms_enable_suffix_index_unit_name: Enable the N digit suffix, true or false
+  # cms_suffix_index_unit_name: Number of digits, like 4
+  # cms_append_static_letter_index_unit_name: static string before the Alphabet Numbers, true or false
+  # cms_append_letter_index_unit_name: Alphabet Numbers using the unit index, like ab replaced by 28
   cms_unit_name: cms-sip
+  cms_enable_suffix_index_unit_name: true
+  cms_suffix_index_unit_name: 4
+  cms_append_static_letter_index_unit_name: none
+  cms_append_letter_index_unit_name: false
   lvu_unit_name: lvu
+  lvu_enable_suffix_index_unit_name: true
+  lvu_suffix_index_unit_name: 4
+  lvu_append_static_letter_index_unit_name: none
+  lvu_append_letter_index_unit_name: false
   omu_unit_name: omu-au
+  omu_enable_suffix_index_unit_name: true
+  omu_suffix_index_unit_name: 4
+  omu_append_static_letter_index_unit_name: none
+  omu_append_letter_index_unit_name: false
   vm-asu_unit_name: vm-asu
+  vm-asu_enable_suffix_index_unit_name: true
+  vm-asu_suffix_index_unit_name: 4
+  vm-asu_append_static_letter_index_unit_name: none
+  vm-asu_append_letter_index_unit_name: false
   mau_unit_name: mau
+  mau_enable_suffix_index_unit_name: true
+  mau_suffix_index_unit_name: 4
+  mau_append_static_letter_index_unit_name: none
+  mau_append_letter_index_unit_name: false
   dsu_unit_name: dsu
+  dsu_enable_suffix_index_unit_name: true
+  dsu_suffix_index_unit_name: 4
+  dsu_append_static_letter_index_unit_name: none
+  dsu_append_letter_index_unit_name: false
   smu_unit_name: smu
+  smu_enable_suffix_index_unit_name: false
+  smu_suffix_index_unit_name: 4
+  smu_append_static_letter_index_unit_name: 1
+  smu_append_letter_index_unit_name: true
 
   # Enable or disable the server group policy
   cms_server_group_enable: true

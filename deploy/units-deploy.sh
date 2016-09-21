@@ -111,7 +111,7 @@ function create_update_cms {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
                         #####
                         # Wait until has been deleted
@@ -275,11 +275,32 @@ function init_cms {
 		_HOT=$(echo ${_HOT}.yaml)
                 echo -e "${GREEN} [OK]${NC}"
 
-        	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
+		echo -e -n "Identifying the right Unit Name to be used ...\t\t"
+		_UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
+		if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+		then
+			_UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
+		fi
+		
+		if [[ "$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')" != "none" ]]
+		then
+		        _UNIT_NAME_APPEND_STATIC_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')
+		else
+		        _UNIT_NAME_APPEND_STATIC_CHAR=""
+		fi
+		if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+		then
+		        _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
+		else
+		        _UNIT_NAME_APPEND_CHAR=""
+		fi
+		_UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+                echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
+
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../${_ENV} \
-                 --parameters "unit_name=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')$(printf "%0*d\n" $((${#_LINES}+1)) ${_INSTANCESTART})" \
+                 --parameters "unit_name=${_UNIT_NAME_FINAL}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -339,7 +360,7 @@ function create_update_lvu {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
                         #####
                         # Wait until has been deleted
@@ -473,7 +494,7 @@ function init_lvu {
                 elif [[ "${_ACTION}" == "Update" ]] # In this case an update might delete the running VM so cannot be put in a new/different server group
                 then
                         _SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
-                        if [[ "${_SERVER_GROUP_ID}" == "" ]]
+                        if [[ "${_SERVER_GROUP_ID}" == "" ]] && ${_SERVER_GROUP}
                         then
 				echo -e -n "${YELLOW} Warning, the Stack ${_STACKNAME}${_INSTANCESTART} has been created without Server Groups so it will keep not using them.${NC}"
                                 _HOT=$(echo ${_HOT}_no_server_group)
@@ -483,11 +504,32 @@ function init_lvu {
                 _HOT=$(echo ${_HOT}.yaml)
                 echo -e "${GREEN} [OK]${NC}"
 
-        	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
+                echo -e -n "Identifying the right Unit Name to be used ...\t\t"
+                _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
+                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        _UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
+                fi
+
+                if [[ "$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')" != "none" ]]
+                then
+                        _UNIT_NAME_APPEND_STATIC_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')
+                else
+                        _UNIT_NAME_APPEND_STATIC_CHAR=""
+                fi
+                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
+                else
+                        _UNIT_NAME_APPEND_CHAR=""
+                fi
+                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+                echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
+
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../${_ENV} \
-                 --parameters "unit_name=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')$(printf "%0*d\n" $((${#_LINES}+1)) ${_INSTANCESTART})" \
+                 --parameters "unit_name=${_UNIT_NAME_FINAL}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -541,7 +583,7 @@ function create_update_omu {
 			#####
 			# Delete the old stack
 			#####
-	                heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+	                heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
 			#####
 			# Wait until has been deleted
@@ -675,7 +717,7 @@ function init_omu {
                 elif [[ "${_ACTION}" == "Update" ]] # In this case an update might delete the running VM so cannot be put in a new/different server group
                 then
                         _SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
-                        if [[ "${_SERVER_GROUP_ID}" == "" ]]
+                        if [[ "${_SERVER_GROUP_ID}" == "" ]] && ${_SERVER_GROUP}
                         then
 				echo -e -n "${YELLOW} Warning, the Stack ${_STACKNAME}${_INSTANCESTART} has been created without Server Groups so it will keep not using them.${NC}"
                                 _HOT=$(echo ${_HOT}_no_server_group)
@@ -685,11 +727,32 @@ function init_omu {
                 _HOT=$(echo ${_HOT}.yaml)
                 echo -e "${GREEN} [OK]${NC}"
 
-        	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
+                echo -e -n "Identifying the right Unit Name to be used ...\t\t"
+                _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
+                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        _UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
+                fi
+
+                if [[ "$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')" != "none" ]]
+                then
+                        _UNIT_NAME_APPEND_STATIC_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')
+                else
+                        _UNIT_NAME_APPEND_STATIC_CHAR=""
+                fi
+                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
+                else
+                        _UNIT_NAME_APPEND_CHAR=""
+                fi
+                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+                echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
+
 		heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
 		 --template-file ${_HOT} \
 		 --environment-file ../${_ENV} \
-                 --parameters "unit_name=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')$(printf "%0*d\n" $((${#_LINES}+1)) ${_INSTANCESTART})" \
+                 --parameters "unit_name=${_UNIT_NAME_FINAL}" \
 		 --parameters "admin_network_port=${_ADMIN_PORTID}" \
 		 --parameters "admin_network_mac=${_ADMIN_MAC}" \
 		 --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -743,7 +806,7 @@ function create_update_vmasu {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
                         #####
                         # Wait until has been deleted
@@ -877,7 +940,7 @@ function init_vmasu {
                 elif [[ "${_ACTION}" == "Update" ]] # In this case an update might delete the running VM so cannot be put in a new/different server group
                 then
                         _SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
-                        if [[ "${_SERVER_GROUP_ID}" == "" ]]
+                        if [[ "${_SERVER_GROUP_ID}" == "" ]] && ${_SERVER_GROUP}
                         then
 				echo -e -n "${YELLOW} Warning, the Stack ${_STACKNAME}${_INSTANCESTART} has been created without Server Groups so it will keep not using them.${NC}"
                                 _HOT=$(echo ${_HOT}_no_server_group)
@@ -887,11 +950,32 @@ function init_vmasu {
                 _HOT=$(echo ${_HOT}.yaml)
                 echo -e "${GREEN} [OK]${NC}"
 
-        	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
+                echo -e -n "Identifying the right Unit Name to be used ...\t\t"
+                _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
+                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        _UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
+                fi
+
+                if [[ "$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')" != "none" ]]
+                then
+                        _UNIT_NAME_APPEND_STATIC_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')
+                else
+                        _UNIT_NAME_APPEND_STATIC_CHAR=""
+                fi
+                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
+                else
+                        _UNIT_NAME_APPEND_CHAR=""
+                fi
+                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+                echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
+
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../${_ENV} \
-                 --parameters "unit_name=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')$(printf "%0*d\n" $((${#_LINES}+1)) ${_INSTANCESTART})" \
+                 --parameters "unit_name=${_UNIT_NAME_FINAL}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -931,7 +1015,7 @@ function create_update_mau {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
                         #####
                         # Wait until has been deleted
@@ -1055,7 +1139,7 @@ function init_mau {
                 elif [[ "${_ACTION}" == "Update" ]] # In this case an update might delete the running VM so cannot be put in a new/different server group
                 then
                         _SERVER_GROUP_ID=$(nova server-group-list|grep $(heat resource-list ${_STACKNAME}${_INSTANCESTART}|grep "OS::Nova::Server"|awk '{print $4}')|awk '{print $2}')
-                        if [[ "${_SERVER_GROUP_ID}" == "" ]]
+                        if [[ "${_SERVER_GROUP_ID}" == "" ]] && ${_SERVER_GROUP}
                         then
 				echo -e -n "${YELLOW} Warning, the Stack ${_STACKNAME}${_INSTANCESTART} has been created without Server Groups so it will keep not using them.${NC}"
                                 _HOT=$(echo ${_HOT}_no_server_group)
@@ -1065,11 +1149,32 @@ function init_mau {
                 _HOT=$(echo ${_HOT}.yaml)
                 echo -e "${GREEN} [OK]${NC}"
 
-        	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
+                echo -e -n "Identifying the right Unit Name to be used ...\t\t"
+                _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
+                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        _UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
+                fi
+
+                if [[ "$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')" != "none" ]]
+                then
+                        _UNIT_NAME_APPEND_STATIC_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')
+                else
+                        _UNIT_NAME_APPEND_STATIC_CHAR=""
+                fi
+                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
+                else
+                        _UNIT_NAME_APPEND_CHAR=""
+                fi
+                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+                echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
+
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../${_ENV} \
-                 --parameters "unit_name=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')$(printf "%0*d\n" $((${#_LINES}+1)) ${_INSTANCESTART})" \
+                 --parameters "unit_name=${_UNIT_NAME_FINAL}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -1122,7 +1227,7 @@ function create_update_dsu {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
                         #####
                         # Wait until has been deleted
@@ -1266,11 +1371,32 @@ function init_dsu {
 		_HOT=$(echo ${_HOT}.yaml)
                 echo -e "${GREEN} [OK]${NC}"
 
-        	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
+                echo -e -n "Identifying the right Unit Name to be used ...\t\t"
+                _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
+                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        _UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
+                fi
+
+                if [[ "$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')" != "none" ]]
+                then
+                        _UNIT_NAME_APPEND_STATIC_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')
+                else
+                        _UNIT_NAME_APPEND_STATIC_CHAR=""
+                fi
+                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
+                else
+                        _UNIT_NAME_APPEND_CHAR=""
+                fi
+                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+                echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
+
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../${_ENV} \
-                 --parameters "unit_name=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')$(printf "%0*d\n" $((${#_LINES}+1)) ${_INSTANCESTART})" \
+                 --parameters "unit_name=${_UNIT_NAME_FINAL}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -1327,7 +1453,7 @@ function create_update_smu {
                         #####
                         # Delete the old stack
                         #####
-                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
+                        heat stack-delete ${_ASSUMEYES} ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true soft
 
                         #####
                         # Wait until has been deleted
@@ -1471,15 +1597,32 @@ function init_smu {
 		_HOT=$(echo ${_HOT}.yaml)
                 echo -e "${GREEN} [OK]${NC}"
 
-		#FIXME
-		smuHostName=$(perl -n -e '/$ARGV[0]_unit_name.+?(\S+)$/ and printf("${1}1%s",chr(96 + $ARGV[1]))' ../${_ENV} ${_UNITLOWER} ${_INSTANCESTART} 2>/dev/null) 
-		echo -e "${GREEN}Note - $NC SMU Hostname will be $smuHostName "
+                echo -e -n "Identifying the right Unit Name to be used ...\t\t"
+                _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
+                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        _UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
+                fi
 
-        	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
+                if [[ "$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')" != "none" ]]
+                then
+                        _UNIT_NAME_APPEND_STATIC_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')
+                else
+                        _UNIT_NAME_APPEND_STATIC_CHAR=""
+                fi
+                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
+                else
+                        _UNIT_NAME_APPEND_CHAR=""
+                fi
+                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+                echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
+
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../${_ENV} \
-                 --parameters "unit_name=$smuHostName" \
+                 --parameters "unit_name=${_UNIT_NAME_FINAL}" \
                  --parameters "admin_network_port=${_ADMIN_PORTID}" \
                  --parameters "admin_network_mac=${_ADMIN_MAC}" \
                  --parameters "admin_network_ip=${_ADMIN_IP}" \
@@ -1722,6 +1865,81 @@ function port_securitygroupcleanup {
 	else
 		neutron port-update --no-security-groups ${_PORT} >/dev/null 2>&1 || exit_for_error "Error, During Neutron Port ${_ADMIN_PORTID} Security Group Clean Up." false soft
 	fi
+}
+
+#####
+# Algoritm to convert decimal numbers to alphabet numbers.
+# Quite a nightmare developing it
+# Here the results https://www.minus40.info/sky/alphabetcountdec.html
+# e.g.
+# 0 = z
+# 1 = a
+# 2 = b
+# 26 = z
+# 27 = aa
+# 1989 = bxm
+# 2050 = bzv
+#####
+function alphabet_number_counter {
+	ALPHBET[0]=z
+	ALPHBET[1]=a
+	ALPHBET[2]=b
+	ALPHBET[3]=c
+	ALPHBET[4]=d
+	ALPHBET[5]=e
+	ALPHBET[6]=f
+	ALPHBET[7]=g
+	ALPHBET[8]=h
+	ALPHBET[9]=i
+	ALPHBET[10]=j
+	ALPHBET[11]=k
+	ALPHBET[12]=l
+	ALPHBET[13]=m
+	ALPHBET[14]=n
+	ALPHBET[15]=o
+	ALPHBET[16]=p
+	ALPHBET[17]=q
+	ALPHBET[18]=r
+	ALPHBET[19]=s
+	ALPHBET[20]=t
+	ALPHBET[21]=u
+	ALPHBET[22]=v
+	ALPHBET[23]=w
+	ALPHBET[24]=x
+	ALPHBET[25]=y
+	ALPHBET[26]=z
+	
+	_NUMBER=$1
+
+	_MOD=$((${_NUMBER} % 26))
+	if (( ${_MOD} == 0 ))
+	then	
+		_INIT_DIV=$(( (${_NUMBER}-1)/26))
+	else
+		_INIT_DIV=$((${_NUMBER}/26))
+	fi
+	_RESULTSUFFIX=${ALPHBET[ ${_MOD} ]}
+	if (( ${_INIT_DIV} <= 26 && ${_NUMBER} > 26 ))
+	then
+		_MOD=$((${_INIT_DIV} % 26))
+		_RESULT=${ALPHBET[ ${_MOD} ]}
+	else
+		while (( ${_INIT_DIV} > 26 ))
+		do
+			_DIV=$((${_INIT_DIV} / 26))
+			_MOD=$((${_INIT_DIV} % 26))
+			if (( ${_MOD} == 0 ))
+			then
+				_DIV=$((${_DIV}-1))
+			fi
+			_RESULT=${ALPHBET[ ${_DIV} ]}
+			_RESULT=$(echo ${_RESULT}${ALPHBET[ ${_MOD} ]} )
+			_INIT_DIV=${_DIV}
+		done
+	fi
+	
+	echo ${_RESULT}${_RESULTSUFFIX}
+
 }
 #####
 # Write the input args into variable
@@ -2179,6 +2397,15 @@ else
 	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
 	                        echo -e -n "\n${RED}It has to be a Number, e.g. 123${NC}"
 	                fi
+                elif [[ "${_EXPECTEDVALUE}" == "string|number" ]]
+                then
+                        echo "${_VALUEFOUND}"|grep -E "[a-zA-Z_-\.0-9]" >/dev/null 2>&1
+                        if [[ "${?}" != "0" ]]
+                        then
+                                _EXIT=true
+                                echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+                                echo -e -n "\n${RED}It has to be either a Number or a String, e.g. 1${NC}"
+                        fi
 	        elif [[ "${_EXPECTEDVALUE}" == "ip" ]]
 	        then
 	                echo "${_VALUEFOUND}"|grep -E "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" >/dev/null 2>&1
