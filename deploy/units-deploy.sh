@@ -1468,13 +1468,12 @@ function init_smu {
 			fi
 		fi
 		
-		#####   Change of smu host name !
-		
-		smuHostName=$(perl -n -e '/$ARGV[0]_unit_name.+?(\S+)$/ and printf("${1}1%s",chr(96 + $ARGV[1]))' ../${_ENV} ${_UNITLOWER} ${_INSTANCESTART} 2>/dev/null) 
-		echo -e "${GREEN}Note - $NC SMU Hostname will be $smuHostName "
-		
 		_HOT=$(echo ${_HOT}.yaml)
                 echo -e "${GREEN} [OK]${NC}"
+
+		#FIXME
+		smuHostName=$(perl -n -e '/$ARGV[0]_unit_name.+?(\S+)$/ and printf("${1}1%s",chr(96 + $ARGV[1]))' ../${_ENV} ${_UNITLOWER} ${_INSTANCESTART} 2>/dev/null) 
+		echo -e "${GREEN}Note - $NC SMU Hostname will be $smuHostName "
 
         	_LINES=$(cat ../${_ADMINCSVFILE}.tmp|wc -l)
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -2345,7 +2344,7 @@ then
 		net_validation ${_UNIT} sip
 
 		#####
-		# Validate the network for CMS
+		# Init the CMS Creation
 		#####
 		create_update_cms
 		echo -e "${GREEN}DONE${NC}"
@@ -2375,7 +2374,7 @@ then
 		net_validation ${_UNIT} sz
 
 		#####
-		# Ini the OMU Creation
+		# Init the OMU Creation
 		#####
 		create_update_omu
 		echo -e "${GREEN}DONE${NC}"
@@ -2419,7 +2418,7 @@ then
 		net_validation ${_UNIT} sz
 
 		#####
-		# Ini the DSU Creation
+		# Init the DSU Creation
 		#####
 		create_update_dsu
 		echo -e "${GREEN}DONE${NC}"
@@ -2434,7 +2433,7 @@ then
 		net_validation ${_UNIT} sz
 
 		#####
-		# Ini the SMU Creation
+		# Init the SMU Creation
 		#####
 		create_update_smu
 		echo -e "${GREEN}DONE${NC}"

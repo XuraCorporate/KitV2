@@ -99,13 +99,13 @@ parameter_defaults:
   media_network_vlan: none
 
   # Flavor Section
-  cms_flavor_name: m1.small
-  lvu_flavor_name: m1.small
-  omu_flavor_name: m1.small
-  vm-asu_flavor_name: m1.small
-  mau_flavor_name: m1.small
+  cms_flavor_name: XURA_2c_4G_50G_Standard
+  lvu_flavor_name: XURA_2c_4G_50G_Standard
+  omu_flavor_name: XURA_2c_4G_50G_Standard
+  vm-asu_flavor_name: XURA_2c_4G_50G_Standard
+  mau_flavor_name: XURA_2c_4G_50G_Standard
   dsu_flavor_name: DSU
-  smu_flavor_name: DSU
+  smu_flavor_name: XURA_2c_4G_50G_Standard
 
   # Source Image to be used for the VM boot.
   # The Image can come from a Glance Image or from a Cinder Volume.
@@ -132,32 +132,32 @@ parameter_defaults:
   ####
   cms_local_boot: True
   cms_image_volume_size: 20
-  cms_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
-  cms_image: Image_for_Stack_1
+  cms_image_id: 7e40e84d-2ec1-45b8-9053-3b43fda0c143 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  cms_image: swp-RedHat-Linux-OS-KVM-1.1.0.0-02_6.6.1.0-01
   lvu_local_boot: True
   lvu_image_volume_size: 20
-  lvu_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
-  lvu_image: Image_for_Stack_1
+  lvu_image_id: 7e40e84d-2ec1-45b8-9053-3b43fda0c143 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  lvu_image: swp-RedHat-Linux-OS-KVM-1.1.0.0-02_6.6.1.0-01
   omu_local_boot: True
   omu_image_volume_size: 20
-  omu_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
-  omu_image: Image_for_Stack_1
+  omu_image_id: 7e40e84d-2ec1-45b8-9053-3b43fda0c143 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  omu_image: swp-RedHat-Linux-OS-KVM-1.1.0.0-02_6.6.1.0-01
   vm-asu_local_boot: True
   vm-asu_image_volume_size: 20
-  vm-asu_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
-  vm-asu_image: Image_for_Stack_1
+  vm-asu_image_id: 7e40e84d-2ec1-45b8-9053-3b43fda0c143 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  vm-asu_image: swp-RedHat-Linux-OS-KVM-1.1.0.0-02_6.6.1.0-01
   mau_local_boot: True
   mau_image_volume_size: 20
-  mau_image_id: d7c201ea-77c8-4f85-ab9c-5925da7a7287 #LP: https://bugs.launchpad.net/heat/+bug/1559186
-  mau_image: Image_for_Stack_1
+  mau_image_id: 1b896235-9544-4579-ab6d-84337266dab3 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  mau_image: XURA_MAU_1.0.0.0_01_5060
   dsu_local_boot: True
   dsu_image_volume_size: 20
-  dsu_image_id: 535d5fee-93d4-4f99-84f2-242dfca13dd9 #LP: https://bugs.launchpad.net/heat/+bug/1559186
-  dsu_image: platform
+  dsu_image_id: 7e40e84d-2ec1-45b8-9053-3b43fda0c143 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  dsu_image: swp-RedHat-Linux-OS-KVM-1.1.0.0-02_6.6.1.0-01
   smu_local_boot: True
   smu_image_volume_size: 20
-  smu_image_id: 535d5fee-93d4-4f99-84f2-242dfca13dd9 #LP: https://bugs.launchpad.net/heat/+bug/1559186
-  smu_image: platform
+  smu_image_id: 7e40e84d-2ec1-45b8-9053-3b43fda0c143 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  smu_image: swp-RedHat-Linux-OS-KVM-1.1.0.0-02_6.6.1.0-01
 
   #####
   # Cinder Source Section
@@ -170,7 +170,7 @@ parameter_defaults:
   omu_volume_id: d8842665-3408-42d6-9ae8-78468b8b39a9
   omu_volume_size: 8
   vm-asu_volume_id: d8842665-3408-42d6-9ae8-78468b8b39a9
-  vm-asu_volume_size: 20
+  vm-asu_volume_size: 8
   mau_volume_id: d8842665-3408-42d6-9ae8-78468b8b39a9
   mau_volume_size: 8
   dsu_volume_id: d8842665-3408-42d6-9ae8-78468b8b39a9

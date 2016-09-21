@@ -19,6 +19,7 @@ function netconfig {
 		then
 			_GW=${6}
 			echo "GATEWAY=${_GW}" >> ${_NETFILE}
+			echo "DNS1=\"\"" >> ${_NETFILE}
 		fi
 		echo "TYPE=Ethernet" >> ${_NETFILE}
 		if ${_SYSTEMDINIT}
@@ -44,6 +45,7 @@ function netconfig {
                 then
                         _GW=${6}
                         echo "GATEWAY=${_GW}" >> ${_NETFILE}.${_VLAN}
+			echo "DNS1=\"\"" >> ${_NETFILE}.${_VLAN}
                 fi
                 if ${_SYSTEMDINIT}
                 then
@@ -69,6 +71,9 @@ for _OLDNET in $(ls /etc/sysconfig/network-scripts/ifcfg-*|grep -v ifcfg-lo)
 do
 	rm -f ${_OLDNET}
 done
+# Clean resolv.conf
+> /etc/resolv.conf
+# Configure the Network
 netconfig ${_SYSTEMD} _ADMIN_VLAN_ _ADMIN_MAC_ _ADMIN_IP_ _ADMIN_NETMASK_
 netconfig ${_SYSTEMD} _SZ_VLAN_ _SZ_MAC_ _SZ_IP_ _SZ_NETMASK_
 netconfig ${_SYSTEMD} _SIP_VLAN_ _SIP_MAC_ _SIP_IP_ _SIP_NETMASK_
@@ -82,9 +87,19 @@ EOF
 _DOMAIN=_DOMAINNAME_
 if [[ "${_DOMAIN}" != "none" ]]
 then
-	echo "fqdn: _HOSTNAME_${_DOMAIN}" >> /etc/cloud/cloud.cfg.d/99_hostname.cfg
+        echo "fqdn: _HOSTNAME_${_DOMAIN}" >> /etc/cloud/cloud.cfg.d/99_hostname.cfg
+        cat > /etc/hosts << EOF
+127.0.0.1       localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1             localhost localhost.localdomain localhost6 localhost6.localdomain6
+_SZ_IP_   _HOSTNAME_ _HOSTNAME_${_DOMAIN}
+EOF
 else
-	_DOMAIN=""
+        _DOMAIN=""
+        cat > /etc/hosts << EOF
+127.0.0.1       localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1             localhost localhost.localdomain localhost6 localhost6.localdomain6
+_SZ_IP_   _HOSTNAME_
+EOF
 fi
 
 cloud-init init
