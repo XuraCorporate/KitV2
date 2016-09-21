@@ -383,14 +383,9 @@ then
 	echo -e -n "Verifying if Server Group Quota ...\t\t"
 	_GROUPS=$(cat ../${_ENV}|grep server_group_quantity|awk '{s+=$2} END {print s}')
 	_GROUPSQUOTA=$(nova quota-show|grep server_groups|awk '{print $4}')	
-	if (( "${_GROUPS}" > "${_GROUPSQUOTA}" ))
+	if (( "${_GROUPS}" > "${_GROUPSQUOTA}" )) && [[ "${_GROUPSQUOTA}" != "-1" ]]
 	then
-		#exit_for_error "Error, In the environemnt file has been defined to create ${_GROUPS} Server Groups but the user quota can only allow to have up to ${_GROUPSQUOTA} Server Groups. Recude the number or call the Administrator to increase the Quota." true
-		# display just warning cause there is aporblem to check quota if you are not admin user (it diplay the defaults quota and not the actual quata ...)
-		echo -e "${RED} [FAIL]${NC}"
-		echo -e $YELLOW "Warning, user quota can only allow to have up to ${_GROUPSQUOTA} Server Groups but the environemnt file is defined to create ${_GROUPS} Server Groups."
-		echo -e $YELLOW "\tReduce the number or call the Administrator to increase the Quota."
-		echo -e $NC
+		exit_for_error "Error, In the environemnt file has been defined to create ${_GROUPS} Server Groups but the user quota can only allow to have up to ${_GROUPSQUOTA} Server Groups. Recude the number or call the Administrator to increase the Quota." true
 	else 
 		echo -e "${GREEN} [OK]${NC}"
 	fi

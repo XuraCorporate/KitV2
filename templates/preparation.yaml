@@ -45,6 +45,14 @@ parameters:
     type: string
     default: anti-affinity
     description: Server Group Policy
+  dsu_server_group_policy:
+    type: string
+    default: anti-affinity
+    description: Server Group Policy
+  smu_server_group_policy:
+    type: string
+    default: anti-affinity
+    description: Server Group Policy
   cms_server_group_quantity:
     type: number
     default: 4
@@ -65,6 +73,14 @@ parameters:
     type: number
     default: 4
     description: Number of Server Group Group to be created for MAU
+  dsu_server_group_quantity:
+    type: number
+    default: 4
+    description: Number of Server Group Group to be created for DSU
+  smu_server_group_quantity:
+    type: number
+    default: 4
+    description: Number of Server Group Group to be created for SMU
 #  keypair_name:
 #    type: string
 #    description: Keypair for the unit
@@ -172,6 +188,25 @@ resources:
         properties:
           name: MAUServerGroup%index%
           policies: [ { get_param: mau_server_group_policy } ]
+  DSUServerGroups:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: dsu_server_group_quantity }
+      resource_def:
+        type: OS::Nova::ServerGroup
+        properties:
+          name: DSUServerGroup%index%
+          policies: [ { get_param: dsu_server_group_policy } ]
+  SMUServerGroups:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: smu_server_group_quantity }
+      resource_def:
+        type: OS::Nova::ServerGroup
+        properties:
+          name: SMUServerGroup%index%
+          policies: [ { get_param: smu_server_group_policy } ]
+
 #  KeyPair:
 #    type: OS::Nova::KeyPair
 #    properties:
