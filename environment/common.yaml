@@ -77,23 +77,23 @@ parameter_defaults:
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
   sz_network_vlan: none
 
-  # SIP Internal Network Section 
-  sip_network_name: "provider-vlan725"
-  sip_network_cidr: "10.107.205.0/24"
-  sip_network_netmask: "255.255.255.0"
+  # SIP Internal Network Section
+  sip_network_name: "integ-NET-SIP-Internal"
+  sip_network_cidr: "172.17.27.0/27"
+  sip_network_netmask: "255.255.255.224"
   sip_security_group_enabled: true
-  # With OpenStaqck liberty a security group is necessary in order to have network communications - in production this will be an SR-IOV port but for testing purpose it is required 
+  # With OpenStaqck liberty a security group is necessary in order to have network communications - in production this will be an SR-IOV port but for testing purpose it is required
   sip_security_group_name: NoFiltering
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
   sip_network_vlan: none
 
-  # Media Network Section 
-  media_network_name: "provider-vlan726"
-  media_network_cidr: "10.107.206.0/24"
-  media_network_netmask: "255.255.255.0"
-  media_network_gateway: "10.107.206.1" # For CMS
+  # Media Network Section
+  media_network_name: "integ-NET-SZ-Internal"
+  media_network_cidr: "172.17.26.0/26"
+  media_network_netmask: "255.255.255.192"
+  media_network_gateway: "172.17.26.1" # For CMS
   media_security_group_enabled: true
-  # With OpenStaqck liberty a security group is necessary in order to have network communications - in production this will be an SR-IOV port but for testing purpose it is required 
+  # With OpenStaqck liberty a security group is necessary in order to have network communications - in production this will be an SR-IOV port but for testing purpose it is required
   media_security_group_name: NoFiltering
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
   media_network_vlan: none
