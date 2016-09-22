@@ -64,11 +64,11 @@ parameter_defaults:
   smu_append_letter_index_unit_name: true
 
   # Enable or disable the server group policy
-  cms_server_group_enable: true
-  lvu_server_group_enable: true
-  omu_server_group_enable: true
-  vm-asu_server_group_enable: true
-  mau_server_group_enable: true
+  cms_server_group_enable: false
+  lvu_server_group_enable: false
+  omu_server_group_enable: false
+  vm-asu_server_group_enable: false
+  mau_server_group_enable: false
   dsu_server_group_enable: false
   smu_server_group_enable: false
 
