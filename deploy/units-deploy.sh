@@ -256,7 +256,7 @@ function init_cms {
 			_HOT="../templates/${_UNITLOWER}_volume"
 		fi
 
-		if [[ "${_ACTION}" == "Create" ]] && ${_SERVER_GROUP}
+		if [[ "${_ACTION}" == "Create" || "${_ACTION}" == "Replace" ]] && ${_SERVER_GROUP}
 		then
 			_SERVER_GROUP_ID=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}
 		elif [[ "${_ACTION}" == "Create" ]] && ! ${_SERVER_GROUP} # in this case _SERVER_GROUP=false
@@ -275,26 +275,32 @@ function init_cms {
 		_HOT=$(echo ${_HOT}.yaml)
                 echo -e "${GREEN} [OK]${NC}"
 
-		echo -e -n "Identifying the right Unit Name to be used ...\t\t"
-		_UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
-		if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
-		then
-			_UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
-		fi
-		
-		if [[ "$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')" != "none" ]]
-		then
-		        _UNIT_NAME_APPEND_STATIC_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')
-		else
-		        _UNIT_NAME_APPEND_STATIC_CHAR=""
-		fi
-		if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
-		then
-		        _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
-		else
-		        _UNIT_NAME_APPEND_CHAR=""
-		fi
-		_UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+                echo -e -n "Identifying the right Unit Name to be used ...\t\t"
+                _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
+                _ENABLE_UNIT_NAME_SUFFIX=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_SUFFIX}
+                then
+                        _UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
+                fi
+
+                if [[ "$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')" != "none" ]]
+                then
+                        _UNIT_NAME_APPEND_STATIC_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_static_letter_index_unit_name/ {print $2}')
+                else
+                        _UNIT_NAME_APPEND_STATIC_CHAR=""
+                fi
+                _ENABLE_UNIT_NAME_APPEND_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_APPEND_CHAR}
+                then
+                        _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
+                else
+                        _UNIT_NAME_APPEND_CHAR=""
+                fi
+                if ! ${_ENABLE_UNIT_NAME_SUFFIX} && ! ${_ENABLE_UNIT_NAME_APPEND_CHAR}
+                then
+                        _UNIT_NAME_INDEX=${_INSTANCESTART}
+                fi
+                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR}${_UNIT_NAME_INDEX})
                 echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
 
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -485,7 +491,7 @@ function init_lvu {
                         _HOT="../templates/${_UNITLOWER}_volume"
                 fi
 
-                if [[ "${_ACTION}" == "Create" ]] && ${_SERVER_GROUP}
+		if [[ "${_ACTION}" == "Create" || "${_ACTION}" == "Replace" ]] && ${_SERVER_GROUP}
                 then
                         _SERVER_GROUP_ID=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}
                 elif [[ "${_ACTION}" == "Create" ]] && ! ${_SERVER_GROUP} # in this case _SERVER_GROUP=false
@@ -506,7 +512,8 @@ function init_lvu {
 
                 echo -e -n "Identifying the right Unit Name to be used ...\t\t"
                 _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
-                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                _ENABLE_UNIT_NAME_SUFFIX=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_SUFFIX}
                 then
                         _UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
                 fi
@@ -517,13 +524,18 @@ function init_lvu {
                 else
                         _UNIT_NAME_APPEND_STATIC_CHAR=""
                 fi
-                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                _ENABLE_UNIT_NAME_APPEND_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_APPEND_CHAR}
                 then
                         _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
                 else
                         _UNIT_NAME_APPEND_CHAR=""
                 fi
-                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+                if ! ${_ENABLE_UNIT_NAME_SUFFIX} && ! ${_ENABLE_UNIT_NAME_APPEND_CHAR}
+                then
+                        _UNIT_NAME_INDEX=${_INSTANCESTART}
+                fi
+                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR}${_UNIT_NAME_INDEX})
                 echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
 
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -708,7 +720,7 @@ function init_omu {
                         _HOT="../templates/${_UNITLOWER}_volume"
                 fi
 
-                if [[ "${_ACTION}" == "Create" ]] && ${_SERVER_GROUP}
+		if [[ "${_ACTION}" == "Create" || "${_ACTION}" == "Replace" ]] && ${_SERVER_GROUP}
                 then
                         _SERVER_GROUP_ID=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}
                 elif [[ "${_ACTION}" == "Create" ]] && ! ${_SERVER_GROUP} # in this case _SERVER_GROUP=false
@@ -729,7 +741,8 @@ function init_omu {
 
                 echo -e -n "Identifying the right Unit Name to be used ...\t\t"
                 _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
-                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                _ENABLE_UNIT_NAME_SUFFIX=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_SUFFIX}
                 then
                         _UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
                 fi
@@ -740,13 +753,18 @@ function init_omu {
                 else
                         _UNIT_NAME_APPEND_STATIC_CHAR=""
                 fi
-                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                _ENABLE_UNIT_NAME_APPEND_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_APPEND_CHAR}
                 then
                         _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
                 else
                         _UNIT_NAME_APPEND_CHAR=""
                 fi
-                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+                if ! ${_ENABLE_UNIT_NAME_SUFFIX} && ! ${_ENABLE_UNIT_NAME_APPEND_CHAR}
+                then
+                        _UNIT_NAME_INDEX=${_INSTANCESTART}
+                fi
+                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR}${_UNIT_NAME_INDEX})
                 echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
 
 		heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -931,7 +949,7 @@ function init_vmasu {
                         _HOT="../templates/${_UNITLOWER}_volume"
                 fi
 
-                if [[ "${_ACTION}" == "Create" ]] && ${_SERVER_GROUP}
+		if [[ "${_ACTION}" == "Create" || "${_ACTION}" == "Replace" ]] && ${_SERVER_GROUP}
                 then
                         _SERVER_GROUP_ID=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}
                 elif [[ "${_ACTION}" == "Create" ]] && ! ${_SERVER_GROUP} # in this case _SERVER_GROUP=false
@@ -952,7 +970,8 @@ function init_vmasu {
 
                 echo -e -n "Identifying the right Unit Name to be used ...\t\t"
                 _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
-                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                _ENABLE_UNIT_NAME_SUFFIX=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_SUFFIX}
                 then
                         _UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
                 fi
@@ -963,13 +982,18 @@ function init_vmasu {
                 else
                         _UNIT_NAME_APPEND_STATIC_CHAR=""
                 fi
-                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                _ENABLE_UNIT_NAME_APPEND_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_APPEND_CHAR}
                 then
                         _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
                 else
                         _UNIT_NAME_APPEND_CHAR=""
                 fi
-                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+                if ! ${_ENABLE_UNIT_NAME_SUFFIX} && ! ${_ENABLE_UNIT_NAME_APPEND_CHAR}
+                then
+                        _UNIT_NAME_INDEX=${_INSTANCESTART}
+                fi
+                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR}${_UNIT_NAME_INDEX})
                 echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
 
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -1130,7 +1154,7 @@ function init_mau {
                         _HOT="../templates/${_UNITLOWER}_volume"
                 fi
 
-                if [[ "${_ACTION}" == "Create" ]] && ${_SERVER_GROUP}
+		if [[ "${_ACTION}" == "Create" || "${_ACTION}" == "Replace" ]] && ${_SERVER_GROUP}
                 then
                         _SERVER_GROUP_ID=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}
                 elif [[ "${_ACTION}" == "Create" ]] && ! ${_SERVER_GROUP} # in this case _SERVER_GROUP=false
@@ -1151,7 +1175,8 @@ function init_mau {
 
                 echo -e -n "Identifying the right Unit Name to be used ...\t\t"
                 _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
-                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                _ENABLE_UNIT_NAME_SUFFIX=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_SUFFIX}
                 then
                         _UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
                 fi
@@ -1162,13 +1187,18 @@ function init_mau {
                 else
                         _UNIT_NAME_APPEND_STATIC_CHAR=""
                 fi
-                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                _ENABLE_UNIT_NAME_APPEND_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_APPEND_CHAR}
                 then
                         _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
                 else
                         _UNIT_NAME_APPEND_CHAR=""
                 fi
-                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+                if ! ${_ENABLE_UNIT_NAME_SUFFIX} && ! ${_ENABLE_UNIT_NAME_APPEND_CHAR}
+                then
+                        _UNIT_NAME_INDEX=${_INSTANCESTART}
+                fi
+                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR}${_UNIT_NAME_INDEX})
                 echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
 
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -1352,7 +1382,7 @@ function init_dsu {
 			_HOT="../templates/${_UNITLOWER}_volume"
 		fi
 
-		if [[ "${_ACTION}" == "Create" ]] && ${_SERVER_GROUP}
+		if [[ "${_ACTION}" == "Create" || "${_ACTION}" == "Replace" ]] && ${_SERVER_GROUP}
 		then
 			_SERVER_GROUP_ID=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}
 		elif [[ "${_ACTION}" == "Create" ]] && ! ${_SERVER_GROUP} # in this case _SERVER_GROUP=false
@@ -1373,7 +1403,8 @@ function init_dsu {
 
                 echo -e -n "Identifying the right Unit Name to be used ...\t\t"
                 _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
-                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                _ENABLE_UNIT_NAME_SUFFIX=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_SUFFIX}
                 then
                         _UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
                 fi
@@ -1384,13 +1415,18 @@ function init_dsu {
                 else
                         _UNIT_NAME_APPEND_STATIC_CHAR=""
                 fi
-                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                _ENABLE_UNIT_NAME_APPEND_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_APPEND_CHAR}
                 then
                         _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
                 else
                         _UNIT_NAME_APPEND_CHAR=""
                 fi
-                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+                if ! ${_ENABLE_UNIT_NAME_SUFFIX} && ! ${_ENABLE_UNIT_NAME_APPEND_CHAR}
+                then
+                        _UNIT_NAME_INDEX=${_INSTANCESTART}
+                fi
+                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR}${_UNIT_NAME_INDEX})
                 echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
 
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
@@ -1578,7 +1614,7 @@ function init_smu {
 			_HOT="../templates/${_UNITLOWER}_volume"
 		fi
 
-		if [[ "${_ACTION}" == "Create" ]] && ${_SERVER_GROUP}
+		if [[ "${_ACTION}" == "Create" || "${_ACTION}" == "Replace" ]] && ${_SERVER_GROUP}
 		then
 			_SERVER_GROUP_ID=${_GROUP[ $((${RANDOM}%${_GROUPNUMBER})) ]}
 		elif [[ "${_ACTION}" == "Create" ]] && ! ${_SERVER_GROUP} # in this case _SERVER_GROUP=false
@@ -1599,7 +1635,8 @@ function init_smu {
 
                 echo -e -n "Identifying the right Unit Name to be used ...\t\t"
                 _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
-                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+		_ENABLE_UNIT_NAME_SUFFIX=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_SUFFIX}
                 then
                         _UNIT_NAME_SUFFIX=$(printf "%0$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_suffix_index_unit_name/ {print $2}')d" ${_INSTANCESTART})
                 fi
@@ -1610,13 +1647,18 @@ function init_smu {
                 else
                         _UNIT_NAME_APPEND_STATIC_CHAR=""
                 fi
-                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+		_ENABLE_UNIT_NAME_APPEND_CHAR=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_append_letter_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
+                if ${_ENABLE_UNIT_NAME_APPEND_CHAR}
                 then
                         _UNIT_NAME_APPEND_CHAR=$(alphabet_number_counter ${_INSTANCESTART})
                 else
                         _UNIT_NAME_APPEND_CHAR=""
                 fi
-                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR})
+		if ! ${_ENABLE_UNIT_NAME_SUFFIX} && ! ${_ENABLE_UNIT_NAME_APPEND_CHAR}
+		then
+			_UNIT_NAME_INDEX=${_INSTANCESTART}
+		fi
+                _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR}${_UNIT_NAME_INDEX})
                 echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
 
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
