@@ -275,6 +275,15 @@ else
 	                        echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
 	                        echo -e -n "\n${RED}It has to be a Number, e.g. 123${NC}"
 	                fi
+                elif [[ "${_EXPECTEDVALUE}" == "string|number" ]]
+                then
+                        echo "${_VALUEFOUND}"|grep -E "[a-zA-Z_-\.0-9]" >/dev/null 2>&1
+                        if [[ "${?}" != "0" ]]
+                        then
+                                _EXIT=true
+                                echo -e -n "\n${YELLOW}Error, value ${NC}${RED}${_VALUEFOUND}${NC}${YELLOW} for parameter ${NC}${RED}${_PARAMFOUND}${NC}${YELLOW} in environment file is not correct.${NC}"
+                                echo -e -n "\n${RED}It has to be either a Number or a String, e.g. 1${NC}"
+                        fi
 	        elif [[ "${_EXPECTEDVALUE}" == "ip" ]]
 	        then
 	                echo "${_VALUEFOUND}"|grep -E "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" >/dev/null 2>&1
