@@ -22,11 +22,11 @@ parameter_defaults:
 
   # Unit Name
   # After the VM creation it will be <UnitName><Index> e.g. vm-asu01
-  # cms_unit_name: Name of the Unit
-  # cms_enable_suffix_index_unit_name: Enable the N digit suffix, true or false
-  # cms_suffix_index_unit_name: Number of digits, like 4
-  # cms_append_static_letter_index_unit_name: static string before the Alphabet Numbers, true or false
-  # cms_append_letter_index_unit_name: Alphabet Numbers using the unit index, like ab replaced by 28
+  # _unit_name: Name of the Unit
+  # _enable_suffix_index_unit_name: Enable the N digit suffix, true or false
+  # _suffix_index_unit_name: Number of digits, like 4
+  # _append_static_letter_index_unit_name: static string before the Alphabet Numbers, true or false
+  # _append_letter_index_unit_name: Alphabet Numbers using the unit index, like ab replaced by 28
   cms_unit_name: cms-sip
   cms_enable_suffix_index_unit_name: true
   cms_suffix_index_unit_name: 4
