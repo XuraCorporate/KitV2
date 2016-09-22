@@ -146,6 +146,9 @@ function create_update_cms {
 			        #####
 			        echo -e -n "Cleaning up Neutron Port ...\t\t"
                 		port_securitygroupcleanup ${_ADMIN_PORTID} false
+                		port_securitygroupcleanup ${_SZ_PORTID} false
+                		port_securitygroupcleanup ${_SIP_PORTID} false
+                		port_securitygroupcleanup ${_MEDIA_PORTID} false
         			echo -e "${GREEN} [OK]${NC}"
 			        #####
 			        # Delete Stack
@@ -399,6 +402,7 @@ function create_update_lvu {
                                 #####
                                 echo -e -n "Cleaning up Neutron Port ...\t\t"
                                 port_securitygroupcleanup ${_ADMIN_PORTID} false
+                		port_securitygroupcleanup ${_SZ_PORTID} false
 				echo -e "${GREEN} [OK]${NC}"
                                 #####
                                 # Delete Stack
@@ -628,6 +632,7 @@ function create_update_omu {
                                 #####
                                 echo -e -n "Cleaning up Neutron Port ...\t\t"
                                 port_securitygroupcleanup ${_ADMIN_PORTID} false
+                		port_securitygroupcleanup ${_SZ_PORTID} false
                                 echo -e "${GREEN} [OK]${NC}"
                                 #####
                                 # Delete Stack
@@ -857,6 +862,7 @@ function create_update_vmasu {
                                 #####
                                 echo -e -n "Cleaning up Neutron Port ...\t\t"
                                 port_securitygroupcleanup ${_ADMIN_PORTID} false
+                		port_securitygroupcleanup ${_SZ_PORTID} false
                                 echo -e "${GREEN} [OK]${NC}"
                                 #####
                                 # Delete Stack
@@ -1290,6 +1296,7 @@ function create_update_dsu {
 			        #####
 			        echo -e -n "Cleaning up Neutron Port ...\t\t"
                 		port_securitygroupcleanup ${_ADMIN_PORTID} false
+                		port_securitygroupcleanup ${_SZ_PORTID} false
         			echo -e "${GREEN} [OK]${NC}"
 			        #####
 			        # Delete Stack
@@ -1522,6 +1529,7 @@ function create_update_smu {
 			        #####
 			        echo -e -n "Cleaning up Neutron Port ...\t\t"
                 		port_securitygroupcleanup ${_ADMIN_PORTID} false
+                		port_securitygroupcleanup ${_SZ_PORTID} false
         			echo -e "${GREEN} [OK]${NC}"
 			        #####
 			        # Delete Stack
