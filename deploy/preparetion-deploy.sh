@@ -1,4 +1,4 @@
-#!/bin/bash
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -415,6 +415,10 @@ then
 	# $ source <openstack rc file>
 	# $ neutron port-list --column id --format value|xargs -n1 neutron port-update --no-security-group
 	#####
+	echo -e -n "Cleaning all of the Neutron Ports ...\t\t"
+	neutron port-list --column id --format value|xargs -n1 neutron port-update --no-security-group >/dev/null 2>&1 || exit_for_error "Error, During Port Clean UP." true
+	echo -e "${GREEN} [OK]${NC}"
+
 	heat stack-list|grep -E "(cms|lvu|omu|vm-asu|mau)" >/dev/null 2>&1 && exit_for_error "Error, During Stack ${_ACTION}. Cannot delete it if any Unit Stacks are presents.\nThis is due to:\n - the associated Neutron Security Groups to the Neutron Ports.\n - the associated Nova Server Group to the Nova VMs."
 	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_ASSUMEYES} ${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
 elif [[ "${_ACTION}" != "Check" ]]
