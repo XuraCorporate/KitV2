@@ -83,12 +83,12 @@ parameter_defaults:
 
   # Count for Server Groups per Unit
   cms_server_group_quantity: 2
-  lvu_server_group_quantity: 2
-  omu_server_group_quantity: 2
-  vm-asu_server_group_quantity: 2
-  mau_server_group_quantity: 2
-  dsu_server_group_quantity: 2
-  smu_server_group_quantity: 2
+  lvu_server_group_quantity: 1
+  omu_server_group_quantity: 1
+  vm-asu_server_group_quantity: 1
+  mau_server_group_quantity: 1
+  dsu_server_group_quantity: 1
+  smu_server_group_quantity: 1
 
   # Admin Network Section
   admin_network_name: "provider2"
