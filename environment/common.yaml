@@ -28,32 +28,32 @@ parameter_defaults:
   # _append_static_letter_index_unit_name: static string before the Alphabet Numbers, true or false
   # _append_letter_index_unit_name: Alphabet Numbers using the unit index, like ab replaced by 28
   cms_unit_name: cms-sip
-  cms_enable_suffix_index_unit_name: true
+  cms_enable_suffix_index_unit_name: false
   cms_suffix_index_unit_name: 4
   cms_append_static_letter_index_unit_name: none
   cms_append_letter_index_unit_name: false
   lvu_unit_name: lvu
-  lvu_enable_suffix_index_unit_name: true
+  lvu_enable_suffix_index_unit_name: false
   lvu_suffix_index_unit_name: 4
   lvu_append_static_letter_index_unit_name: none
   lvu_append_letter_index_unit_name: false
   omu_unit_name: omu-au
-  omu_enable_suffix_index_unit_name: true
+  omu_enable_suffix_index_unit_name: false
   omu_suffix_index_unit_name: 4
   omu_append_static_letter_index_unit_name: none
   omu_append_letter_index_unit_name: false
   vm-asu_unit_name: vm-asu
-  vm-asu_enable_suffix_index_unit_name: true
+  vm-asu_enable_suffix_index_unit_name: false
   vm-asu_suffix_index_unit_name: 4
   vm-asu_append_static_letter_index_unit_name: none
   vm-asu_append_letter_index_unit_name: false
   mau_unit_name: mau
-  mau_enable_suffix_index_unit_name: true
+  mau_enable_suffix_index_unit_name: false
   mau_suffix_index_unit_name: 4
   mau_append_static_letter_index_unit_name: none
   mau_append_letter_index_unit_name: false
   dsu_unit_name: dsu
-  dsu_enable_suffix_index_unit_name: true
+  dsu_enable_suffix_index_unit_name: false
   dsu_suffix_index_unit_name: 4
   dsu_append_static_letter_index_unit_name: none
   dsu_append_letter_index_unit_name: false
