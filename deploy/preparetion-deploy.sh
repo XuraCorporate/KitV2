@@ -127,16 +127,20 @@ else
         echo -e "${YELLOW} [NOT AVAILABLE]${NC}"
 fi
 
-echo -e -n "Verifying git binary ...\t\t"
-which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find git and any changes will be commited." false soft
-echo -e "${GREEN} [OK]${NC}"
+_ENABLEGIT=false
+if ${_ENABLEGIT}
+then
+	echo -e -n "Verifying git binary ...\t\t"
+	which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find git and any changes will be commited." false soft
+	echo -e "${GREEN} [OK]${NC}"
+fi
 
 echo -e -n "Verifying dos2unix binary ...\t\t"
-which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find dos2unix binary, please install it\nThe installation will continue BUT the Wrapper cannot ensure the File Unix format consistency." false soft
+which dos2unix > /dev/null 2>&1 || exit_for_error "Error, Cannot find dos2unix binary, please install it\nThe installation will continue BUT the Wrapper cannot ensure the File Unix format consistency." false soft
 echo -e "${GREEN} [OK]${NC}"
 
 echo -e -n "Verifying md5sum binary ...\t\t"
-which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find md5sum binary." false hard
+which md5sum > /dev/null 2>&1 || exit_for_error "Error, Cannot find md5sum binary." false hard
 echo -e "${GREEN} [OK]${NC}"
 
 #####
@@ -151,7 +155,7 @@ do
 	#####
 	# Verify the MD5 after and before the dos2unix - eventually commit the changes
 	#####
-	if [[ "${_MD5BEFORE}" != "${_MD5AFTER}" ]]
+	if [[ "${_MD5BEFORE}" != "${_MD5AFTER}" ]] && ${_ENABLEGIT}
 	then
 		git add ${_FILE} >/dev/null 2>&1
 		git commit -m "Auto Commit Dos2Unix for file ${_FILE} conversion" >/dev/null 2>&1
