@@ -77,6 +77,8 @@ done
 netconfig ${_SYSTEMD} _ADMIN_VLAN_ _ADMIN_MAC_ _ADMIN_IP_ _ADMIN_NETMASK_ _ADMIN_GW_
 netconfig ${_SYSTEMD} _SZ_VLAN_ _SZ_MAC_ _SZ_IP_ _SZ_NETMASK_
 
+sed -e "s/#UseDNS yes/UseDNS no/g" -i /etc/ssh/sshd_config
+systemctl restart sshd || service sshd restart
 cat > /etc/cloud/cloud.cfg.d/99_hostname.cfg << EOF
 #cloud-config
 hostname: _HOSTNAME_
