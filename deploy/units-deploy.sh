@@ -2327,7 +2327,7 @@ do
         #####
         # Verify the MD5 after and before the dos2unix - eventually commit the changes
         #####
-        if [[ "${_MD5BEFORE}" != "${_MD5AFTER}" ]] ${_ENABLEGIT}
+        if [[ "${_MD5BEFORE}" != "${_MD5AFTER}" ]] && ${_ENABLEGIT}
         then
                 git add ${_FILE} >/dev/null 2>&1
                 git commit -m "Auto Commit Dos2Unix for file ${_FILE} conversion" >/dev/null 2>&1
