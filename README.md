@@ -272,7 +272,7 @@ $ neutron port-list
 
 ## Phase 2 - Preparetion Stack
 ```
-$ bash deploy/preparetion-deploy.sh kitv2rc Create
+$ bash deploy/preparation-deploy.sh kitv2rc Create
 +--------------------------------------+------------------+--------------------+----------------------+
 | id                                   | stack_name       | stack_status       | creation_time        |
 +--------------------------------------+------------------+--------------------+----------------------+
