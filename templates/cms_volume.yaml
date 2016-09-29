@@ -108,6 +108,22 @@ parameters:
   nova_az:
     type: string
     description: Availability Zone for Nova
+  admin_network_mtu:
+    type: number
+    description: Admin Network MTU size - default is 1400 byte
+    default: 1400
+  sz_network_mtu:
+    type: number
+    description: Secure Zone Network MTU size - default is 1400 byte
+    default: 1400
+  sip_network_mtu:
+    type: number
+    description: SIP Network MTU size - default is 1400 byte
+    default: 1400
+  media_network_mtu:
+    type: number
+    description: Media Network MTU size - default is 1400 byte
+    default: 1400
 
 resources:
 #  tenant_network_port:
@@ -157,6 +173,10 @@ resources:
             _MEDIA_GW_: { get_param: media_network_gateway }
             _HOSTNAME_: { get_param: unit_name }
             _DOMAINNAME_: { get_param: domain_name }
+            _ADMIN_MTU_: { get_param: admin_network_mtu }
+            _SZ_MTU_: { get_param: sz_network_mtu }
+            _SIP_MTU_: { get_param: sip_network_mtu }
+            _MEDIA_MTU_: { get_param: media_network_mtu }
       scheduler_hints: { group: {get_param: antiaffinity_group } }
       block_device_mapping_v2:
         -

@@ -99,6 +99,7 @@ parameter_defaults:
   admin_security_group_name: AdminSecGroup
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
   admin_network_vlan: none
+  admin_network_mtu: 1400
 
   # Secure Zone Network Section 
   sz_network_name: "provider1"
@@ -109,6 +110,7 @@ parameter_defaults:
   sz_security_group_name: NoFiltering
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
   sz_network_vlan: none
+  sz_network_mtu: 1400
 
   # SIP Internal Network Section
   sip_network_name: "integ-NET-SIP-Internal"
@@ -119,6 +121,7 @@ parameter_defaults:
   sip_security_group_name: NoFiltering
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
   sip_network_vlan: none
+  sip_network_mtu: 1400
 
   # Media Network Section
   media_network_name: "integ-NET-SZ-Internal"
@@ -130,6 +133,7 @@ parameter_defaults:
   media_security_group_name: NoFiltering
   # "none" will disable the VLAN configuration, a number between 1 to 4096 will configure the vlan taggin
   media_network_vlan: none
+  media_network_mtu: 1400
 
   # Flavor Section
   cms_flavor_name: m1.xlarge
