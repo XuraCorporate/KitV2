@@ -185,8 +185,8 @@ parameter_defaults:
   vm-asu_image: swp-RedHat-Linux-OS-KVM-1.1.0.0-02_6.6.1.0-01
   mau_local_boot: True
   mau_image_volume_size: 20
-  mau_image_id: 936c3ad7-f1ba-4a06-8971-e0587e8b2ab2 #LP: https://bugs.launchpad.net/heat/+bug/1559186
-  mau_image: Xura_Mau_1.0.0.0_01
+  mau_image_id: 8875aae0-c21a-420a-aa71-11031ca65c62 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  mau_image: XURA_Mau_1.0.0.0_02
   dsu_local_boot: True
   dsu_image_volume_size: 20
   dsu_image_id: 2671f8fa-54fb-44c1-a984-afe15aaf25f4 #LP: https://bugs.launchpad.net/heat/+bug/1559186
