@@ -1,10 +1,11 @@
 #!/bin/bash
 function netconfig {
 	_SYSTEMDINIT=${1}
-	_VLAN=${2}
-	_MAC=${3}
-	_IP=${4}
-	_NETMASK=${5}
+	_MTU=${2}
+	_VLAN=${3}
+	_MAC=${4}
+	_IP=${5}
+	_NETMASK=${6}
 	_ETH=$(ip -oneline link|awk '/'${_MAC}'/ {print $2}'|sed "s/://g")
 	_NETFILE="/etc/sysconfig/network-scripts/ifcfg-${_ETH}"
 	touch ${_NETFILE}
@@ -15,9 +16,10 @@ function netconfig {
 		echo "ONBOOT=yes" >> ${_NETFILE}
 		echo "IPADDR=${_IP}" >> ${_NETFILE}
 		echo "NETMASK=${_NETMASK}" >> ${_NETFILE}
-		if [[ "${6}" != "" ]]
+		echo "MTU=${_MTU}" >> ${_NETFILE}
+		if [[ "${7}" != "" ]]
 		then
-			_GW=${6}
+			_GW=${7}
 			echo "GATEWAY=${_GW}" >> ${_NETFILE}
 			echo "DNS1=\"\"" >> ${_NETFILE}
 		fi
@@ -39,11 +41,12 @@ function netconfig {
                 echo "ONBOOT=yes" >> ${_NETFILE}.${_VLAN}
                 echo "IPADDR=${_IP}" >> ${_NETFILE}.${_VLAN}
                 echo "NETMASK=${_NETMASK}" >> ${_NETFILE}.${_VLAN}
+		echo "MTU=${_MTU}" >> ${_NETFILE}.${_VLAN}
                 echo "USERCTL=no" >> ${_NETFILE}.${_VLAN}
                 echo "VLAN=yes" >> ${_NETFILE}.${_VLAN}
-                if [[ "${6}" != "" ]]
+                if [[ "${7}" != "" ]]
                 then
-                        _GW=${6}
+                        _GW=${7}
                         echo "GATEWAY=${_GW}" >> ${_NETFILE}.${_VLAN}
 			echo "DNS1=\"\"" >> ${_NETFILE}.${_VLAN}
                 fi
@@ -74,10 +77,10 @@ done
 # Clean resolv.conf
 > /etc/resolv.conf
 # Configure the Network
-netconfig ${_SYSTEMD} _ADMIN_VLAN_ _ADMIN_MAC_ _ADMIN_IP_ _ADMIN_NETMASK_
-netconfig ${_SYSTEMD} _SZ_VLAN_ _SZ_MAC_ _SZ_IP_ _SZ_NETMASK_
-netconfig ${_SYSTEMD} _SIP_VLAN_ _SIP_MAC_ _SIP_IP_ _SIP_NETMASK_
-netconfig ${_SYSTEMD} _MEDIA_VLAN_ _MEDIA_MAC_ _MEDIA_IP_ _MEDIA_NETMASK_ _MEDIA_GW_
+netconfig ${_SYSTEMD} _ADMIN_MTU_ _ADMIN_VLAN_ _ADMIN_MAC_ _ADMIN_IP_ _ADMIN_NETMASK_
+netconfig ${_SYSTEMD} _SZ_MTU_ _SZ_VLAN_ _SZ_MAC_ _SZ_IP_ _SZ_NETMASK_
+netconfig ${_SYSTEMD} _SIP_MTU_ _SIP_VLAN_ _SIP_MAC_ _SIP_IP_ _SIP_NETMASK_
+netconfig ${_SYSTEMD} _MEDIA_MTU_ _MEDIA_VLAN_ _MEDIA_MAC_ _MEDIA_IP_ _MEDIA_NETMASK_ _MEDIA_GW_
 
 sed -e "s/#UseDNS yes/UseDNS no/g" -i /etc/ssh/sshd_config
 systemctl restart sshd || service sshd restart

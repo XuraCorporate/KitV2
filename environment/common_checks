@@ -141,3 +141,7 @@ vm-asu_image_id: string
 mau_image_id: string
 smu_image_id: string
 dsu_image_id: string
+admin_network_mtu: number
+sz_network_mtu: number
+sip_network_mtu: number
+media_network_mtu: number

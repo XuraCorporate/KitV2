@@ -1,57 +1,60 @@
 #!/bin/bash
 function netconfig {
-	_SYSTEMDINIT=${1}
-	_VLAN=${2}
-	_MAC=${3}
-	_IP=${4}
-	_NETMASK=${5}
-	_ETH=$(ip -oneline link|awk '/'${_MAC}'/ {print $2}'|sed "s/://g")
-	_NETFILE="/etc/sysconfig/network-scripts/ifcfg-${_ETH}"
-	touch ${_NETFILE}
-	if [[ "${_VLAN}" == "none" ]]
-	then
-		echo "BOOTPROTO=static" >> ${_NETFILE}
-		echo "DEVICE=${_ETH}" >> ${_NETFILE}
-		echo "ONBOOT=yes" >> ${_NETFILE}
-		echo "IPADDR=${_IP}" >> ${_NETFILE}
-		echo "NETMASK=${_NETMASK}" >> ${_NETFILE}
-		if [[ "${6}" != "" ]]
-		then
-			_GW=${6}
-			echo "GATEWAY=${_GW}" >> ${_NETFILE}
-			echo "DNS1=\"\"" >> ${_NETFILE}
-		fi
-		echo "TYPE=Ethernet" >> ${_NETFILE}
-		if ${_SYSTEMDINIT}
-		then
-			ifdown ${_ETH} || true
-			ifup ${_ETH} || (echo "could not configure the device ${_ETH}." ; exit 1)
-		fi
-	else
+        _SYSTEMDINIT=${1}
+        _MTU=${2}
+        _VLAN=${3}
+        _MAC=${4}
+        _IP=${5}
+        _NETMASK=${6}
+        _ETH=$(ip -oneline link|awk '/'${_MAC}'/ {print $2}'|sed "s/://g")
+        _NETFILE="/etc/sysconfig/network-scripts/ifcfg-${_ETH}"
+        touch ${_NETFILE}
+        if [[ "${_VLAN}" == "none" ]]
+        then
+                echo "BOOTPROTO=static" >> ${_NETFILE}
+                echo "DEVICE=${_ETH}" >> ${_NETFILE}
+                echo "ONBOOT=yes" >> ${_NETFILE}
+                echo "IPADDR=${_IP}" >> ${_NETFILE}
+                echo "NETMASK=${_NETMASK}" >> ${_NETFILE}
+                echo "MTU=${_MTU}" >> ${_NETFILE}
+                if [[ "${7}" != "" ]]
+                then
+                        _GW=${7}
+                        echo "GATEWAY=${_GW}" >> ${_NETFILE}
+                        echo "DNS1=\"\"" >> ${_NETFILE}
+                fi
+                echo "TYPE=Ethernet" >> ${_NETFILE}
+                if ${_SYSTEMDINIT}
+                then
+                        ifdown ${_ETH} || true
+                        ifup ${_ETH} || (echo "could not configure the device ${_ETH}." ; exit 1)
+                fi
+        else
                 echo "DEVICE=${_ETH}" >> ${_NETFILE}
                 echo "TYPE=Ethernet" >> ${_NETFILE}
                 echo "BOOTPROTO=static" >> ${_NETFILE}
                 echo "ONBOOT=yes" >> ${_NETFILE}
 
-		touch ${_NETFILE}.${_VLAN}
+                touch ${_NETFILE}.${_VLAN}
                 echo "DEVICE=${_ETH}.${_VLAN}" >> ${_NETFILE}.${_VLAN}
                 echo "BOOTPROTO=none" >> ${_NETFILE}.${_VLAN}
                 echo "ONBOOT=yes" >> ${_NETFILE}.${_VLAN}
                 echo "IPADDR=${_IP}" >> ${_NETFILE}.${_VLAN}
                 echo "NETMASK=${_NETMASK}" >> ${_NETFILE}.${_VLAN}
+                echo "MTU=${_MTU}" >> ${_NETFILE}.${_VLAN}
                 echo "USERCTL=no" >> ${_NETFILE}.${_VLAN}
                 echo "VLAN=yes" >> ${_NETFILE}.${_VLAN}
-                if [[ "${6}" != "" ]]
+                if [[ "${7}" != "" ]]
                 then
-                        _GW=${6}
+                        _GW=${7}
                         echo "GATEWAY=${_GW}" >> ${_NETFILE}.${_VLAN}
-			echo "DNS1=\"\"" >> ${_NETFILE}.${_VLAN}
+                        echo "DNS1=\"\"" >> ${_NETFILE}.${_VLAN}
                 fi
                 if ${_SYSTEMDINIT}
                 then
                         systemctl restart network || (echo "could not configure the device ${_ETH}." ; exit 1)
                 fi
-	fi
+        fi
 }
 
 _DEVMODE=_DEVMODE_
@@ -74,7 +77,7 @@ done
 # Clean resolv.conf
 > /etc/resolv.conf
 # Configure the Network
-netconfig ${_SYSTEMD} _ADMIN_VLAN_ _ADMIN_MAC_ _ADMIN_IP_ _ADMIN_NETMASK_ _ADMIN_GW_
+netconfig ${_SYSTEMD} _ADMIN_MTU_ _ADMIN_VLAN_ _ADMIN_MAC_ _ADMIN_IP_ _ADMIN_NETMASK_
 
 sed -e "s/#UseDNS yes/UseDNS no/g" -i /etc/ssh/sshd_config
 systemctl restart sshd || service sshd restart
