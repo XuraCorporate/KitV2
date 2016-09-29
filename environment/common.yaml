@@ -165,19 +165,19 @@ parameter_defaults:
   ####
   cms_local_boot: True
   cms_image_volume_size: 20
-  cms_image_id: 7e40e84d-2ec1-45b8-9053-3b43fda0c143 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  cms_image_id: 2671f8fa-54fb-44c1-a984-afe15aaf25f4 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   cms_image: swp-RedHat-Linux-OS-KVM-1.1.0.0-02_6.6.1.0-01
   lvu_local_boot: True
   lvu_image_volume_size: 20
-  lvu_image_id: 7e40e84d-2ec1-45b8-9053-3b43fda0c143 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  lvu_image_id: 2671f8fa-54fb-44c1-a984-afe15aaf25f4 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   lvu_image: swp-RedHat-Linux-OS-KVM-1.1.0.0-02_6.6.1.0-01
   omu_local_boot: True
   omu_image_volume_size: 20
-  omu_image_id: 7e40e84d-2ec1-45b8-9053-3b43fda0c143 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  omu_image_id: 2671f8fa-54fb-44c1-a984-afe15aaf25f4 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   omu_image: swp-RedHat-Linux-OS-KVM-1.1.0.0-02_6.6.1.0-01
   vm-asu_local_boot: True
   vm-asu_image_volume_size: 20
-  vm-asu_image_id: 7e40e84d-2ec1-45b8-9053-3b43fda0c143 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  vm-asu_image_id: 2671f8fa-54fb-44c1-a984-afe15aaf25f4 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   vm-asu_image: swp-RedHat-Linux-OS-KVM-1.1.0.0-02_6.6.1.0-01
   mau_local_boot: True
   mau_image_volume_size: 20
@@ -185,11 +185,11 @@ parameter_defaults:
   mau_image: Xura_Mau_1.0.0.0_01
   dsu_local_boot: True
   dsu_image_volume_size: 20
-  dsu_image_id: 7e40e84d-2ec1-45b8-9053-3b43fda0c143 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  dsu_image_id: 2671f8fa-54fb-44c1-a984-afe15aaf25f4 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   dsu_image: swp-RedHat-Linux-OS-KVM-1.1.0.0-02_6.6.1.0-01
   smu_local_boot: True
   smu_image_volume_size: 20
-  smu_image_id: 7e40e84d-2ec1-45b8-9053-3b43fda0c143 #LP: https://bugs.launchpad.net/heat/+bug/1559186
+  smu_image_id: 2671f8fa-54fb-44c1-a984-afe15aaf25f4 #LP: https://bugs.launchpad.net/heat/+bug/1559186
   smu_image: swp-RedHat-Linux-OS-KVM-1.1.0.0-02_6.6.1.0-01
 
   #####
