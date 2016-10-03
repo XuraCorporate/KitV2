@@ -145,3 +145,5 @@ admin_network_mtu: number
 sz_network_mtu: number
 sip_network_mtu: number
 media_network_mtu: number
+dsu_persistent_volume_mount: boolean
+dsu_persistent_volume_size: number

@@ -81,6 +81,10 @@ parameters:
     type: number
     default: 4
     description: Number of Server Group Group to be created for SMU
+  dsu_persistent_volume_size:
+    type: number
+    default: 40
+    description: Disk size in GB for the DSU Volume to be used in Tenant1
 #  keypair_name:
 #    type: string
 #    description: Keypair for the unit
@@ -206,6 +210,10 @@ resources:
         properties:
           name: SMUServerGroup%index%
           policies: [ { get_param: smu_server_group_policy } ]
+  DSUPersistentVolume:
+    type: OS::Cinder::Volume
+    properties:
+      size: { get_param: dsu_persistent_volume_size }
 
 #  KeyPair:
 #    type: OS::Nova::KeyPair

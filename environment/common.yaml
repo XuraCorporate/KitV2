@@ -63,6 +63,10 @@ parameter_defaults:
   smu_append_static_letter_index_unit_name: 1
   smu_append_letter_index_unit_name: true
 
+  # DSU enable Volume attachment - For Tenant1
+  dsu_persistent_volume_mount: true
+  dsu_persistent_volume_size: 100
+
   # Enable or disable the server group policy
   cms_server_group_enable: false
   lvu_server_group_enable: false
