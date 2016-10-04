@@ -1783,7 +1783,7 @@ function validation {
 		#####
 		while :
 		do
-			_VOLUME_SOURCE_STATUS=$(cinder show temp-${_VOLUMEID}|grep status|grep -v extended_status|awk '{print $4}')
+			_VOLUME_SOURCE_STATUS=$(cinder show temp-${_VOLUMEID}|grep " status "|awk '{print $4}')
 			if [[ "${_VOLUME_SOURCE_STATUS}" == "available" ]]
 			then
 				cinder delete temp-${_VOLUMEID} >/dev/null 2>&1

@@ -384,11 +384,11 @@ do
         elif [[ "${_SOURCE}" == "cinder" ]]
         then
                 echo -e " - ${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from Volume (aka from the SAN)${NC}"
-                echo -e -n "   - Validating chosen Cinder Volume ${_VOLUMEID} ...\t\t\t\t\t"
+                echo -e -n "   - Validating chosen Cinder Volume ${_VOLUMEID} ...\t\t\t\t"
                 cinder show ${_VOLUMEID} >/dev/null 2>&1 || exit_for_error "Error, Volume for Unit ${_UNITTOBEVALIDATED} not present." true hard
                 echo -e "${GREEN} [OK]${NC}"
 
-                echo -e -n "   - Validating given volume size ...\t\t\t\t\t\t"
+                echo -e -n "   - Validating given volume size ...\t\t\t\t\t\t\t\t"
                 _VOLUME_SIZE=$(cinder show ${_VOLUMEID}|awk '/size/ {print $4}'|sed "s/ //g")
                 _VOLUME_GIVEN_SIZE=$(cat ../${_ENV}|awk '/'$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_volume_size'/ {print $2}'|sed "s/\"//g")
                 if (( "${_VOLUME_GIVEN_SIZE}" < "${_VOLUME_SIZE}" ))
@@ -413,7 +413,7 @@ do
                 #####
                 while :
                 do
-                        _VOLUME_SOURCE_STATUS=$(cinder show temp-${_VOLUMEID}|grep status|grep -v extended_status|awk '{print $4}')
+                        _VOLUME_SOURCE_STATUS=$(cinder show temp-${_VOLUMEID}|grep " status "|awk '{print $4}')
                         if [[ "${_VOLUME_SOURCE_STATUS}" == "available" ]]
                         then
                                 cinder delete temp-${_VOLUMEID} >/dev/null 2>&1
