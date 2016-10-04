@@ -439,7 +439,7 @@ done
 
 #TODO
 # Add Quota Validation
-# Add Generic Environment validation
+# Add Network validation
 cd ${_CURRENTDIR}
 exit 0
 
