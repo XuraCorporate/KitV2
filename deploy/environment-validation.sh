@@ -45,20 +45,6 @@ function exit_for_error {
 }
 
 #####
-# Function to check the OpenStack environment
-#####
-function check {
-#	echo -e -n "Verifying access to the Nova API ...\t\t"
-#	nova list > /dev/null 2>&1 || exit_for_error "Error, Cannot access to the Nova API." false
-#	echo -e "${GREEN} [OK]${NC}"
-#	
-#	echo -e -n "Verifying access to the Neutron API ...\t\t"
-#	neutron net-list > /dev/null 2>&1 || exit_for_error "Error, Cannot access to the Nova API." false
-#	echo -e "${GREEN} [OK]${NC}"
-	echo "Not yet implemented."
-}
-
-#####
 # Verity if any input values are present
 #####
 if [[ "$1" == "" ]]
@@ -93,12 +79,12 @@ echo -e "${GREEN}${BOLD}Verifying OpenStack Binary${NC}${NORMAL}"
 _BINS="nova glance cinder neutron heat"
 for _BIN in ${_BINS}
 do
-	echo -e -n "Verifying ${_BIN} binary ...\t\t"
+	echo -e -n " - Verifying ${_BIN} binary ...\t\t"
 	which ${_BIN} > /dev/null 2>&1 || exit_for_error "Error, Cannot find python${_BIN}-client." false
 	echo -e "${GREEN} [OK]${NC}"
 done
 
-echo -e -n "Verifying Heat Assume Yes ...\t\t"
+echo -e -n " - Verifying Heat Assume Yes ...\t\t"
 _ASSUMEYES=""
 heat help stack-delete|grep "\-\-yes" >/dev/null 2>&1
 if [[ "${?}" == "0" ]]
@@ -121,60 +107,60 @@ done
 #####
 # Load environment file
 #####
-echo -e -n "Loading environment file ...\t\t"
+echo -e -n " - Loading environment file ...\t\t"
 source ${_RCFILE}
 echo -e "${GREEN} [OK]${NC}"
 
 #####
 # Verify if the given credential are valid. This will also check if the use can contact Heat
 #####
-echo -e -n "Verifying OpenStack credential ...\t\t"
+echo -e -n " - Verifying OpenStack credential ...\t\t"
 nova --timeout 5 endpoints > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
 
-echo -e -n "\n${GREEN}${BOLD}Verifying OpenStack API Access${NC}${NORMAL}"
-echo -e -n "Verifying access to OpenStack Nova API ...\t\t"
+echo -e "\n${GREEN}${BOLD}Verifying OpenStack API Access${NC}${NORMAL}"
+echo -e -n " - Verifying access to OpenStack Nova API ...\t\t"
 nova list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n "Verifying access to OpenStack Glance API ...\t\t"
+echo -e -n " - Verifying access to OpenStack Glance API ...\t\t"
 glance image-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n "Verifying access to OpenStack Cinder API ...\t\t"
+echo -e -n " - Verifying access to OpenStack Cinder API ...\t\t"
 cinder list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n "Verifying access to OpenStack Neutron API ...\t\t"
+echo -e -n " - Verifying access to OpenStack Neutron API ...\t\t"
 neutron net-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n "Verifying access to OpenStack Heat API ...\t\t"
+echo -e -n " - Verifying access to OpenStack Heat API ...\t\t"
 heat stack-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n "\n${GREEN}${BOLD}Verifying environment files integrity${NC}${NORMAL}"
+echo -e "\n${GREEN}${BOLD}Verifying environment files integrity${NC}${NORMAL}"
 _ENABLEGIT=false
 if ${_ENABLEGIT}
 then
-	echo -e -n "Verifying git binary ...\t\t"
+	echo -e -n " - Verifying git binary ...\t\t"
 	which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find git and any changes will be commited." false soft
 	echo -e "${GREEN} [OK]${NC}"
 fi
 
-echo -e -n "Verifying dos2unix binary ...\t\t"
+echo -e -n " - Verifying dos2unix binary ...\t\t"
 which dos2unix > /dev/null 2>&1 || exit_for_error "Error, Cannot find dos2unix binary, please install it\nThe installation will continue BUT the Wrapper cannot ensure the File Unix format consistency." false soft
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n "Verifying md5sum binary ...\t\t"
+echo -e -n " - Verifying md5sum binary ...\t\t"
 which md5sum > /dev/null 2>&1 || exit_for_error "Error, Cannot find md5sum binary." false hard
 echo -e "${GREEN} [OK]${NC}"
 
 #####
 # Convert every files exept the GITs one
 #####
-echo -e -n "Eventually converting files in Standard Unix format ...\t\t"
+echo -e -n " - Eventually converting files in Standard Unix format ...\t\t"
 for _FILE in $(find . -not \( -path ./.git -prune \) -type f)
 do
 	_MD5BEFORE=$(md5sum ${_FILE}|awk '{print $1}')
@@ -194,7 +180,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if there is the environment file
 #####
-echo -e -n "Verifying if there is the environment file ...\t\t"
+echo -e -n " - Verifying if there is the environment file ...\t\t"
 if [ ! -f ${_ENV} ] || [ ! -r ${_ENV} ] || [ ! -s ${_ENV} ]
 then
 	exit_for_error "Error, Environment file missing." false hard
@@ -204,7 +190,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if there is any duplicated entry in the environment file
 #####
-echo -e -n "Verifying duplicate entries in the environment file ...\t\t"
+echo -e -n " - Verifying duplicate entries in the environment file ...\t\t"
 _DUPENTRY=$(cat ${_ENV}|grep -v -E '^[[:space:]]*$|^$'|awk '{print $1}'|grep -v "#"|sort|uniq -c|grep " 2 "|wc -l)
 if (( "${_DUPENTRY}" > "0" ))
 then
@@ -223,7 +209,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if there is a test for each entry in the environment file
 #####
-echo -e -n "Verifying if there is a test for each entry in the environment file ...\t\t"
+echo -e -n " - Verifying if there is a test for each entry in the environment file ...\t\t"
 _EXIT=false
 _OLDIFS=$IFS
 IFS=$'\n'
@@ -247,7 +233,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if the environment file has the right input values
 #####
-echo -e -n "Verifying if the environment file has all of the right input values ...\t\t"
+echo -e -n " - Verifying if the environment file has all of the right input values ...\t\t"
 _EXIT=false
 if [ ! -f ${_CHECKS} ] || [ ! -r ${_CHECKS} ] || [ ! -s ${_CHECKS} ]
 then
