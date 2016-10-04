@@ -1468,7 +1468,7 @@ function init_dsu {
 		#####
 		# Function to attach the persistent volume only when the VM has been created
 		#####
-		if ${_VOLIDAVAILABLE} && [[ "${_ACTION}" == "Create" || "${_STATUS}" == "Replace" ]]
+		if ${_VOLIDAVAILABLE} && [[ "${_ACTION}" == "Create" || "${_ACTION}" == "Replace" ]]
 		then
                 	echo -e -n "Waiting instance do be ready to attach persistent volume ...\t\t"
 			#####
