@@ -3,6 +3,8 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
+BOLD='\e[1m'
+NORMAL='\e[0m'
 
 #####
 # Function to exit in case of error
@@ -84,10 +86,11 @@ then
 	exit 1
 fi
 
+echo -e "${GREEN}${BOLD}Verifying OpenStack Binary${NC}${NORMAL}"
 #####
 # Verify binary
 #####
-_BINS="heat nova neutron glance cinder"
+_BINS="nova glance cinder neutron heat"
 for _BIN in ${_BINS}
 do
 	echo -e -n "Verifying ${_BIN} binary ...\t\t"
@@ -106,6 +109,7 @@ else
         echo -e "${YELLOW} [NOT AVAILABLE]${NC}"
 fi
 
+echo -e "\n${GREEN}${BOLD}Verifying OpenStack Credential Authentication${NC}${NORMAL}"
 #####
 # Unload any previous loaded environment file
 #####
@@ -129,6 +133,7 @@ nova --timeout 5 endpoints > /dev/null 2>&1 || exit_for_error "Error, During cre
 echo -e "${GREEN} [OK]${NC}"
 
 
+echo -e -n "\n${GREEN}${BOLD}Verifying OpenStack API Access${NC}${NORMAL}"
 echo -e -n "Verifying access to OpenStack Nova API ...\t\t"
 nova list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
@@ -149,6 +154,7 @@ echo -e -n "Verifying access to OpenStack Heat API ...\t\t"
 heat stack-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
+echo -e -n "\n${GREEN}${BOLD}Verifying environment files integrity${NC}${NORMAL}"
 _ENABLEGIT=false
 if ${_ENABLEGIT}
 then
