@@ -61,7 +61,7 @@ function check {
 #####
 if [[ "$1" == "" ]]
 then
-	echo -e "${RED}Usage bash $0 <OpenStack RC environment file> <Create/Update/List/Delete>${NC}"
+	echo -e "${RED}Usage bash $0 <OpenStack RC environment file>${NC}"
 	exit 1
 fi
 
@@ -69,9 +69,6 @@ fi
 # Write the input args into variable
 #####
 _RCFILE=$1
-_ACTION=$2
-_STACKNAME=PreparetionStack
-#_STACKNAME=${3-PreparetionStack}
 _ENV="environment/common.yaml"
 _CHECKS="environment/common_checks"
 
@@ -82,24 +79,6 @@ if [ ! -e ${_RCFILE} ]
 then
 	echo -e "${RED}"
 	echo "OpenStack RC environment file does not exist."
-	echo "Usage bash $0 <OpenStack RC environment file> <Create/Update/List/Delete>"
-	echo -e "${NC}"
-	exit 1
-fi
-
-#####
-# Check Action Name
-#####
-if [[ "${_ACTION}" != "Create" && "${_ACTION}" != "Update" && "${_ACTION}" != "List" && "${_ACTION}" != "Delete" && "${_ACTION}" != "Check" ]]
-then
-	echo -e "${RED}"
-	echo "Action not valid."
-	echo "It must be in the following format:"
-	echo "\"Create\" - To create a new ${_STACKNAME}"
-	echo "\"Update\" - To update the stack ${_STACKNAME}"
-	echo "\"List\" - To list the resource in the stack ${_STACKNAME}"
-	echo "\"Delete\" - To delete the stack ${_STACKNAME} - WARNING cannot be reversed!"
-	echo "\"Check\" - Check the OpenStack environment in order to find out any possible issue"
 	echo "Usage bash $0 <OpenStack RC environment file> <Create/Update/List/Delete>"
 	echo -e "${NC}"
 	exit 1
@@ -366,76 +345,9 @@ echo -e "${GREEN} [OK]${NC}"
 _CURRENTDIR=$(pwd)
 cd ${_CURRENTDIR}/$(dirname $0)
 
-#####
-# Initiate the actions phase
-#####
-echo -e "${GREEN}Performing Action ${_ACTION}${NC}"
-if [[ "${_ACTION}" != "Delete" && "${_ACTION}" != "List" && "${_ACTION}" != "Check" ]]
-then
-	#####
-	# Here the action can be only Update or Create
-	#####
-
-	#####
-	# Verify if the stack already exist. A double create will fail
-	# Verify if the stack exist in order to be updated
-	#####
-	echo -e -n "Verifying if ${_STACKNAME} is already loaded ...\t\t"
-	heat resource-list ${_STACKNAME} > /dev/null 2>&1
-	_STATUS=${?}
-	if [[ "${_ACTION}" == "Create" && "${_STATUS}" == "0" ]]
-	then
-		exit_for_error "Error, The Stack already exist." true
-	elif [[ "${_ACTION}" == "Update" && "${_STATUS}" != "0" ]]
-	then
-		exit_for_error "Error, The Stack does not exist." true
-	fi
-	echo -e "${GREEN} [OK]${NC}"
-
-	echo -e -n "Verifying if Server Group Quota ...\t\t"
-	_GROUPS=$(cat ../${_ENV}|grep server_group_quantity|awk '{s+=$2} END {print s}')
-	_GROUPSQUOTA=$(nova quota-show|grep server_groups|awk '{print $4}')	
-	if (( "${_GROUPS}" > "${_GROUPSQUOTA}" )) && [[ "${_GROUPSQUOTA}" != "-1" ]]
-	then
-		exit_for_error "Error, In the environemnt file has been defined to create ${_GROUPS} Server Groups but the user quota can only allow to have up to ${_GROUPSQUOTA} Server Groups. Recude the number or call the Administrator to increase the Quota." true
-	else 
-		echo -e "${GREEN} [OK]${NC}"
-	fi
-
-	#####
-	# Create or Update the Stack
-	# All of the path have a ".." in front since we are in the deploy directory in this phase
-	#####
-	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') \
-	 --template-file ../templates/preparation.yaml \
-	 --environment-file ../${_ENV} \
-	${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
-elif [[ "${_ACTION}" != "List" && "${_ACTION}" != "Check" ]]
-then
-	#####
-	# Delete the Stack
-	# To disassociate all of the Neutron ports for any security groups
-	# $ source <openstack rc file>
-	# $ neutron port-list --column id --format value|xargs -n1 neutron port-update --no-security-group
-	#####
-	echo -e -n "Cleaning all of the Neutron Ports ...\t\t"
-	neutron port-list --column id --format value|xargs -n1 neutron port-update --no-security-group >/dev/null 2>&1 || exit_for_error "Error, During Port Clean UP." true
-	echo -e "${GREEN} [OK]${NC}"
-
-	heat stack-list|grep -E "(cms|lvu|omu|vm-asu|mau)" >/dev/null 2>&1 && exit_for_error "Error, During Stack ${_ACTION}. Cannot delete it if any Unit Stacks are presents.\nThis is due to:\n - the associated Neutron Security Groups to the Neutron Ports.\n - the associated Nova Server Group to the Nova VMs."
-	heat stack-$(echo "${_ACTION}" | awk '{print tolower($0)}') ${_ASSUMEYES} ${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
-elif [[ "${_ACTION}" != "Check" ]]
-then
-	#####
-	# List all of the Stack's resources
-	#####
-	heat resource-$(echo "${_ACTION}" | awk '{print tolower($0)}') -n 20 ${_STACKNAME} || exit_for_error "Error, During Stack ${_ACTION}." true
-else
-	#####
-	# Check the OpenStack environment
-	#####
-	check	
-fi
+# Add API Validation
+# Add Quota Validation
+# Add Generic Environment validation
 
 cd ${_CURRENTDIR}
 
