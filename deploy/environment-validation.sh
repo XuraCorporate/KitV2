@@ -351,6 +351,12 @@ echo -e -n " - Verifying access to OpenStack Heat API ...\t\t"
 heat stack-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
+#####
+# Change directory into the deploy one
+#####
+_CURRENTDIR=$(pwd)
+cd ${_CURRENTDIR}/$(dirname $0)
+
 for _UNITTOBEVALIDATED in "cms" "dsu" "lvu" "mau" "omu" "smu" "vm-asu"
 do
         _IMAGE=$(cat ../${_ENV}|grep "$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_image"|grep -v -E "image_id|image_source|image_volume_size"|awk '{print $2}'|sed "s/\"//g")
@@ -433,6 +439,6 @@ done
 #TODO
 # Add Quota Validation
 # Add Generic Environment validation
-
+cd ${_CURRENTDIR}
 exit 0
 
