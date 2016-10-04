@@ -67,100 +67,32 @@ if [ ! -e ${_RCFILE} ]
 then
 	echo -e "${RED}"
 	echo "OpenStack RC environment file does not exist."
-	echo "Usage bash $0 <OpenStack RC environment file> <Create/Update/List/Delete>"
+	echo "Usage bash $0 <OpenStack RC environment file>"
 	echo -e "${NC}"
 	exit 1
 fi
 
-echo -e "${GREEN}${BOLD}Verifying OpenStack Binary${NC}${NORMAL}"
-#####
-# Verify binary
-#####
-_BINS="nova glance cinder neutron heat"
-for _BIN in ${_BINS}
-do
-	echo -e -n " - Verifying ${_BIN} binary ...\t\t"
-	which ${_BIN} > /dev/null 2>&1 || exit_for_error "Error, Cannot find python${_BIN}-client." false
-	echo -e "${GREEN} [OK]${NC}"
-done
-
-echo -e -n " - Verifying Heat Assume Yes ...\t\t"
-_ASSUMEYES=""
-heat help stack-delete|grep "\-\-yes" >/dev/null 2>&1
-if [[ "${?}" == "0" ]]
-then
-        _ASSUMEYES="--yes"
-        echo -e "${GREEN} [OK]${NC}"
-else
-        echo -e "${YELLOW} [NOT AVAILABLE]${NC}"
-fi
-
-echo -e "\n${GREEN}${BOLD}Verifying OpenStack Credential Authentication${NC}${NORMAL}"
-#####
-# Unload any previous loaded environment file
-#####
-for _BASHENV in $(env|grep ^OS|awk -F "=" '{print $1}')
-do
-        unset ${_BASHENV}
-done
-
-#####
-# Load environment file
-#####
-echo -e -n " - Loading environment file ...\t\t"
-source ${_RCFILE}
-echo -e "${GREEN} [OK]${NC}"
-
-#####
-# Verify if the given credential are valid. This will also check if the use can contact Heat
-#####
-echo -e -n " - Verifying OpenStack credential ...\t\t"
-nova --timeout 5 endpoints > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
-echo -e "${GREEN} [OK]${NC}"
-
-
-echo -e "\n${GREEN}${BOLD}Verifying OpenStack API Access${NC}${NORMAL}"
-echo -e -n " - Verifying access to OpenStack Nova API ...\t\t"
-nova list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
-echo -e "${GREEN} [OK]${NC}"
-
-echo -e -n " - Verifying access to OpenStack Glance API ...\t\t"
-glance image-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
-echo -e "${GREEN} [OK]${NC}"
-
-echo -e -n " - Verifying access to OpenStack Cinder API ...\t\t"
-cinder list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
-echo -e "${GREEN} [OK]${NC}"
-
-echo -e -n " - Verifying access to OpenStack Neutron API ...\t\t"
-neutron net-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
-echo -e "${GREEN} [OK]${NC}"
-
-echo -e -n " - Verifying access to OpenStack Heat API ...\t\t"
-heat stack-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
-echo -e "${GREEN} [OK]${NC}"
-
-echo -e "\n${GREEN}${BOLD}Verifying environment files integrity${NC}${NORMAL}"
+echo -e "\n${GREEN}${BOLD}Verifying Environment Files Integrity${NC}${NORMAL}"
 _ENABLEGIT=false
 if ${_ENABLEGIT}
 then
-	echo -e -n " - Verifying git binary ...\t\t"
+	echo -e -n " - Verifying git binary ...\t\t\t\t\t\t\t\t"
 	which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find git and any changes will be commited." false soft
 	echo -e "${GREEN} [OK]${NC}"
 fi
 
-echo -e -n " - Verifying dos2unix binary ...\t\t"
+echo -e -n " - Verifying dos2unix binary ...\t\t\t\t\t\t\t"
 which dos2unix > /dev/null 2>&1 || exit_for_error "Error, Cannot find dos2unix binary, please install it\nThe installation will continue BUT the Wrapper cannot ensure the File Unix format consistency." false soft
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n " - Verifying md5sum binary ...\t\t"
+echo -e -n " - Verifying md5sum binary ...\t\t\t\t\t\t\t\t"
 which md5sum > /dev/null 2>&1 || exit_for_error "Error, Cannot find md5sum binary." false hard
 echo -e "${GREEN} [OK]${NC}"
 
 #####
 # Convert every files exept the GITs one
 #####
-echo -e -n " - Eventually converting files in Standard Unix format ...\t\t"
+echo -e -n " - Eventually converting files in Standard Unix format ...\t\t\t\t"
 for _FILE in $(find . -not \( -path ./.git -prune \) -type f)
 do
 	_MD5BEFORE=$(md5sum ${_FILE}|awk '{print $1}')
@@ -180,7 +112,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if there is the environment file
 #####
-echo -e -n " - Verifying if there is the environment file ...\t\t"
+echo -e -n " - Verifying if there is the environment file ...\t\t\t\t\t"
 if [ ! -f ${_ENV} ] || [ ! -r ${_ENV} ] || [ ! -s ${_ENV} ]
 then
 	exit_for_error "Error, Environment file missing." false hard
@@ -190,7 +122,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if there is any duplicated entry in the environment file
 #####
-echo -e -n " - Verifying duplicate entries in the environment file ...\t\t"
+echo -e -n " - Verifying duplicate entries in the environment file ...\t\t\t\t"
 _DUPENTRY=$(cat ${_ENV}|grep -v -E '^[[:space:]]*$|^$'|awk '{print $1}'|grep -v "#"|sort|uniq -c|grep " 2 "|wc -l)
 if (( "${_DUPENTRY}" > "0" ))
 then
@@ -352,18 +284,158 @@ fi
 IFS=${_OLDIFS}
 echo -e "${GREEN} [OK]${NC}"
 
+echo -e "${GREEN}${BOLD}Verifying OpenStack Binary${NC}${NORMAL}"
 #####
-# Change directory into the deploy one
+# Verify binary
 #####
-_CURRENTDIR=$(pwd)
-cd ${_CURRENTDIR}/$(dirname $0)
+_BINS="nova glance cinder neutron heat"
+for _BIN in ${_BINS}
+do
+        echo -e -n " - Verifying ${_BIN} binary ...\t\t"
+        which ${_BIN} > /dev/null 2>&1 || exit_for_error "Error, Cannot find python${_BIN}-client." false
+        echo -e "${GREEN} [OK]${NC}"
+done
+
+echo -e -n " - Verifying Heat Assume Yes ...\t\t"
+_ASSUMEYES=""
+heat help stack-delete|grep "\-\-yes" >/dev/null 2>&1
+if [[ "${?}" == "0" ]]
+then
+        _ASSUMEYES="--yes"
+        echo -e "${GREEN} [OK]${NC}"
+else
+        echo -e "${YELLOW} [NOT AVAILABLE]${NC}"
+fi
+
+echo -e "\n${GREEN}${BOLD}Verifying OpenStack Credential Authentication${NC}${NORMAL}"
+#####
+# Unload any previous loaded environment file
+#####
+for _BASHENV in $(env|grep ^OS|awk -F "=" '{print $1}')
+do
+        unset ${_BASHENV}
+done
+
+#####
+# Load environment file
+#####
+echo -e -n " - Loading environment file ...\t\t"
+source ${_RCFILE}
+echo -e "${GREEN} [OK]${NC}"
+
+#FIXME
+exit 0
+
+#####
+# Verify if the given credential are valid. This will also check if the use can contact Heat
+#####
+echo -e -n " - Verifying OpenStack credential ...\t\t"
+nova --timeout 5 endpoints > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e "\n${GREEN}${BOLD}Verifying OpenStack API Access${NC}${NORMAL}"
+echo -e -n " - Verifying access to OpenStack Nova API ...\t\t"
+nova list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n " - Verifying access to OpenStack Glance API ...\t\t"
+glance image-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n " - Verifying access to OpenStack Cinder API ...\t\t"
+cinder list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n " - Verifying access to OpenStack Neutron API ...\t\t"
+neutron net-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n " - Verifying access to OpenStack Heat API ...\t\t"
+heat stack-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
+echo -e "${GREEN} [OK]${NC}"
+
+for _UNITTOBEVALIDATED in "cms" "dsu" "lvu" "mau" "omu" "smu" "vm-asu"
+do
+        _IMAGE=$(cat ../${_ENV}|grep "$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_image"|grep -v -E "image_id|image_source|image_volume_size"|awk '{print $2}'|sed "s/\"//g")
+        _IMAGEID=$(cat ../${_ENV}|awk '/'$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_image_id'/ {print $2}'|sed "s/\"//g")
+        _VOLUMEID=$(cat ../${_ENV}|awk '/'$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_volume_id'/ {print $2}'|sed "s/\"//g")
+        _FLAVOR=$(cat ../${_ENV}|awk '/'$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_flavor_name'/ {print $2}'|sed "s/\"//g")
+        _SOURCE=$(cat ../${_ENV}|grep "$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_image_source"|awk '{print $2}'|sed "s/\"//g")
+
+        #####
+        # _SOURCE=glance -> Check the Image Id and the Image Name is the same 
+        # _SOURCE=cinder -> Check the Volume Id, the Given size and if the Volume snapshot/clone feature is present 
+        #####
+        if [[ "${_SOURCE}" == "glance" ]]
+        then
+                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        echo -e "${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from the local hypervisor disk (aka Ephemeral Disk)${NC}"
+                else
+                        echo -e "${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from Volume (aka from the SAN)${NC}"
+                fi
+                echo -e -n "Validating chosen Glance Image ${_IMAGE} ...\t\t"
+                glance image-show ${_IMAGEID}|grep "${_IMAGE}" >/dev/null 2>&1 || exit_for_error "Error, Image for Unit ${_UNITTOBEVALIDATED} not present or mismatch between ID and Name." true hard
+                echo -e "${GREEN} [OK]${NC}"
+        elif [[ "${_SOURCE}" == "cinder" ]]
+        then
+                echo -e "${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from Volume (aka from the SAN)${NC}"
+                echo -e -n "Validating chosen Cinder Volume ${_VOLUMEID} ...\t\t"
+                cinder show ${_VOLUMEID} >/dev/null 2>&1 || exit_for_error "Error, Volume for Unit ${_UNITTOBEVALIDATED} not present." true hard
+                echo -e "${GREEN} [OK]${NC}"
+
+                echo -e -n "Validating given volume size ...\t\t"
+                _VOLUME_SIZE=$(cinder show ${_VOLUMEID}|awk '/size/ {print $4}'|sed "s/ //g")
+                _VOLUME_GIVEN_SIZE=$(cat ../${_ENV}|awk '/'$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_volume_size'/ {print $2}'|sed "s/\"//g")
+                if (( "${_VOLUME_GIVEN_SIZE}" < "${_VOLUME_SIZE}" ))
+                then
+                        exit_for_error "Error, Volume for Unit ${_UNITTOBEVALIDATED} with UUID ${_VOLUMEID} has a size of ${_VOLUME_SIZE} which cannot fit into the given input size of ${_VOLUME_GIVEN_SIZE}." true hard
+                fi
+                echo -e "${GREEN} [OK]${NC}"
+
+                #####
+                # Creating a test volume to verify that the snapshotting works
+                # https://wiki.openstack.org/wiki/CinderSupportMatrix
+                # e.g. Feature not available with standard NFS driver
+                #####
+                echo -e -n "Validating if volume cloning/snapshotting feature is available ...\t\t"
+                #####
+                # Creating a new volume from the given one
+                #####
+                cinder create --source-volid ${_VOLUMEID} --display-name "temp-${_VOLUMEID}" ${_VOLUME_SIZE} >/dev/null 2>&1 || exit_for_error "Error, During volume cloning/snapshotting. With the current Cinder's backend Glance has to be used." true hard
+
+                #####
+                # Wait until the volume created is in error or available states
+                #####
+                while :
+                do
+                        _VOLUME_SOURCE_STATUS=$(cinder show temp-${_VOLUMEID}|grep status|grep -v extended_status|awk '{print $4}')
+                        if [[ "${_VOLUME_SOURCE_STATUS}" == "available" ]]
+                        then
+                                cinder delete temp-${_VOLUMEID} >/dev/null 2>&1
+                                echo -e "${GREEN} [OK]${NC}"
+                                break
+                        elif [[ "${_VOLUME_SOURCE_STATUS}" == "error" ]]
+                        then
+                                cinder delete temp-${_VOLUMEID} >/dev/null 2>&1
+                                exit_for_error "Error, the system does not support volume cloning/snapshotting. With the current Cinder's backend Glance has to be used." true hard
+                        fi
+                done
+        else
+                exit_for_error "Error, Invalid Image Source option, can be \"glance\" or \"cinder\"." true hard
+        fi
+
+        #####
+        # Check the given flavor is available
+        #####
+        echo -e -n "Validating chosen Flavor ${_FLAVOR} ...\t\t"
+        nova flavor-show "${_FLAVOR}" >/dev/null 2>&1 || exit_for_error "Error, Flavor for Unit ${_UNITTOBEVALIDATED} not present." true hard
+        echo -e "${GREEN} [OK]${NC}"
+done
 
 #TODO
-# Add API Validation
 # Add Quota Validation
 # Add Generic Environment validation
-
-cd ${_CURRENTDIR}
 
 exit 0
 
