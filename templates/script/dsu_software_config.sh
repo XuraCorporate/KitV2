@@ -117,6 +117,7 @@ then
 fi
 
 #DSU Cinder Volume Config
+sleep 20s # this is to make sure that the Volume is attached
 _CINDERVOL=$(ls /dev/[sv]d*|grep -v "$(lsblk|grep -i swap|grep -o -E "[sv]d[a-z]{1,3}")")
 if [[ "${_CINDERVOL}" != "" ]]
 then

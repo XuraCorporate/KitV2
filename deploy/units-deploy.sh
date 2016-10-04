@@ -1408,6 +1408,21 @@ function init_dsu {
 		_HOT=$(echo ${_HOT}.yaml)
                 echo -e "${GREEN} [OK]${NC}"
 
+                echo -e -n "Identifying the Cinder Volume to be used for persistent data ...\t\t"
+                if $(cat ../${_ENV}|awk '/dsu_persistent_volume_mount/ {print $2}'|awk '{print tolower($0)}')
+                then
+                        heat resource-show PreparetionStack DSUPersistentVolume >/dev/null 2>&1 || exit_for_error "Error, No Volume available for persistent data." false soft
+                        _VOLID=$(heat resource-show PreparetionStack DSUPersistentVolume|grep physical_resource_id|awk '{print $4}')
+                        _VOLIDSTATUS=$(cinder show ${_VOLID}|grep " status "|awk '{print $4}')
+                        if [[ "${_VOLIDSTATUS}" == "available" ]]
+                        then
+                                _VOLIDAVAILABLE=true
+                        else
+                                _VOLIDAVAILABLE=false
+                        fi
+                fi
+                echo -e "${GREEN} [OK]${NC}"
+
                 echo -e -n "Identifying the right Unit Name to be used ...\t\t"
                 _UNIT_NAME=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_unit_name/ {print $2}')
                 _ENABLE_UNIT_NAME_SUFFIX=$(cat ../${_ENV}|awk '/'${_UNITLOWER}'_enable_suffix_index_unit_name/ {print $2}'|awk '{print tolower($0)}')
@@ -1436,21 +1451,6 @@ function init_dsu {
                 _UNIT_NAME_FINAL=$(echo ${_UNIT_NAME}${_UNIT_NAME_SUFFIX}${_UNIT_NAME_APPEND_STATIC_CHAR}${_UNIT_NAME_APPEND_CHAR}${_UNIT_NAME_INDEX})
                 echo -e "${GREEN} ${_UNIT_NAME_FINAL}${NC}"
 
-		echo -e -n "Identifying the Cinder Volume to be used for persistent data ...\t\t"
-		if $(cat ../${_ENV}|awk '/dsu_persistent_volume_mount/ {print $2}'|awk '{print tolower($0)}')
-		then
-			heat resource-show PreparetionStack DSUPersistentVolume >/dev/null 2>&1 || exit_for_error "Error, No Volume available for persistent data. Run update for the Preparetion Stack." false soft
-			_VOLID=$(heat resource-show PreparetionStack DSUPersistentVolume|grep physical_resource_id|awk '{print $4}')
-			_VOLIDSTATUS=$(cinder show ${_VOLID}|grep " status "|awk '{print $4}')
-			if [[ "${_VOLIDSTATUS}" == "available" ]]
-			then
-				_VOLIDAVAILABLE=true
-			else
-				_VOLIDAVAILABLE=false
-			fi	
-		fi
-                echo -e "${GREEN} [OK]${NC}"
-
                 heat stack-$(echo "${_COMMAND}" | awk '{print tolower($0)}') \
                  --template-file ${_HOT} \
                  --environment-file ../${_ENV} \
@@ -1465,16 +1465,30 @@ function init_dsu {
                  ${_STACKNAME}${_INSTANCESTART} || exit_for_error "Error, During Stack ${_ACTION}." true hard
                 #--parameters "tenant_network_id=${_TENANT_NETWORK_ID}" \
 		
-		if ${_VOLIDAVAILABLE}
+		#####
+		# Function to attach the persistent volume only when the VM has been created
+		#####
+		if ${_VOLIDAVAILABLE} && [[ "${_ACTION}" == "Create" || "${_STATUS}" == "Replace" ]]
 		then
-			_VMID=$(heat resource-show ${_STACKNAME}${_INSTANCESTART} dsu_unit|grep physical_resource_id|awk '{print $4}')
-			while :; do nova show ${_VMID}|grep ACTIVE >/dev/null 2>&1 && break; done
-			nova volume-attach ${_VMID} ${_VOLID} || exit_for_error "Error, Cannot attach the persistent volume." false soft
+                	echo -e -n "Waiting instance do be ready to attach persistent volume ...\t\t"
+			#####
+			# Function to wait until the new instance is ready
+			#####
+			while :
+			do
+				_STACKSTATUS=$(heat resource-list ${_STACKNAME}${_INSTANCESTART})
+				_VMID=$(echo "${_STACKSTATUS}"|grep "OS::Nova::Server"|awk '{print $4}')
+				echo "${_STACKSTATUS}"|grep "OS::Nova::Server"|grep "_COMPLETE" && break
+			done >/dev/null 2>&1
+                	echo -e "${GREEN} [OK]${NC}"
+
+                	echo -e -n "Attaching persistent volume to instance ...\t\t"
+			nova volume-attach ${_VMID} ${_VOLID} >/dev/null 2>&1 || exit_for_error "Error, Cannot attach the persistent volume." false soft
+                	echo -e "${GREEN} [OK]${NC}"
 		fi
         fi
         _INSTANCESTART=$(($_INSTANCESTART+1))
 }
-
 
 #####
 # Function to Create SMU Unit
