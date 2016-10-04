@@ -72,7 +72,7 @@ then
 	exit 1
 fi
 
-echo -e "\n${GREEN}${BOLD}Verifying Environment Files Integrity${NC}${NORMAL}"
+echo -e "${GREEN}${BOLD}Verifying Environment Files Integrity${NC}${NORMAL}"
 _ENABLEGIT=false
 if ${_ENABLEGIT}
 then
@@ -284,7 +284,7 @@ fi
 IFS=${_OLDIFS}
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e "${GREEN}${BOLD}Verifying OpenStack Binary${NC}${NORMAL}"
+echo -e "\n${GREEN}${BOLD}Verifying OpenStack Binary${NC}${NORMAL}"
 #####
 # Verify binary
 #####
