@@ -76,23 +76,23 @@ echo -e "\n${GREEN}${BOLD}Verifying Environment Files Integrity${NC}${NORMAL}"
 _ENABLEGIT=false
 if ${_ENABLEGIT}
 then
-	echo -e -n " - Verifying git binary ...\t\t\t\t\t\t\t\t"
+	echo -e -n " - Verifying git binary ...\t\t\t\t\t\t\t"
 	which git > /dev/null 2>&1 || exit_for_error "Error, Cannot find git and any changes will be commited." false soft
 	echo -e "${GREEN} [OK]${NC}"
 fi
 
-echo -e -n " - Verifying dos2unix binary ...\t\t\t\t\t\t\t"
+echo -e -n " - Verifying dos2unix binary ...\t\t\t\t\t\t"
 which dos2unix > /dev/null 2>&1 || exit_for_error "Error, Cannot find dos2unix binary, please install it\nThe installation will continue BUT the Wrapper cannot ensure the File Unix format consistency." false soft
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n " - Verifying md5sum binary ...\t\t\t\t\t\t\t\t"
+echo -e -n " - Verifying md5sum binary ...\t\t\t\t\t\t\t"
 which md5sum > /dev/null 2>&1 || exit_for_error "Error, Cannot find md5sum binary." false hard
 echo -e "${GREEN} [OK]${NC}"
 
 #####
 # Convert every files exept the GITs one
 #####
-echo -e -n " - Eventually converting files in Standard Unix format ...\t\t\t\t"
+echo -e -n " - Eventually converting files in Standard Unix format ...\t\t\t"
 for _FILE in $(find . -not \( -path ./.git -prune \) -type f)
 do
 	_MD5BEFORE=$(md5sum ${_FILE}|awk '{print $1}')
@@ -112,7 +112,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if there is the environment file
 #####
-echo -e -n " - Verifying if there is the environment file ...\t\t\t\t\t"
+echo -e -n " - Verifying if there is the environment file ...\t\t\t\t"
 if [ ! -f ${_ENV} ] || [ ! -r ${_ENV} ] || [ ! -s ${_ENV} ]
 then
 	exit_for_error "Error, Environment file missing." false hard
@@ -122,7 +122,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if there is any duplicated entry in the environment file
 #####
-echo -e -n " - Verifying duplicate entries in the environment file ...\t\t\t\t"
+echo -e -n " - Verifying duplicate entries in the environment file ...\t\t\t"
 _DUPENTRY=$(cat ${_ENV}|grep -v -E '^[[:space:]]*$|^$'|awk '{print $1}'|grep -v "#"|sort|uniq -c|grep " 2 "|wc -l)
 if (( "${_DUPENTRY}" > "0" ))
 then
@@ -141,7 +141,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if there is a test for each entry in the environment file
 #####
-echo -e -n " - Verifying if there is a test for each entry in the environment file ...\t\t"
+echo -e -n " - Verifying if there is a test for each entry in the environment file ...\t"
 _EXIT=false
 _OLDIFS=$IFS
 IFS=$'\n'
@@ -165,7 +165,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if the environment file has the right input values
 #####
-echo -e -n " - Verifying if the environment file has all of the right input values ...\t\t"
+echo -e -n " - Verifying if the environment file has all of the right input values ...\t"
 _EXIT=false
 if [ ! -f ${_CHECKS} ] || [ ! -r ${_CHECKS} ] || [ ! -s ${_CHECKS} ]
 then
@@ -296,7 +296,7 @@ do
         echo -e "${GREEN} [OK]${NC}"
 done
 
-echo -e -n " - Verifying Heat Assume Yes ...\t\t"
+echo -e -n " - Verifying Heat Assume Yes ...\t"
 _ASSUMEYES=""
 heat help stack-delete|grep "\-\-yes" >/dev/null 2>&1
 if [[ "${?}" == "0" ]]
@@ -326,7 +326,7 @@ echo -e "${GREEN} [OK]${NC}"
 #####
 # Verify if the given credential are valid. This will also check if the use can contact Heat
 #####
-echo -e -n " - Verifying OpenStack credential ...\t\t"
+echo -e -n " - Verifying OpenStack credential ...\t"
 nova --timeout 5 endpoints > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
@@ -343,7 +343,7 @@ echo -e -n " - Verifying access to OpenStack Cinder API ...\t\t"
 cinder list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n " - Verifying access to OpenStack Neutron API ...\t\t"
+echo -e -n " - Verifying access to OpenStack Neutron API ...\t"
 neutron net-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
@@ -371,7 +371,7 @@ do
         #####
         if [[ "${_SOURCE}" == "glance" ]]
         then
-                if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+                if $(cat ../${_ENV}|awk '/'${_UNITTOBEVALIDATED}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 then
                         echo -e "${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from the local hypervisor disk (aka Ephemeral Disk)${NC}"
                 else

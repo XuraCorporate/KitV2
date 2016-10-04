@@ -1742,7 +1742,7 @@ function validation {
 	#####
 	if [[ "${_SOURCE}" == "glance" ]]
 	then
-		if $(cat ../${_ENV}|awk '/'${_UNITLOWER}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
+		if $(cat ../${_ENV}|awk '/'${_UNITTOBEVALIDATED}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
 		then
 			echo -e "${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from the local hypervisor disk (aka Ephemeral Disk)${NC}"
 		else
