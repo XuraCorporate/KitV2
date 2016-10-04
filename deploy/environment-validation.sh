@@ -323,9 +323,6 @@ echo -e -n " - Loading environment file ...\t\t"
 source ${_RCFILE}
 echo -e "${GREEN} [OK]${NC}"
 
-#FIXME
-exit 0
-
 #####
 # Verify if the given credential are valid. This will also check if the use can contact Heat
 #####
