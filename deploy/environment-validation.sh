@@ -87,7 +87,7 @@ fi
 #####
 # Verify binary
 #####
-_BINS="heat nova neutron glance"
+_BINS="heat nova neutron glance cinder"
 for _BIN in ${_BINS}
 do
 	echo -e -n "Verifying ${_BIN} binary ...\t\t"
@@ -105,6 +105,49 @@ then
 else
         echo -e "${YELLOW} [NOT AVAILABLE]${NC}"
 fi
+
+#####
+# Unload any previous loaded environment file
+#####
+for _BASHENV in $(env|grep ^OS|awk -F "=" '{print $1}')
+do
+        unset ${_BASHENV}
+done
+
+#####
+# Load environment file
+#####
+echo -e -n "Loading environment file ...\t\t"
+source ${_RCFILE}
+echo -e "${GREEN} [OK]${NC}"
+
+#####
+# Verify if the given credential are valid. This will also check if the use can contact Heat
+#####
+echo -e -n "Verifying OpenStack credential ...\t\t"
+nova --timeout 5 endpoints > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
+echo -e "${GREEN} [OK]${NC}"
+
+
+echo -e -n "Verifying access to OpenStack Nova API ...\t\t"
+nova list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n "Verifying access to OpenStack Glance API ...\t\t"
+glance image-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n "Verifying access to OpenStack Cinder API ...\t\t"
+cinder list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n "Verifying access to OpenStack Neutron API ...\t\t"
+neutron net-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n "Verifying access to OpenStack Heat API ...\t\t"
+heat stack-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
+echo -e "${GREEN} [OK]${NC}"
 
 _ENABLEGIT=false
 if ${_ENABLEGIT}
@@ -318,33 +361,12 @@ IFS=${_OLDIFS}
 echo -e "${GREEN} [OK]${NC}"
 
 #####
-# Unload any previous loaded environment file
-#####
-for _BASHENV in $(env|grep ^OS|awk -F "=" '{print $1}')
-do
-        unset ${_BASHENV}
-done
-
-#####
-# Load environment file
-#####
-echo -e -n "Loading environment file ...\t\t"
-source ${_RCFILE}
-echo -e "${GREEN} [OK]${NC}"
-
-#####
-# Verify if the given credential are valid. This will also check if the use can contact Heat
-#####
-echo -e -n "Verifying OpenStack credential ...\t\t"
-heat stack-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
-echo -e "${GREEN} [OK]${NC}"
-
-#####
 # Change directory into the deploy one
 #####
 _CURRENTDIR=$(pwd)
 cd ${_CURRENTDIR}/$(dirname $0)
 
+#TODO
 # Add API Validation
 # Add Quota Validation
 # Add Generic Environment validation
