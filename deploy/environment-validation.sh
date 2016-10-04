@@ -432,7 +432,7 @@ do
         #####
         # Check the given flavor is available
         #####
-        echo -e -n "   - Validating chosen Flavor ${_FLAVOR} ...\t\t\t\t\t"
+        echo -e -n "   - Validating chosen Flavor ${_FLAVOR} ...\t\t\t\t\t\t"
         nova flavor-show "${_FLAVOR}" >/dev/null 2>&1 || exit_for_error "Error, Flavor for Unit ${_UNITTOBEVALIDATED} not present." true hard
         echo -e "${GREEN} [OK]${NC}"
 done
