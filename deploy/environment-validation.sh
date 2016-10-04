@@ -351,6 +351,7 @@ echo -e -n " - Verifying access to OpenStack Heat API ...\t\t"
 heat stack-list > /dev/null 2>&1 || exit_for_error "Error, During credential validation." false
 echo -e "${GREEN} [OK]${NC}"
 
+echo -e "\n${GREEN}${BOLD}Verifying Units Specific Characteristic${NC}${NORMAL}"
 #####
 # Change directory into the deploy one
 #####
@@ -373,21 +374,21 @@ do
         then
                 if $(cat ../${_ENV}|awk '/'${_UNITTOBEVALIDATED}'_local_boot/ {print $2}'|awk '{print tolower($0)}')
                 then
-                        echo -e "${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from the local hypervisor disk (aka Ephemeral Disk)${NC}"
+                        echo -e " - ${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from the local hypervisor disk (aka Ephemeral Disk)${NC}"
                 else
-                        echo -e "${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from Volume (aka from the SAN)${NC}"
+                        echo -e " - ${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from Volume (aka from the SAN)${NC}"
                 fi
-                echo -e -n "Validating chosen Glance Image ${_IMAGE} ...\t\t"
+                echo -e -n " - Validating chosen Glance Image ${_IMAGE} ...\t\t"
                 glance image-show ${_IMAGEID}|grep "${_IMAGE}" >/dev/null 2>&1 || exit_for_error "Error, Image for Unit ${_UNITTOBEVALIDATED} not present or mismatch between ID and Name." true hard
                 echo -e "${GREEN} [OK]${NC}"
         elif [[ "${_SOURCE}" == "cinder" ]]
         then
-                echo -e "${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from Volume (aka from the SAN)${NC}"
-                echo -e -n "Validating chosen Cinder Volume ${_VOLUMEID} ...\t\t"
+                echo -e " - ${GREEN}The Unit ${_UNITTOBEVALIDATED} will boot from Volume (aka from the SAN)${NC}"
+                echo -e -n " - Validating chosen Cinder Volume ${_VOLUMEID} ...\t\t"
                 cinder show ${_VOLUMEID} >/dev/null 2>&1 || exit_for_error "Error, Volume for Unit ${_UNITTOBEVALIDATED} not present." true hard
                 echo -e "${GREEN} [OK]${NC}"
 
-                echo -e -n "Validating given volume size ...\t\t"
+                echo -e -n " - Validating given volume size ...\t\t"
                 _VOLUME_SIZE=$(cinder show ${_VOLUMEID}|awk '/size/ {print $4}'|sed "s/ //g")
                 _VOLUME_GIVEN_SIZE=$(cat ../${_ENV}|awk '/'$(echo "${_UNITTOBEVALIDATED}" | awk '{print tolower($0)}')_volume_size'/ {print $2}'|sed "s/\"//g")
                 if (( "${_VOLUME_GIVEN_SIZE}" < "${_VOLUME_SIZE}" ))
@@ -401,7 +402,7 @@ do
                 # https://wiki.openstack.org/wiki/CinderSupportMatrix
                 # e.g. Feature not available with standard NFS driver
                 #####
-                echo -e -n "Validating if volume cloning/snapshotting feature is available ...\t\t"
+                echo -e -n " - Validating if volume cloning/snapshotting feature is available ...\t\t"
                 #####
                 # Creating a new volume from the given one
                 #####
@@ -431,7 +432,7 @@ do
         #####
         # Check the given flavor is available
         #####
-        echo -e -n "Validating chosen Flavor ${_FLAVOR} ...\t\t"
+        echo -e -n " - Validating chosen Flavor ${_FLAVOR} ...\t\t"
         nova flavor-show "${_FLAVOR}" >/dev/null 2>&1 || exit_for_error "Error, Flavor for Unit ${_UNITTOBEVALIDATED} not present." true hard
         echo -e "${GREEN} [OK]${NC}"
 done
