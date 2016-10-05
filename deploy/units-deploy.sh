@@ -1409,6 +1409,7 @@ function init_dsu {
                 echo -e "${GREEN} [OK]${NC}"
 
                 echo -e -n "Identifying the Cinder Volume to be used for persistent data ...\t\t"
+		_VOLIDAVAILABLE=false
                 if $(cat ../${_ENV}|awk '/dsu_persistent_volume_mount/ {print $2}'|awk '{print tolower($0)}')
                 then
                         heat resource-show PreparetionStack DSUPersistentVolume >/dev/null 2>&1 || exit_for_error "Error, No Volume available for persistent data." false soft
@@ -1417,8 +1418,6 @@ function init_dsu {
                         if [[ "${_VOLIDSTATUS}" == "available" ]]
                         then
                                 _VOLIDAVAILABLE=true
-                        else
-                                _VOLIDAVAILABLE=false
                         fi
                 fi
                 echo -e "${GREEN} [OK]${NC}"
