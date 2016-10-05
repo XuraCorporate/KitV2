@@ -448,14 +448,16 @@ do
         echo -e "${GREEN} [OK]${NC}"
 done
 
+echo -e "\n${GREEN}${BOLD}Verifying Units CVS Files${NC}${NORMAL}"
 for _UNITTOBEVALIDATED in "cms" "dsu" "lvu" "mau" "omu" "smu" "vm-asu"
 do
-        _CSVFILEPATH=environment/${_UNITTOBEVALIDATED}
+        _CSVFILEPATH=../environment/${_UNITTOBEVALIDATED}
         _ADMINCSVFILE=$(echo ${_CSVFILEPATH}/admin.csv)
         _SZCSVFILE=$(echo ${_CSVFILEPATH}/sz.csv)
         _SIPCSVFILE=$(echo ${_CSVFILEPATH}/sip.csv)
         _MEDIACSVFILE=$(echo ${_CSVFILEPATH}/media.csv)
 
+	echo -e " - $(echo ${_UNITTOBEVALIDATED}|awk '{ print toupper($0) }')"
         for _CSV in "${_ADMINCSVFILE}" "${_SZCSVFILE}" "${_SIPCSVFILE}" "${_MEDIACSVFILE}"
         do
                 #####
@@ -581,65 +583,63 @@ echo -e -n " - Gathering Tenant Quota ...\t\t"
 _TENANTQUOTA=$(nova quota-show)
 _TENANTVCPU=$(echo "${_TENANTQUOTA}"|awk '/\| cores / {print $4}')
 _TENANTVRAM=$(echo "${_TENANTQUOTA}"|awk '/\| ram / {print $4}')
-_TENANTVDISK=$(echo "${_TENANTQUOTA}"|awk '/\| disk / {print $4}')
+#_TENANTVDISK=$(echo "${_TENANTQUOTA}"|awk '/\| disk / {print $4}')
 _TENANTVMS=$(echo "${_TENANTQUOTA}"|awk '/\| instances / {print $4}')
+echo -e "${GREEN} [OK]${NC}"
 
-echo -e -n " - Verifying Tenant Quota for all of the Units ...\t\t"
+echo -e " - Verifying Tenant Quota for all of the Units"
 _NEEDEDVCPU=$(( (${_CMSVCPU} * ${_CMSUNITS}) + (${_DSUVCPU} * ${_DSUUNITS}) + (${_LVUVCPU} * ${_LVUUNITS}) + (${_MAUVCPU} * ${_MAUUNITS}) + (${_OMUVCPU} * ${_OMUUNITS}) + (${_SMUVCPU} * ${_SMUUNITS}) + (${_VMASUVCPU} * ${_VMASUUNITS}) ))
 _NEEDEDVRAM=$(( (${_CMSVRAM} * ${_CMSUNITS}) + (${_DSUVRAM} * ${_DSUUNITS}) + (${_LVUVRAM} * ${_LVUUNITS}) + (${_MAUVRAM} * ${_MAUUNITS}) + (${_OMUVRAM} * ${_OMUUNITS}) + (${_SMUVRAM} * ${_SMUUNITS}) + (${_VMASUVRAM} * ${_VMASUUNITS}) ))
-_NEEDEDVDISK=$(( (${_CMSVDISK} * ${_CMSUNITS}) + (${_DSUVDISK} * ${_DSUUNITS}) + (${_LVUVDISK} * ${_LVUUNITS}) + (${_MAUVDISK} * ${_MAUUNITS}) + (${_OMUVDISK} * ${_OMUUNITS}) + (${_SMUVDISK} * ${_SMUUNITS}) + (${_VMASUVDISK} * ${_VMASUUNITS}) ))
+#_NEEDEDVDISK=$(( (${_CMSVDISK} * ${_CMSUNITS}) + (${_DSUVDISK} * ${_DSUUNITS}) + (${_LVUVDISK} * ${_LVUUNITS}) + (${_MAUVDISK} * ${_MAUUNITS}) + (${_OMUVDISK} * ${_OMUUNITS}) + (${_SMUVDISK} * ${_SMUUNITS}) + (${_VMASUVDISK} * ${_VMASUUNITS}) ))
 _NEEDEDUNITS=$(( ${_CMSUNITS} + ${_DSUUNITS} + ${_LVUUNITS} + ${_MAUUNITS} + ${_OMUUNITS} + ${_SMUUNITS} + ${_VMASUUNITS} ))
 
 if (( ${_NEEDEDVCPU} <= ${_TENANTVCPU} )) || [[ ${_TENANTVCPU} == "-1" ]]
 then
 	if [[ ${_TENANTVCPU} == "-1" ]]
 	then
-		echo -e -n "   - The Tenant Quota has unlimited vCPU and you are going to use ${GREEN}${_NEEDEDVCPU}${NC}"
+		echo -e "   - The Tenant Quota has unlimited vCPU and you are going to use ${GREEN}${_NEEDEDVCPU}${NC}"
 	else
-		echo -e -n "   - The Tenant Quota has ${_TENANTVCPU} vCPU and you are going to use ${GREEN}${_NEEDEDVCPU}${NC}"
+		echo -e "   - The Tenant Quota has ${_TENANTVCPU} vCPU and you are going to use ${GREEN}${_NEEDEDVCPU}${NC}"
 	fi
 else
-	echo -e -n "${RED}   - The Tenant Quota has ${_TENANTVCPU} vCPU and you are going to use ${_NEEDEDVCPU}${NC}"
+	echo -e "${RED}   - The Tenant Quota has ${_TENANTVCPU} vCPU and you are going to use ${_NEEDEDVCPU}${NC}"
 fi
 
 if (( ${_NEEDEDVRAM} <= ${_TENANTVRAM} )) || [[ ${_TENANTVRAM} == "-1" ]]
 then
 	if [[ ${_TENANTVRAM} == "-1" ]]
 	then
-		echo -e -n "   - The Tenant Quota has unlimited vRAM and you are going to use ${GREEN}${_NEEDEDVRAM}${NC}"
+		echo -e "   - The Tenant Quota has unlimited vRAM and you are going to use ${GREEN}${_NEEDEDVRAM}${NC}"
 	else
-		echo -e -n "   - The Tenant Quota has ${_TENANTVRAM} vRAM and you are going to use ${GREEN}${_NEEDEDVRAM}${NC}"
+		echo -e "   - The Tenant Quota has ${_TENANTVRAM} vRAM and you are going to use ${GREEN}${_NEEDEDVRAM}${NC}"
 	fi
 else
-	echo -e -n "${RED}   - The Tenant Quota has ${_TENANTVRAM} vRAM and you are going to use ${_NEEDEDVRAM}${NC}"
+	echo -e "${RED}   - The Tenant Quota has ${_TENANTVRAM} vRAM and you are going to use ${_NEEDEDVRAM}${NC}"
 fi
 
-if (( ${_NEEDEDVDISK} <= ${_TENANTVDISK} )) || [[ ${_TENANTVDISK} == "-1" ]]
-then
-	if [[ ${_TENANTVDISK} == "-1" ]]
-	then
-		echo -e -n "   - The Tenant Quota has unlimited vDISK and you are going to use ${GREEN}${_NEEDEDVDISK}${NC}"
-	else
-		echo -e -n "   - The Tenant Quota has ${_TENANTVDISK} vDISK and you are going to use ${GREEN}${_NEEDEDVDISK}${NC}"
-	fi
-else
-	echo -e -n "${RED}   - The Tenant Quota has ${_TENANTVDISK} vDISK and you are going to use ${_NEEDEDVDISK}${NC}"
-fi
+#if (( ${_NEEDEDVDISK} <= ${_TENANTVDISK} )) || [[ ${_TENANTVDISK} == "-1" ]]
+#then
+#	if [[ ${_TENANTVDISK} == "-1" ]]
+#	then
+#		echo -e "   - The Tenant Quota has unlimited vDISK and you are going to use ${GREEN}${_NEEDEDVDISK}${NC}"
+#	else
+#		echo -e "   - The Tenant Quota has ${_TENANTVDISK} vDISK and you are going to use ${GREEN}${_NEEDEDVDISK}${NC}"
+#	fi
+#else
+#	echo -e "${RED}   - The Tenant Quota has ${_TENANTVDISK} vDISK and you are going to use ${_NEEDEDVDISK}${NC}"
+#fi
 
 if (( ${_NEEDEDUNITS} <= ${_TENANTVMS} )) || [[ ${_TENANTVMS} == "-1" ]]
 then
 	if [[ ${_TENANTVMS} == "-1" ]]
 	then
-		echo -e -n "   - The Tenant Quota has unlimited Instance and you are going to create ${GREEN}${_NEEDEDUNITS}${NC}"
+		echo -e "   - The Tenant Quota has unlimited Instance and you are going to create ${GREEN}${_NEEDEDUNITS}${NC}"
 	else
-		echo -e -n "   - The Tenant Quota has ${_TENANTVMS} Instance and you are going to create ${GREEN}${_NEEDEDUNITS}${NC}"
+		echo -e "   - The Tenant Quota has ${_TENANTVMS} Instance and you are going to create ${GREEN}${_NEEDEDUNITS}${NC}"
 	fi
 else
-	echo -e -n "${RED}   - The Tenant Quota has ${_TENANTVMS} Instance and you are going to create ${_NEEDEDUNITS}${NC}"
+	echo -e "${RED}   - The Tenant Quota has ${_TENANTVMS} Instance and you are going to create ${_NEEDEDUNITS}${NC}"
 fi
-
-echo -e "${GREEN} [OK]${NC}"
-
 
 #for _UNITTOBEVALIDATED in "cms" "dsu" "lvu" "mau" "omu" "smu" "vm-asu"
 #do
