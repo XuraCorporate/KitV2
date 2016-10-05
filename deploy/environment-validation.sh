@@ -26,12 +26,14 @@ function exit_for_error {
         # If soft no exit
         #####
         _EXIT=${3-hard}
-        if ${_CHANGEDIR}
+        if ${_CHANGEDIR} && [[ "${_EXIT}" == "hard" ]]
         then
                 cd ${_CURRENTDIR}
         fi
         if [[ "${_EXIT}" == "hard" ]]
         then
+                rm -rf ../${_ADMINCSVFILE}.tmp ../${_SZCSVFILE}.tmp ../${_SIPCSVFILE}.tmp ../${_MEDIACSVFILE}.tmp >/dev/null 2>&1
+                rm -rf ${_ADMINCSVFILE}.tmp ${_SZCSVFILE}.tmp ${_SIPCSVFILE}.tmp ${_MEDIACSVFILE}.tmp >/dev/null 2>&1
                 echo -e "${RED}${_MESSAGE}${NC}"
                 exit 1
         elif [[ "${_EXIT}" == "break" ]]
@@ -42,6 +44,15 @@ function exit_for_error {
         then
                 echo -e "${YELLOW}${_MESSAGE}${NC}"
         fi
+}
+
+function csv_validation {
+	echo -e -n " - Verifying unit $(echo ${_UNITTOBEVALIDATED}|awk '{ print toupper($0) }') CSV file ${_CSV} ...\t\t"
+	if [ ! -f ${_CSV} ] || [ ! -r ${_CSV} ] || [ ! -s ${_CSV} ]
+	then
+	        exit_for_error "CSV File ${_CSV} Network with mapping PortID,MacAddress,FixedIP does not exist." false soft
+	fi
+	echo -e "${GREEN} [OK]${NC}"
 }
 
 #####
@@ -437,9 +448,226 @@ do
         echo -e "${GREEN} [OK]${NC}"
 done
 
+for _UNITTOBEVALIDATED in "cms" "dsu" "lvu" "mau" "omu" "smu" "vm-asu"
+do
+        _CSVFILEPATH=environment/${_UNITTOBEVALIDATED}
+        _ADMINCSVFILE=$(echo ${_CSVFILEPATH}/admin.csv)
+        _SZCSVFILE=$(echo ${_CSVFILEPATH}/sz.csv)
+        _SIPCSVFILE=$(echo ${_CSVFILEPATH}/sip.csv)
+        _MEDIACSVFILE=$(echo ${_CSVFILEPATH}/media.csv)
+
+        for _CSV in "${_ADMINCSVFILE}" "${_SZCSVFILE}" "${_SIPCSVFILE}" "${_MEDIACSVFILE}"
+        do
+                #####
+                # Check if the CSV File
+                # - Does it exist?
+                # - Is it readable?
+                # - Does it have a size higher than 0Byte?
+                # - Does it have the given starting line?
+                # - Does it have the given ending line?
+                #####
+                if [[ "${_UNITTOBEVALIDATED}" == "cms" ]] && [[ "${_CSV}" =~ "sip.csv" || "${_CSV}" =~ "media.csv" ]]
+                then
+                        csv_validation
+                fi
+
+                if [[ "${_UNITTOBEVALIDATED}" != "mau" ]] && [[ "${_CSV}" =~ "sz.csv" ]]
+                then
+                        csv_validation
+                fi
+
+                if [[ "${_CSV}" =~ "admin.csv" ]]
+                then
+                        csv_validation
+                fi
+        done
+done
+
+echo -e "\n${GREEN}${BOLD}Verifying OpenStack Quota${NC}${NORMAL}"
+echo -e -n " - Gathering CMS Quota ...\t\t"
+_CMSFLAVOR=$(cat ../environment/common.yaml|awk '/cms_flavor_name/ {print $2}'|sed "s/\"//g")
+_CMSFLAVOROUTPUT=$(nova flavor-show ${_CMSFLAVOR})
+_CMSVCPU=$(echo "${_CMSFLAVOROUTPUT}"|grep " vcpus "|awk '{print $4}')
+_CMSVRAM=$(echo "${_CMSFLAVOROUTPUT}"|grep " ram "|awk '{print $4}')
+_CMSVDISK=$(echo "${_CMSFLAVOROUTPUT}"|grep " disk "|awk '{print $4}')
+_CMSUNITS=$(cat ../environment/cms/admin.csv|wc -l)
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n " - Gathering DSU Quota ...\t\t"
+_DSUFLAVOR=$(cat ../environment/common.yaml|awk '/dsu_flavor_name/ {print $2}'|sed "s/\"//g")
+if [[ "${_DSUFLAVOR}" == "${_CMSFLAVOR}" ]]
+then
+	_DSUFLAVOROUTPUT=${_CMSFLAVOROUTPUT}
+else
+	_DSUFLAVOROUTPUT=$(nova flavor-show ${_DSUFLAVOR})
+fi
+_DSUVCPU=$(echo "${_DSUFLAVOROUTPUT}"|grep " vcpus "|awk '{print $4}')
+_DSUVRAM=$(echo "${_DSUFLAVOROUTPUT}"|grep " ram "|awk '{print $4}')
+_DSUVDISK=$(echo "${_DSUFLAVOROUTPUT}"|grep " disk "|awk '{print $4}')
+_DSUUNITS=$(cat ../environment/dsu/admin.csv|wc -l)
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n " - Gathering LVU Quota ...\t\t"
+_LVUFLAVOR=$(cat ../environment/common.yaml|awk '/lvu_flavor_name/ {print $2}'|sed "s/\"//g")
+if [[ "${_LVUFLAVOR}" == "${_DSUFLAVOR}" ]]
+then
+	_LVUFLAVOROUTPUT=${_DSUFLAVOROUTPUT}
+else
+	_LVUFLAVOROUTPUT=$(nova flavor-show ${_LVUFLAVOR})
+fi
+_LVUVCPU=$(echo "${_LVUFLAVOROUTPUT}"|grep " vcpus "|awk '{print $4}')
+_LVUVRAM=$(echo "${_LVUFLAVOROUTPUT}"|grep " ram "|awk '{print $4}')
+_LVUVDISK=$(echo "${_LVUFLAVOROUTPUT}"|grep " disk "|awk '{print $4}')
+_LVUUNITS=$(cat ../environment/lvu/admin.csv|wc -l)
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n " - Gathering MAU Quota ...\t\t"
+_MAUFLAVOR=$(cat ../environment/common.yaml|awk '/mau_flavor_name/ {print $2}'|sed "s/\"//g")
+if [[ "${_MAUFLAVOR}" == "${_LVUFLAVOR}" ]]
+then
+	_MAUFLAVOROUTPUT=${_LVUFLAVOROUTPUT}
+else
+	_MAUFLAVOROUTPUT=$(nova flavor-show ${_MAUFLAVOR})
+fi
+_MAUVCPU=$(echo "${_MAUFLAVOROUTPUT}"|grep " vcpus "|awk '{print $4}')
+_MAUVRAM=$(echo "${_MAUFLAVOROUTPUT}"|grep " ram "|awk '{print $4}')
+_MAUVDISK=$(echo "${_MAUFLAVOROUTPUT}"|grep " disk "|awk '{print $4}')
+_MAUUNITS=$(cat ../environment/mau/admin.csv|wc -l)
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n " - Gathering OMU Quota ...\t\t"
+_OMUFLAVOR=$(cat ../environment/common.yaml|awk '/omu_flavor_name/ {print $2}'|sed "s/\"//g")
+if [[ "${_OMUFLAVOR}" == "${_MAUFLAVOR}" ]]
+then
+	_OMUFLAVOROUTPUT=${_MAUFLAVOROUTPUT}
+else
+	_OMUFLAVOROUTPUT=$(nova flavor-show ${_OMUFLAVOR})
+fi
+_OMUVCPU=$(echo "${_OMUFLAVOROUTPUT}"|grep " vcpus "|awk '{print $4}')
+_OMUVRAM=$(echo "${_OMUFLAVOROUTPUT}"|grep " ram "|awk '{print $4}')
+_OMUVDISK=$(echo "${_OMUFLAVOROUTPUT}"|grep " disk "|awk '{print $4}')
+_OMUUNITS=$(cat ../environment/omu/admin.csv|wc -l)
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n " - Gathering SMU Quota ...\t\t"
+_SMUFLAVOR=$(cat ../environment/common.yaml|awk '/smu_flavor_name/ {print $2}'|sed "s/\"//g")
+if [[ "${_SMUFLAVOR}" == "${_OMUFLAVOR}" ]]
+then
+	_SMUFLAVOROUTPUT=${_OMUFLAVOROUTPUT}
+else
+	_SMUFLAVOROUTPUT=$(nova flavor-show ${_SMUFLAVOR})
+fi
+_SMUVCPU=$(echo "${_SMUFLAVOROUTPUT}"|grep " vcpus "|awk '{print $4}')
+_SMUVRAM=$(echo "${_SMUFLAVOROUTPUT}"|grep " ram "|awk '{print $4}')
+_SMUVDISK=$(echo "${_SMUFLAVOROUTPUT}"|grep " disk "|awk '{print $4}')
+_SMUUNITS=$(cat ../environment/smu/admin.csv|wc -l)
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n " - Gathering VM-ASU Quota ...\t\t"
+_VMASUFLAVOR=$(cat ../environment/common.yaml|awk '/vm-asu_flavor_name/ {print $2}'|sed "s/\"//g")
+if [[ "${_VMASUFLAVOR}" == "${_SMUFLAVOR}" ]]
+then
+	_VMASUFLAVOROUTPUT=${_SMUFLAVOROUTPUT}
+else
+	_VMASUFLAVOROUTPUT=$(nova flavor-show ${_VMASUFLAVOR})
+fi
+_VMASUVCPU=$(echo "${_VMASUFLAVOROUTPUT}"|grep " vcpus "|awk '{print $4}')
+_VMASUVRAM=$(echo "${_VMASUFLAVOROUTPUT}"|grep " ram "|awk '{print $4}')
+_VMASUVDISK=$(echo "${_VMASUFLAVOROUTPUT}"|grep " disk "|awk '{print $4}')
+_VMASUUNITS=$(cat ../environment/vm-asu/admin.csv|wc -l)
+echo -e "${GREEN} [OK]${NC}"
+
+echo -e -n " - Gathering Tenant Quota ...\t\t"
+_TENANTQUOTA=$(nova quota-show)
+_TENANTVCPU=$(echo "${_TENANTQUOTA}"|awk '/\| cores / {print $4}')
+_TENANTVRAM=$(echo "${_TENANTQUOTA}"|awk '/\| ram / {print $4}')
+_TENANTVDISK=$(echo "${_TENANTQUOTA}"|awk '/\| disk / {print $4}')
+_TENANTVMS=$(echo "${_TENANTQUOTA}"|awk '/\| instances / {print $4}')
+
+echo -e -n " - Verifying Tenant Quota for all of the Units ...\t\t"
+_NEEDEDVCPU=$(( (${_CMSVCPU} * ${_CMSUNITS}) + (${_DSUVCPU} * ${_DSUUNITS}) + (${_LVUVCPU} * ${_LVUUNITS}) + (${_MAUVCPU} * ${_MAUUNITS}) + (${_OMUVCPU} * ${_OMUUNITS}) + (${_SMUVCPU} * ${_SMUUNITS}) + (${_VMASUVCPU} * ${_VMASUUNITS}) ))
+_NEEDEDVRAM=$(( (${_CMSVRAM} * ${_CMSUNITS}) + (${_DSUVRAM} * ${_DSUUNITS}) + (${_LVUVRAM} * ${_LVUUNITS}) + (${_MAUVRAM} * ${_MAUUNITS}) + (${_OMUVRAM} * ${_OMUUNITS}) + (${_SMUVRAM} * ${_SMUUNITS}) + (${_VMASUVRAM} * ${_VMASUUNITS}) ))
+_NEEDEDVDISK=$(( (${_CMSVDISK} * ${_CMSUNITS}) + (${_DSUVDISK} * ${_DSUUNITS}) + (${_LVUVDISK} * ${_LVUUNITS}) + (${_MAUVDISK} * ${_MAUUNITS}) + (${_OMUVDISK} * ${_OMUUNITS}) + (${_SMUVDISK} * ${_SMUUNITS}) + (${_VMASUVDISK} * ${_VMASUUNITS}) ))
+_NEEDEDUNITS=$(( ${_CMSUNITS} + ${_DSUUNITS} + ${_LVUUNITS} + ${_MAUUNITS} + ${_OMUUNITS} + ${_SMUUNITS} + ${_VMASUUNITS} ))
+
+if (( ${_NEEDEDVCPU} <= ${_TENANTVCPU} )) || [[ ${_TENANTVCPU} == "-1" ]]
+then
+	if [[ ${_TENANTVCPU} == "-1" ]]
+	then
+		echo -e -n "   - The Tenant Quota has unlimited vCPU and you are going to use ${GREEN}${_NEEDEDVCPU}${NC}"
+	else
+		echo -e -n "   - The Tenant Quota has ${_TENANTVCPU} vCPU and you are going to use ${GREEN}${_NEEDEDVCPU}${NC}"
+	fi
+else
+	echo -e -n "${RED}   - The Tenant Quota has ${_TENANTVCPU} vCPU and you are going to use ${_NEEDEDVCPU}${NC}"
+fi
+
+if (( ${_NEEDEDVRAM} <= ${_TENANTVRAM} )) || [[ ${_TENANTVRAM} == "-1" ]]
+then
+	if [[ ${_TENANTVRAM} == "-1" ]]
+	then
+		echo -e -n "   - The Tenant Quota has unlimited vRAM and you are going to use ${GREEN}${_NEEDEDVRAM}${NC}"
+	else
+		echo -e -n "   - The Tenant Quota has ${_TENANTVRAM} vRAM and you are going to use ${GREEN}${_NEEDEDVRAM}${NC}"
+	fi
+else
+	echo -e -n "${RED}   - The Tenant Quota has ${_TENANTVRAM} vRAM and you are going to use ${_NEEDEDVRAM}${NC}"
+fi
+
+if (( ${_NEEDEDVDISK} <= ${_TENANTVDISK} )) || [[ ${_TENANTVDISK} == "-1" ]]
+then
+	if [[ ${_TENANTVDISK} == "-1" ]]
+	then
+		echo -e -n "   - The Tenant Quota has unlimited vDISK and you are going to use ${GREEN}${_NEEDEDVDISK}${NC}"
+	else
+		echo -e -n "   - The Tenant Quota has ${_TENANTVDISK} vDISK and you are going to use ${GREEN}${_NEEDEDVDISK}${NC}"
+	fi
+else
+	echo -e -n "${RED}   - The Tenant Quota has ${_TENANTVDISK} vDISK and you are going to use ${_NEEDEDVDISK}${NC}"
+fi
+
+if (( ${_NEEDEDUNITS} <= ${_TENANTVMS} )) || [[ ${_TENANTVMS} == "-1" ]]
+then
+	if [[ ${_TENANTVMS} == "-1" ]]
+	then
+		echo -e -n "   - The Tenant Quota has unlimited Instance and you are going to create ${GREEN}${_NEEDEDUNITS}${NC}"
+	else
+		echo -e -n "   - The Tenant Quota has ${_TENANTVMS} Instance and you are going to create ${GREEN}${_NEEDEDUNITS}${NC}"
+	fi
+else
+	echo -e -n "${RED}   - The Tenant Quota has ${_TENANTVMS} Instance and you are going to create ${_NEEDEDUNITS}${NC}"
+fi
+
+echo -e "${GREEN} [OK]${NC}"
+
+
+#for _UNITTOBEVALIDATED in "cms" "dsu" "lvu" "mau" "omu" "smu" "vm-asu"
+#do
+#	_CSVFILEPATH=environment/${_UNITTOBEVALIDATED}
+#	_ADMINCSVFILE=$(echo ${_CSVFILEPATH}/admin.csv)
+#	_SZCSVFILE=$(echo ${_CSVFILEPATH}/sz.csv)
+#	_SIPCSVFILE=$(echo ${_CSVFILEPATH}/sip.csv)
+#	_MEDIACSVFILE=$(echo ${_CSVFILEPATH}/media.csv)
+#
+#	if [[ "${_UNITTOBEVALIDATED}" == "cms" ]]
+#	then
+#		cat ../${_SIPCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SIPCSVFILE}.tmp
+#		cat ../${_MEDIACSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_MEDIACSVFILE}.tmp
+#	fi
+#
+#	if [[ "${_UNITTOBEVALIDATED}" != "mau" ]]
+#	then
+#		cat ../${_SZCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_SZCSVFILE}.tmp
+#	fi
+#
+#	cat ../${_ADMINCSVFILE}|tail -n+${_INSTANCESTART} | sed -e "s/\^M//g" | grep -v "^$" > ../${_ADMINCSVFILE}.tmp
+#
+#done
+
 #TODO
 # Add Quota Validation
 # Add Network validation
+
 cd ${_CURRENTDIR}
 exit 0
 
