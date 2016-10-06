@@ -583,14 +583,14 @@ echo -e -n " - Gathering Tenant Quota ...\t\t"
 _TENANTQUOTA=$(nova quota-show)
 _TENANTVCPU=$(echo "${_TENANTQUOTA}"|awk '/\| cores / {print $4}')
 _TENANTVRAM=$(echo "${_TENANTQUOTA}"|awk '/\| ram / {print $4}')
-#_TENANTVDISK=$(echo "${_TENANTQUOTA}"|awk '/\| disk / {print $4}')
+_TENANTVDISK=$(echo "${_TENANTQUOTA}"|awk '/\| disk / {print $4}')
 _TENANTVMS=$(echo "${_TENANTQUOTA}"|awk '/\| instances / {print $4}')
 echo -e "${GREEN} [OK]${NC}"
 
 echo -e " - Verifying Tenant Quota for all of the Units"
 _NEEDEDVCPU=$(( (${_CMSVCPU} * ${_CMSUNITS}) + (${_DSUVCPU} * ${_DSUUNITS}) + (${_LVUVCPU} * ${_LVUUNITS}) + (${_MAUVCPU} * ${_MAUUNITS}) + (${_OMUVCPU} * ${_OMUUNITS}) + (${_SMUVCPU} * ${_SMUUNITS}) + (${_VMASUVCPU} * ${_VMASUUNITS}) ))
 _NEEDEDVRAM=$(( (${_CMSVRAM} * ${_CMSUNITS}) + (${_DSUVRAM} * ${_DSUUNITS}) + (${_LVUVRAM} * ${_LVUUNITS}) + (${_MAUVRAM} * ${_MAUUNITS}) + (${_OMUVRAM} * ${_OMUUNITS}) + (${_SMUVRAM} * ${_SMUUNITS}) + (${_VMASUVRAM} * ${_VMASUUNITS}) ))
-#_NEEDEDVDISK=$(( (${_CMSVDISK} * ${_CMSUNITS}) + (${_DSUVDISK} * ${_DSUUNITS}) + (${_LVUVDISK} * ${_LVUUNITS}) + (${_MAUVDISK} * ${_MAUUNITS}) + (${_OMUVDISK} * ${_OMUUNITS}) + (${_SMUVDISK} * ${_SMUUNITS}) + (${_VMASUVDISK} * ${_VMASUUNITS}) ))
+_NEEDEDVDISK=$(( (${_CMSVDISK} * ${_CMSUNITS}) + (${_DSUVDISK} * ${_DSUUNITS}) + (${_LVUVDISK} * ${_LVUUNITS}) + (${_MAUVDISK} * ${_MAUUNITS}) + (${_OMUVDISK} * ${_OMUUNITS}) + (${_SMUVDISK} * ${_SMUUNITS}) + (${_VMASUVDISK} * ${_VMASUUNITS}) ))
 _NEEDEDUNITS=$(( ${_CMSUNITS} + ${_DSUUNITS} + ${_LVUUNITS} + ${_MAUUNITS} + ${_OMUUNITS} + ${_SMUUNITS} + ${_VMASUUNITS} ))
 
 if (( ${_NEEDEDVCPU} <= ${_TENANTVCPU} )) || [[ ${_TENANTVCPU} == "-1" ]]
@@ -617,17 +617,22 @@ else
 	echo -e "${RED}   - The Tenant Quota has ${_TENANTVRAM} vRAM and you are going to use ${_NEEDEDVRAM}${NC}"
 fi
 
-#if (( ${_NEEDEDVDISK} <= ${_TENANTVDISK} )) || [[ ${_TENANTVDISK} == "-1" ]]
-#then
-#	if [[ ${_TENANTVDISK} == "-1" ]]
-#	then
-#		echo -e "   - The Tenant Quota has unlimited vDISK and you are going to use ${GREEN}${_NEEDEDVDISK}${NC}"
-#	else
-#		echo -e "   - The Tenant Quota has ${_TENANTVDISK} vDISK and you are going to use ${GREEN}${_NEEDEDVDISK}${NC}"
-#	fi
-#else
-#	echo -e "${RED}   - The Tenant Quota has ${_TENANTVDISK} vDISK and you are going to use ${_NEEDEDVDISK}${NC}"
-#fi
+if [[ "$(echo ${_TENANTVDISK}|grep -E -v "[0-9]")" == "" ]]
+then 
+	if (( ${_NEEDEDVDISK} <= ${_TENANTVDISK} )) || [[ ${_TENANTVDISK} == "-1" ]]
+	then
+		if [[ ${_TENANTVDISK} == "-1" ]]
+		then
+			echo -e "   - The Tenant Quota has unlimited vDISK and you are going to use ${GREEN}${_NEEDEDVDISK}${NC}"
+		else
+			echo -e "   - The Tenant Quota has ${_TENANTVDISK} vDISK and you are going to use ${GREEN}${_NEEDEDVDISK}${NC}"
+		fi
+	else
+		echo -e "${RED}   - The Tenant Quota has ${_TENANTVDISK} vDISK and you are going to use ${_NEEDEDVDISK}${NC}"
+	fi
+else
+	echo -e "${YELLOW}   - This OpenStack version does not support Tenant Disk Quota${NC}"
+fi
 
 if (( ${_NEEDEDUNITS} <= ${_TENANTVMS} )) || [[ ${_TENANTVMS} == "-1" ]]
 then
