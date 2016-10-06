@@ -47,7 +47,7 @@ function exit_for_error {
 }
 
 function csv_validation {
-	echo -e -n " - Verifying unit $(echo ${_UNITTOBEVALIDATED}|awk '{ print toupper($0) }') CSV file ${_CSV} ...\t\t"
+	echo -e -n "   - Verifying unit $(echo ${_UNITTOBEVALIDATED}|awk '{ print toupper($0) }') CSV file ${_CSV} ...\t\t"
 	if [ ! -f ${_CSV} ] || [ ! -r ${_CSV} ] || [ ! -s ${_CSV} ]
 	then
 	        exit_for_error "CSV File ${_CSV} Network with mapping PortID,MacAddress,FixedIP does not exist." false soft
@@ -617,7 +617,7 @@ else
 	echo -e "${RED}   - The Tenant Quota has ${_TENANTVRAM} vRAM and you are going to use ${_NEEDEDVRAM}${NC}"
 fi
 
-if [[ "$(echo ${_TENANTVDISK}|grep -E -v "[0-9]")" == "" ]]
+if [[ "$(echo ${_TENANTVDISK}|grep -E -v "[0-9]")" == "" && "${_TENANTVDISK}" != "" ]]
 then 
 	if (( ${_NEEDEDVDISK} <= ${_TENANTVDISK} )) || [[ ${_TENANTVDISK} == "-1" ]]
 	then
@@ -630,8 +630,8 @@ then
 	else
 		echo -e "${RED}   - The Tenant Quota has ${_TENANTVDISK} vDISK and you are going to use ${_NEEDEDVDISK}${NC}"
 	fi
-else
-	echo -e "${YELLOW}   - This OpenStack version does not support Tenant Disk Quota${NC}"
+#else
+#	echo -e "${YELLOW}   - This OpenStack version does not support Tenant Disk Quota${NC}"
 fi
 
 if (( ${_NEEDEDUNITS} <= ${_TENANTVMS} )) || [[ ${_TENANTVMS} == "-1" ]]
