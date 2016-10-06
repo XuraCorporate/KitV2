@@ -57,13 +57,14 @@ function csv_validation {
 
 function net_validation {
         _NET=$1
+	_NAME=$2
         _NETWORK=$(cat ../${_ENV}|awk '/'${_NET}'_network_name/ {print $2}'|sed "s/\"//g")
         _VLAN=$(cat ../${_ENV}|awk '/'${_NET}'_network_vlan/ {print $2}'|sed "s/\"//g")
 
         #####
         # Check the Network exist
         #####
-        echo -e -n " - Validating chosen Network ${_NETWORK} ...\t\t"
+        echo -e -n " - Validating chosen ${_NAME} Network: ${_NETWORK} ...\t\t"
         neutron net-show "${_NETWORK}" >/dev/null 2>&1 || exit_for_error "Error, ${_NET} Network is not present." true hard
         echo -e "${GREEN} [OK]${NC}"
 
@@ -72,7 +73,7 @@ function net_validation {
         # - none
         # - between 1 to 4096
         #####
-        echo -e -n "   - Validating VLAN ${_VLAN} for chosen Network ${_NETWORK} ...\t\t"
+        echo -e -n "   - Validating VLAN ${_VLAN} for chosen ${_NAME} Network ${_NETWORK} ...\t\t"
         if [[ "${_VLAN}" != "none" ]]
         then
                 if (( ${_VLAN} < 1 || ${_VLAN} > 4096 ))
@@ -810,7 +811,7 @@ else
 fi
 
 #TODO
-# Add Network validation
+# QUOTA IS MISSING CURRENT ALLOCATED RESOURCES
 
 cd ${_CURRENTDIR}
 exit 0
