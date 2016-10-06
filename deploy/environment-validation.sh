@@ -56,15 +56,14 @@ function csv_validation {
 }
 
 function net_validation {
-        _UNITTOBEVALIDATED=$1
-        _NET=$2
+        _NET=$1
         _NETWORK=$(cat ../${_ENV}|awk '/'${_NET}'_network_name/ {print $2}'|sed "s/\"//g")
         _VLAN=$(cat ../${_ENV}|awk '/'${_NET}'_network_vlan/ {print $2}'|sed "s/\"//g")
 
         #####
         # Check the Network exist
         #####
-        echo -e -n "Validating chosen Network ${_NETWORK} ...\t\t"
+        echo -e -n " - Validating chosen Network ${_NETWORK} ...\t\t"
         neutron net-show "${_NETWORK}" >/dev/null 2>&1 || exit_for_error "Error, ${_NET} Network is not present." true hard
         echo -e "${GREEN} [OK]${NC}"
 
@@ -73,7 +72,7 @@ function net_validation {
         # - none
         # - between 1 to 4096
         #####
-        echo -e -n "Validating VLAN ${_VLAN} for chosen Network ${_NETWORK} ...\t\t"
+        echo -e -n "   - Validating VLAN ${_VLAN} for chosen Network ${_NETWORK} ...\t\t"
         if [[ "${_VLAN}" != "none" ]]
         then
                 if (( ${_VLAN} < 1 || ${_VLAN} > 4096 ))
@@ -580,6 +579,12 @@ do
                         csv_validation
                 fi
         done
+done
+
+echo -e "\n${GREEN}${BOLD}Verifying OpenStack Neutron Network${NC}${NORMAL}"
+for _NETWORK in "admin" "sz" "sip" "media"
+do
+	net_validation ${_NETWORK}
 done
 
 echo -e "\n${GREEN}${BOLD}Verifying OpenStack Neutron Ports${NC}${NORMAL}"
