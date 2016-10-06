@@ -812,6 +812,7 @@ fi
 
 #TODO
 # QUOTA IS MISSING CURRENT ALLOCATED RESOURCES
+# Ensure exit on error 
 
 cd ${_CURRENTDIR}
 exit 0
