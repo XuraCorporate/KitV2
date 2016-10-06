@@ -618,16 +618,19 @@ do
 			done <<< "$(cat ${_SZCSVFILE})"
                 fi
 
-                if [[ "${_UNITTOBEVALIDATED}" == "cms" ]] && [[ "${_CSV}" =~ "sip.csv" || "${_CSV}" =~ "media.csv" ]]
+                if [[ "${_UNITTOBEVALIDATED}" == "cms" ]] && [[ "${_CSV}" =~ "sip.csv" ]]
                 then
-        		echo -e "   - OpenStack SIP Neutron Ports"
-                	while read _PORTID _MAC _IP
-			do
-				mac_validation ${_MAC}
-                		port_validation ${_PORTID} ${_MAC}
-                		ip_validation ${_IP}
-			done <<< "$(cat ${_SIPCSVFILE})"
+                        echo -e "   - OpenStack SIP Neutron Ports"
+                        while read _PORTID _MAC _IP
+                        do
+                                mac_validation ${_MAC}
+                                port_validation ${_PORTID} ${_MAC}
+                                ip_validation ${_IP}
+                        done <<< "$(cat ${_SIPCSVFILE})"
+                fi
 
+                if [[ "${_UNITTOBEVALIDATED}" == "cms" ]] && [[ "${_CSV}" =~ "media.csv" ]]
+                then
         		echo -e "   - OpenStack Media Neutron Ports"
                 	while read _PORTID _MAC _IP
 			do
@@ -636,7 +639,6 @@ do
                 		ip_validation ${_IP}
 			done <<< "$(cat ${_MEDIACSVFILE})"
                 fi
-
         done
 done
 IFS=${_OLDIFS}
