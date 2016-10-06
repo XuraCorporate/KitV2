@@ -585,7 +585,7 @@ done
 echo -e "\n${GREEN}${BOLD}Verifying OpenStack Neutron Network${NC}${NORMAL}"
 for _NETWORK in "admin" "sz" "sip" "media"
 do
-	net_validation ${_NETWORK}
+	net_validation ${_NETWORK} $(echo ${_NETWORK}|awk '{ print toupper($0) }')
 done
 
 echo -e "\n${GREEN}${BOLD}Verifying OpenStack Neutron Ports${NC}${NORMAL}"
