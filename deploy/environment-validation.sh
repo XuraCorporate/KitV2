@@ -91,7 +91,7 @@ function port_validation {
         #####
         # Check of the port exist
         #####
-        echo -e -n "     - Validating Port ${_PORT} exist ...\t\t"
+        echo -e -n "     - Validating Port ${_PORT} exist ...\t\t\t"
         neutron port-show ${_PORT} >/dev/null 2>&1 || exit_for_error "Error, Port with ID ${_PORT} does not exist." false break
         echo -e "${GREEN} [OK]${NC}"
 
@@ -112,7 +112,7 @@ function ip_validation {
         #####
         # Check if the given IP or NetMask is valid
         #####
-        echo -e -n "     - Validating IP Address ${_IP} ...\t\t"
+        echo -e -n "     - Validating IP Address ${_IP} ...\t\t\t\t\t\t"
         echo ${_IP}|grep -E "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" >/dev/null 2>&1
         if [[ "${?}" != "0" ]]
         then
@@ -143,7 +143,7 @@ function mac_validation {
         #####
         # Check if the given IP or NetMask is valid
         #####
-        echo -e -n "     - Validating MAC Address ${_MAC} ...\t\t"
+        echo -e -n "     - Validating MAC Address ${_MAC} ...\t\t\t\t\t"
         echo ${_MAC}|grep -E "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})" >/dev/null 2>&1
         if [[ "${?}" != "0" ]]
         then
